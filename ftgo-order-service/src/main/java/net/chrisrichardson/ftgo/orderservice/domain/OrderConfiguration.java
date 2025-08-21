@@ -11,10 +11,12 @@ import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCusto
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.Optional;
 
 @Configuration
+@EnableJpaRepositories
 @Import(DomainConfiguration.class)
 public class OrderConfiguration {
   // TODO move to framework
