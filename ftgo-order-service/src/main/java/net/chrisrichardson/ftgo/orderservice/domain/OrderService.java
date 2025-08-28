@@ -2,7 +2,12 @@ package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
-import net.chrisrichardson.ftgo.domain.*;
+import net.chrisrichardson.ftgo.domain.CourierRepository;
+import net.chrisrichardson.ftgo.domain.RestaurantRepository;
+import net.chrisrichardson.ftgo.domain.Restaurant;
+import net.chrisrichardson.ftgo.domain.MenuItem;
+import net.chrisrichardson.ftgo.domain.Courier;
+import net.chrisrichardson.ftgo.domain.Action;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +107,7 @@ public class OrderService {
 
     List<Courier> couriers = courierRepository.findAllAvailable();
     Courier courier = couriers.get(random.nextInt(couriers.size()));
-    courier.addAction(Action.makePickup(order));
-    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(30)));
+    
 
     order.schedule(courier);
 

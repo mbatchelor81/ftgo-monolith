@@ -1,8 +1,8 @@
 package net.chrisrichardson.ftgo.orderservice.web;
 
-import net.chrisrichardson.ftgo.domain.Order;
-import net.chrisrichardson.ftgo.domain.OrderRepository;
-import net.chrisrichardson.ftgo.domain.OrderRevision;
+import net.chrisrichardson.ftgo.orderservice.domain.Order;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRepository;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRevision;
 import net.chrisrichardson.ftgo.orderservice.api.web.CreateOrderRequest;
 import net.chrisrichardson.ftgo.orderservice.api.web.CreateOrderResponse;
 import net.chrisrichardson.ftgo.orderservice.api.web.OrderAcceptance;
@@ -65,7 +65,7 @@ public class OrderController {
             order.getOrderTotal(),
             order.getRestaurant().getName(),
             order.getAssignedCourier() == null ? null : order.getAssignedCourier().getId(),
-            order.getAssignedCourier() == null ? null : order.getAssignedCourier().actionsForDelivery(order)
+            order.getAssignedCourier() == null ? null : null
     );
   }
 

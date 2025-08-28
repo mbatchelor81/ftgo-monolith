@@ -1,7 +1,10 @@
 package net.chrisrichardson.ftgo.orderservice;
 
 import net.chrisrichardson.ftgo.common.Money;
-import net.chrisrichardson.ftgo.domain.*;
+import net.chrisrichardson.ftgo.domain.MenuItem;
+import net.chrisrichardson.ftgo.domain.Restaurant;
+import net.chrisrichardson.ftgo.domain.RestaurantMenu;
+import net.chrisrichardson.ftgo.orderservice.domain.*;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 
 import java.util.Collections;
