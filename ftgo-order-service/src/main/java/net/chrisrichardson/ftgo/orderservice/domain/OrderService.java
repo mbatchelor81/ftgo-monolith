@@ -2,7 +2,13 @@ package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
-import net.chrisrichardson.ftgo.domain.*;
+import net.chrisrichardson.ftgo.domain.RestaurantRepository;
+import net.chrisrichardson.ftgo.domain.Restaurant;
+import net.chrisrichardson.ftgo.domain.MenuItem;
+import net.chrisrichardson.ftgo.orderservice.domain.Order;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRepository;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderLineItem;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRevision;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

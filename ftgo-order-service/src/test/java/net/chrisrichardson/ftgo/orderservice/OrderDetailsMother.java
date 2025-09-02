@@ -2,6 +2,9 @@ package net.chrisrichardson.ftgo.orderservice;
 
 import net.chrisrichardson.ftgo.common.Money;
 import net.chrisrichardson.ftgo.domain.*;
+import net.chrisrichardson.ftgo.orderservice.domain.Order;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderLineItem;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderState;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 
 import java.util.Collections;

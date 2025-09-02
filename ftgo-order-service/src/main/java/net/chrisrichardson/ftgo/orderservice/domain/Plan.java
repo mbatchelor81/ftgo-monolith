@@ -1,4 +1,4 @@
-package net.chrisrichardson.ftgo.domain;
+package net.chrisrichardson.ftgo.orderservice.domain;
 
 import javax.persistence.ElementCollection;
 import java.util.LinkedList;
