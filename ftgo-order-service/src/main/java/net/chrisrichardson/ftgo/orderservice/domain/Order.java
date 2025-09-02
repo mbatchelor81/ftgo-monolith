@@ -1,14 +1,17 @@
-package net.chrisrichardson.ftgo.domain;
+package net.chrisrichardson.ftgo.orderservice.domain;
 
 import net.chrisrichardson.ftgo.common.Money;
 import net.chrisrichardson.ftgo.common.UnsupportedStateTransitionException;
+import net.chrisrichardson.ftgo.domain.Restaurant;
+import net.chrisrichardson.ftgo.domain.DeliveryInformation;
+import net.chrisrichardson.ftgo.domain.PaymentInformation;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static net.chrisrichardson.ftgo.domain.OrderState.*;
+import static net.chrisrichardson.ftgo.orderservice.domain.OrderState.*;
 
 
 @Entity
@@ -197,4 +200,3 @@ public class Order {
     }
   }
 }
-

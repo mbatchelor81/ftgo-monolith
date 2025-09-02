@@ -1,6 +1,6 @@
 package net.chrisrichardson.ftgo.courierservice.domain;
 
-import net.chrisrichardson.ftgo.domain.CourierRepository;
+import net.chrisrichardson.ftgo.orderservice.domain.CourierRepository;
 import net.chrisrichardson.ftgo.domain.DomainConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

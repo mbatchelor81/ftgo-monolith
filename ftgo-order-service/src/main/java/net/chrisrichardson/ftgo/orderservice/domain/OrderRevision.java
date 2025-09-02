@@ -1,4 +1,6 @@
-package net.chrisrichardson.ftgo.domain;
+package net.chrisrichardson.ftgo.orderservice.domain;
+
+import net.chrisrichardson.ftgo.domain.DeliveryInformation;
 
 import java.util.Map;
 import java.util.Optional;
