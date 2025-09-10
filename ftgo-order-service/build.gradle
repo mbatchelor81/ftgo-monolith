@@ -32,32 +32,13 @@ apply plugin: IntegrationTestsPlugin
 // integrationTest.dependsOn(integrationTestsComposeUp)
 
 dependencies {
-
-
-    compile project(":common-swagger")
-    compile project(":ftgo-domain")
-
-    compile project(":ftgo-consumer-service-api")
-    compile project(":ftgo-restaurant-service-api")
-    compile project(":ftgo-order-service-api")
-    compile project(":ftgo-consumer-service")
-
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
-    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-    compile 'javax.el:javax.el-api:2.2.5'
-
+    compile project(":ftgo-order-service:order-web")
+    compile project(":ftgo-order-service:order-domain") 
+    compile project(":ftgo-order-service:order-data")
+    
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion") {
         exclude group: 'org.mockito', module: 'mockito-core'
     }
-
-    // Use a more compatible version of Mockito for Java 8
     testCompile 'org.mockito:mockito-core:2.23.4'
-
-    testCompile 'io.rest-assured:rest-assured:3.0.6'
-    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
-    testCompile "io.rest-assured:json-path:3.0.6"
-
     testCompile project(":ftgo-test-util")
 }
