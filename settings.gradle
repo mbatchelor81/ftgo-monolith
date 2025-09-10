@@ -12,6 +12,9 @@ include "ftgo-domain"
 
 
 include "ftgo-order-service"
+include "ftgo-order-service:order-web"
+include "ftgo-order-service:order-domain"
+include "ftgo-order-service:order-data"
 include "ftgo-order-service-api"
 
 include "ftgo-consumer-service-api"

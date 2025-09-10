@@ -1,9 +1,8 @@
 package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
+import net.chrisrichardson.ftgo.orderservice.domain.ConsumerServiceInterface;
 import net.chrisrichardson.ftgo.domain.*;
-import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+
+import static java.util.stream.Collectors.toList;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
@@ -27,14 +28,14 @@ public class OrderService {
 
   private Optional<MeterRegistry> meterRegistry;
 
-  private ConsumerService consumerService;
+  private ConsumerServiceInterface consumerService;
   private CourierRepository courierRepository;
   private Random random = new Random();
 
   public OrderService(OrderRepository orderRepository,
                       RestaurantRepository restaurantRepository,
                       Optional<MeterRegistry> meterRegistry,
-                      ConsumerService consumerService, CourierRepository courierRepository) {
+                      ConsumerServiceInterface consumerService, CourierRepository courierRepository) {
 
     this.orderRepository = orderRepository;
     this.restaurantRepository = restaurantRepository;
