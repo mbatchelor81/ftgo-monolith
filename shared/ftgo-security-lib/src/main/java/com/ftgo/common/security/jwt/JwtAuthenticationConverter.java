@@ -24,7 +24,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
     public AbstractAuthenticationToken convert(Jwt jwt) {
         String tokenType = jwt.getClaimAsString("type");
         if (!"access".equals(tokenType)) {
-            throw new org.springframework.security.oauth2.jwt.JwtException(
+            throw new org.springframework.security.oauth2.server.resource.InvalidBearerTokenException(
                     "Only access tokens are accepted for API authentication");
         }
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
