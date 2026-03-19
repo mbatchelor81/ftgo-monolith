@@ -82,6 +82,9 @@ project(":shared-ftgo-openapi-lib").projectDir = file("shared/ftgo-openapi-lib")
 include "shared-ftgo-tracing-lib"
 project(":shared-ftgo-tracing-lib").projectDir = file("shared/ftgo-tracing-lib")
 
+include "shared-ftgo-error-handling-lib"
+project(":shared-ftgo-error-handling-lib").projectDir = file("shared/ftgo-error-handling-lib")
+
 // ---------------------------------------------------------------------------
 // New Microservice Modules: Service API Contracts
 // ---------------------------------------------------------------------------
