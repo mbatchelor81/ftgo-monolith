@@ -1,20 +1,73 @@
 plugins {
-    id 'java-library'
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
 }
 
 group = 'com.ftgo'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+version = ftgoCommonLibVersion
 
 dependencies {
-    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // JPA annotations for @Embeddable value objects
+    api libs.spring.boot.starter.data.jpa
 
-    api 'com.fasterxml.jackson.core:jackson-core'
-    api 'com.fasterxml.jackson.core:jackson-databind'
-    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    // Jackson serialization support
+    api libs.bundles.jackson
+
+    // Apache Commons Lang 2 for equals/hashCode/toString builders
+    // (ported from original monolith which uses org.apache.commons.lang v2 package)
     api 'commons-lang:commons-lang:2.6'
 
-    runtimeOnly 'mysql:mysql-connector-java'
+    // MySQL connector (runtime only)
+    runtimeOnly libs.mysql.connector
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // JAXB for Java 9+ compatibility
+    runtimeOnly 'javax.xml.bind:jaxb-api:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-core:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    runtimeOnly 'javax.activation:activation:1.1.1'
+}
+
+// ---------------------------------------------------------------------------
+// Maven Publishing Configuration (extends ftgo.publishing-conventions)
+// ---------------------------------------------------------------------------
+// Customizes the publication from the convention plugin with ftgo-common-lib
+// specific metadata. The convention plugin already creates a 'mavenJava'
+// publication with components.java and a local repo.
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-common-lib'
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, serialization modules, and utilities for FTGO microservices'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        // Remote artifact repository (configure via Gradle properties)
+        // Usage: ./gradlew publish -PrepoUrl=https://your-repo.example.com/releases
+        //                          -PrepoUsername=user -PrepoPassword=pass
+        if (project.hasProperty('repoUrl')) {
+            maven {
+                name = 'remote'
+                url = project.property('repoUrl')
+                credentials {
+                    username = project.findProperty('repoUsername') ?: ''
+                    password = project.findProperty('repoPassword') ?: ''
+                }
+            }
+        }
+    }
 }

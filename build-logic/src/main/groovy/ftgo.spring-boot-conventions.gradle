@@ -1,0 +1,12 @@
+// =============================================================================
+// ftgo.spring-boot-conventions
+// =============================================================================
+// Applies the Spring Boot plugin on top of ftgo.java-conventions.
+// The Spring Boot BOM and dependency management are already configured by
+// ftgo.java-conventions — this plugin adds the bootJar / bootRun tasks and
+// Spring Boot's opinionated defaults for executable JARs.
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'org.springframework.boot'
+}
