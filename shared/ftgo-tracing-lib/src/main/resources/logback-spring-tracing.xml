@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared logback configuration fragment for trace context logging.
+  Services should include this in their logback-spring.xml:
+
+    <include resource="logback-spring-tracing.xml"/>
+
+  This adds traceId and spanId to all log lines via MDC,
+  which Brave's MDCScopeDecorator populates automatically.
+-->
+<included>
+    <property name="TRACE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{36} - %msg%n"/>
+</included>

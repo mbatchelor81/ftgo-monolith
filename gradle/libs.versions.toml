@@ -22,6 +22,8 @@ mysqlConnector          = "8.3.0"
 
 # --- Observability ---
 micrometer              = "1.12.5"
+micrometerTracing       = "1.2.5"
+zipkinReporter          = "2.17.2"
 
 # --- API Documentation ---
 springdocOpenapi        = "2.4.0"
@@ -64,6 +66,9 @@ mysql-connector         = { module = "com.mysql:mysql-connector-j",             
 
 # Observability
 micrometer-prometheus   = { module = "io.micrometer:micrometer-registry-prometheus",  version.ref = "micrometer" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometerTracing" }
+zipkin-reporter-brave   = { module = "io.zipkin.reporter2:zipkin-reporter-brave",      version.ref = "zipkinReporter" }
+zipkin-sender-urlconnection = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkinReporter" }
 
 # API Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
