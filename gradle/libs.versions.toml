@@ -36,6 +36,7 @@ junitJupiter            = "5.10.2"
 restAssured             = "5.4.0"
 mockito                 = "5.11.0"
 assertj                 = "3.25.3"
+testcontainers          = "1.19.7"
 
 # --- Spring Cloud ---
 springCloud             = "2023.0.1"
@@ -90,6 +91,8 @@ rest-assured-spring      = { module = "io.rest-assured:spring-mock-mvc",        
 mockito-core            = { module = "org.mockito:mockito-core",                      version.ref = "mockito" }
 mockito-junit-jupiter   = { module = "org.mockito:mockito-junit-jupiter",             version.ref = "mockito" }
 assertj-core            = { module = "org.assertj:assertj-core",                      version.ref = "assertj" }
+testcontainers-mysql    = { module = "org.testcontainers:mysql",                       version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter",          version.ref = "testcontainers" }
 
 # Spring Cloud Gateway
 spring-cloud-dependencies        = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "springCloud" }
@@ -123,6 +126,15 @@ testing = [
     "mockito-core",
     "mockito-junit-jupiter",
     "assertj-core",
+]
+testing-integration = [
+    "spring-boot-starter-test",
+    "junit-jupiter",
+    "mockito-core",
+    "mockito-junit-jupiter",
+    "assertj-core",
+    "testcontainers-mysql",
+    "testcontainers-junit-jupiter",
 ]
 security-testing = [
     "spring-boot-starter-test",
