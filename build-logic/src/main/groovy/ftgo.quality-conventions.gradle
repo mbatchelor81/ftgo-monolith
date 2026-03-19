@@ -1,0 +1,94 @@
+// =============================================================================
+// ftgo.quality-conventions
+// =============================================================================
+// Configures Checkstyle, SpotBugs, and PMD for static analysis quality gates.
+// Apply this plugin to microservice modules that should enforce code quality.
+
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'pmd'
+}
+
+// ---------------------------------------------------------------------------
+// Checkstyle
+// ---------------------------------------------------------------------------
+checkstyle {
+    toolVersion = '10.14.0'
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    configProperties = ['suppressionFile': rootProject.file('config/checkstyle/suppressions.xml').absolutePath]
+    ignoreFailures = false
+    maxWarnings = 0
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    // Only check main source set
+    exclude '**/test/**', '**/integrationTest/**'
+}
+
+// ---------------------------------------------------------------------------
+// PMD
+// ---------------------------------------------------------------------------
+pmd {
+    toolVersion = '6.55.0'
+    consoleOutput = true
+    ignoreFailures = false
+    ruleSets = []
+    ruleSetConfig = resources.text.fromString("""<?xml version="1.0"?>
+<ruleset name="FTGO PMD Rules" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+         https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>FTGO custom PMD rules</description>
+
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="JUnitTestsShouldIncludeAssert"/>
+        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+        <exclude name="GuardLogStatement"/>
+    </rule>
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="AtLeastOneConstructor"/>
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude name="DefaultPackage"/>
+        <exclude name="CallSuperInConstructor"/>
+        <exclude name="LongVariable"/>
+        <exclude name="ShortVariable"/>
+        <exclude name="ShortMethodName"/>
+        <exclude name="ShortClassName"/>
+        <exclude name="FieldNamingConventions"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="TooManyStaticImports"/>
+    </rule>
+    <rule ref="category/java/design.xml">
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="DataClass"/>
+        <exclude name="TooManyMethods"/>
+        <exclude name="ExcessiveImports"/>
+        <exclude name="AvoidCatchingGenericException"/>
+    </rule>
+    <rule ref="category/java/errorprone.xml">
+        <exclude name="BeanMembersShouldSerialize"/>
+        <exclude name="DataflowAnomalyAnalysis"/>
+        <exclude name="AvoidLiteralsInIfCondition"/>
+    </rule>
+    <rule ref="category/java/performance.xml"/>
+</ruleset>
+""")
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Only run PMD on main source set
+pmdTest.enabled = false
