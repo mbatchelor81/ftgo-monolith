@@ -130,14 +130,14 @@ jobs:
           ./gradlew :${{ matrix.module }}:flywayMigrate \
             -Dflyway.url=jdbc:mysql://127.0.0.1:3306/ftgo_test \
             -Dflyway.user=root \
-            -Dflyway.password=rootpassword || true
+            -Dflyway.password=rootpassword
 
       - name: Run integration tests
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/ftgo_test
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: rootpassword
-        run: ./gradlew :${{ matrix.module }}:integrationTest || true
+        run: ./gradlew :${{ matrix.module }}:integrationTest
 
       - name: Upload integration test results
         if: always()
@@ -196,7 +196,7 @@ jobs:
       - name: Run E2E tests
         env:
           DOCKER_HOST_IP: 127.0.0.1
-        run: ./gradlew :ftgo-end-to-end-tests:test || true
+        run: ./gradlew :ftgo-end-to-end-tests:test
 
       - name: Collect Docker logs
         if: always()

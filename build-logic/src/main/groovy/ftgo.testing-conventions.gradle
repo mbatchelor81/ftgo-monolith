@@ -96,7 +96,9 @@ tasks.withType(Test).configureEach {
 
     // Enable parallel test execution for faster feedback
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
 
-    // Generate JaCoCo execution data
+// Only finalize the unit test task with JaCoCo report (not integrationTest)
+test {
     finalizedBy jacocoTestReport
 }
