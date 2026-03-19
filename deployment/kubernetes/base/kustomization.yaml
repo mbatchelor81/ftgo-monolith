@@ -21,6 +21,10 @@ resources:
   - restaurant-service/service.yaml
   - restaurant-service/configmap.yaml
   - restaurant-service/hpa.yaml
+  - api-gateway/deployment.yaml
+  - api-gateway/service.yaml
+  - api-gateway/configmap.yaml
+  - api-gateway/hpa.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: ftgo

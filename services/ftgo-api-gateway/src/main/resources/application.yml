@@ -1,0 +1,86 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ftgo-api-gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Configured per-environment via K8s ConfigMap
+          issuer-uri: ${FTGO_JWT_ISSUER_URI:http://localhost:8080}
+          jwk-set-uri: ${FTGO_JWT_JWK_SET_URI:}
+
+# -------------------------------------------------------------------------
+# Service Route URLs (overridden by K8s ConfigMap in deployed environments)
+# -------------------------------------------------------------------------
+ftgo:
+  gateway:
+    routes:
+      consumer-service: ${CONSUMER_SERVICE_URL:http://localhost:8081}
+      order-service: ${ORDER_SERVICE_URL:http://localhost:8082}
+      restaurant-service: ${RESTAURANT_SERVICE_URL:http://localhost:8083}
+      courier-service: ${COURIER_SERVICE_URL:http://localhost:8084}
+    cors:
+      allowed-origins: ${FTGO_CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
+# -------------------------------------------------------------------------
+# Resilience4j Circuit Breaker defaults
+# -------------------------------------------------------------------------
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      consumerServiceCB:
+        baseConfig: default
+      orderServiceCB:
+        baseConfig: default
+      restaurantServiceCB:
+        baseConfig: default
+      courierServiceCB:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 10s
+
+# -------------------------------------------------------------------------
+# Actuator
+# -------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+
+# -------------------------------------------------------------------------
+# Logging
+# -------------------------------------------------------------------------
+logging:
+  level:
+    com.ftgo.apigateway: INFO
+    org.springframework.cloud.gateway: INFO
+    io.github.resilience4j: INFO
