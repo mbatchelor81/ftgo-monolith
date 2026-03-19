@@ -28,10 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module:
-          - shared-ftgo-common
-          - shared-ftgo-common-jpa
-          - shared-ftgo-domain
+        include:
+          - module: shared-ftgo-common
+            dir: shared/ftgo-common
+          - module: shared-ftgo-common-jpa
+            dir: shared/ftgo-common-jpa
+          - module: shared-ftgo-domain
+            dir: shared/ftgo-domain
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,5 +58,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.module }}
-          path: ${{ matrix.module }}/build/reports/tests/
+          path: ${{ matrix.dir }}/build/reports/tests/
           retention-days: 14

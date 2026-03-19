@@ -46,7 +46,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
 
       - name: Build Courier Service API
-        run: ./gradlew :ftgo-courier-service-api:build
+        run: ./gradlew :services-ftgo-courier-service-api:build
 
       - name: Build Courier Service
         run: ./gradlew :services-ftgo-courier-service:build

@@ -46,7 +46,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
 
       - name: Build Restaurant Service API
-        run: ./gradlew :ftgo-restaurant-service-api:build
+        run: ./gradlew :services-ftgo-restaurant-service-api:build
 
       - name: Build Restaurant Service
         run: ./gradlew :services-ftgo-restaurant-service:build
