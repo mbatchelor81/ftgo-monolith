@@ -94,6 +94,8 @@ public class BaseSecurityConfiguration {
         if (decoder != null) {
             JwtAuthenticationConverter converter = jwtConverterProvider.getIfAvailable();
             http.oauth2ResourceServer(oauth2 -> {
+                oauth2.authenticationEntryPoint(securityExceptionHandler);
+                oauth2.accessDeniedHandler(securityExceptionHandler);
                 oauth2.jwt(jwt -> {
                     jwt.decoder(decoder);
                     if (converter != null) {
