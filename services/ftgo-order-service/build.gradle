@@ -17,5 +17,7 @@ dependencies {
     implementation project(':services-ftgo-restaurant-service-api')
 
     implementation libs.bundles.spring.boot.service
+    implementation libs.flyway.core
+    implementation libs.flyway.mysql
     runtimeOnly libs.mysql.connector
 }
