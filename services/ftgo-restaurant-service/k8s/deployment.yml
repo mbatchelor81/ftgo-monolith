@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-restaurant-service
+  labels:
+    app: ftgo-restaurant-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftgo-restaurant-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-restaurant-service
+    spec:
+      containers:
+        - name: ftgo-restaurant-service
+          image: ftgo/restaurant-service:latest
+          ports:
+            - containerPort: 8083
+          env:
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-config
+                  key: mysql-host
+            - name: MYSQL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-config
+                  key: mysql-port
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-credentials
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-credentials
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-restaurant-service
+spec:
+  selector:
+    app: ftgo-restaurant-service
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: ClusterIP
