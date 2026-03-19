@@ -1,0 +1,36 @@
+# =============================================================================
+# FTGO CODEOWNERS — Automatic Reviewer Assignment
+# =============================================================================
+# Each line defines a file pattern and the GitHub users/teams who should be
+# requested for review when those files are modified.
+#
+# Order matters — later patterns take precedence over earlier ones.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
+
+# Default owners for everything
+*                                   @mbatchelor81
+
+# Shared libraries — require review from platform/core team
+/shared/                            @mbatchelor81
+/build-logic/                       @mbatchelor81
+
+# Individual microservices
+/services/ftgo-consumer-service/    @mbatchelor81
+/services/ftgo-order-service/       @mbatchelor81
+/services/ftgo-restaurant-service/  @mbatchelor81
+/services/ftgo-courier-service/     @mbatchelor81
+/services/ftgo-api-gateway/         @mbatchelor81
+
+# Infrastructure and deployment
+/deployment/                        @mbatchelor81
+/.github/workflows/                 @mbatchelor81
+/docker-compose*.yml                @mbatchelor81
+
+# Gradle configuration
+/gradle/                            @mbatchelor81
+/settings.gradle                    @mbatchelor81
+/build.gradle                       @mbatchelor81
+
+# Security-sensitive files
+/shared/ftgo-security-lib/          @mbatchelor81
