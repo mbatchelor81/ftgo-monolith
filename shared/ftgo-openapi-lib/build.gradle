@@ -1,0 +1,27 @@
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    api libs.springdoc.openapi.starter.webmvc.ui
+    api libs.spring.boot.starter.web
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-openapi-lib'
+
+            pom {
+                name = 'FTGO OpenAPI Library'
+                description = 'Shared SpringDoc OpenAPI 3 configuration for FTGO microservices'
+            }
+        }
+    }
+}

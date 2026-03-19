@@ -9,6 +9,7 @@ version = '0.0.1-SNAPSHOT'
 dependencies {
     implementation project(':shared-ftgo-common')
     implementation project(':shared-ftgo-domain')
+    implementation project(':shared-ftgo-openapi-lib')
     implementation project(':services-ftgo-consumer-service-api')
 
     implementation libs.bundles.spring.boot.service

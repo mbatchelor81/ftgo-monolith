@@ -35,6 +35,8 @@ jobs:
             dir: shared/ftgo-common-jpa
           - module: shared-ftgo-domain
             dir: shared/ftgo-domain
+          - module: shared-ftgo-openapi-lib
+            dir: shared/ftgo-openapi-lib
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,6 +50,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          validate-wrappers: false
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
 
       - name: Build ${{ matrix.module }}
