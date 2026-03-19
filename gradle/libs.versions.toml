@@ -37,6 +37,10 @@ restAssured             = "5.4.0"
 mockito                 = "5.11.0"
 assertj                 = "3.25.3"
 
+# --- Spring Cloud ---
+springCloud             = "2023.0.1"
+resilience4j            = "2.2.0"
+
 # --- Utilities ---
 commonsLang3            = "3.14.0"
 lombok                  = "1.18.32"
@@ -86,6 +90,16 @@ rest-assured-spring      = { module = "io.rest-assured:spring-mock-mvc",        
 mockito-core            = { module = "org.mockito:mockito-core",                      version.ref = "mockito" }
 mockito-junit-jupiter   = { module = "org.mockito:mockito-junit-jupiter",             version.ref = "mockito" }
 assertj-core            = { module = "org.assertj:assertj-core",                      version.ref = "assertj" }
+
+# Spring Cloud Gateway
+spring-cloud-dependencies        = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "springCloud" }
+spring-cloud-starter-gateway     = { module = "org.springframework.cloud:spring-cloud-starter-gateway" }
+spring-cloud-starter-circuitbreaker-resilience4j = { module = "org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j" }
+
+# Resilience4j
+resilience4j-spring-boot3        = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-reactor             = { module = "io.github.resilience4j:resilience4j-reactor", version.ref = "resilience4j" }
+resilience4j-micrometer          = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
 
 # Utilities
 commons-lang3           = { module = "org.apache.commons:commons-lang3",              version.ref = "commonsLang3" }
