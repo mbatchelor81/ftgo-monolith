@@ -1,0 +1,39 @@
+// =============================================================================
+// ftgo.java-conventions
+// =============================================================================
+// Shared Java compilation settings for all FTGO microservice modules.
+// Sets Java 17, UTF-8 encoding, common compiler options, and imports the
+// Spring Boot BOM so that transitive dependency versions are always resolved.
+
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
+        mavenBom "com.fasterxml.jackson:jackson-bom:${libs.versions.jacksonBom.get()}"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll([
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation',
+    ])
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
