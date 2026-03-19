@@ -1,11 +1,33 @@
 plugins {
     id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
     id 'ftgo.publishing-conventions'
 }
 
-version = '0.0.1-SNAPSHOT'
+group = 'com.ftgo'
+version = '1.0.0'
 
 dependencies {
+    // Shared value objects (Money, Address, PersonName)
     api project(':shared-ftgo-common')
+
+    // JPA / Spring Data
     api libs.spring.boot.starter.data.jpa
+
+    // Apache Commons Lang 2 (for equals/hashCode/toString builders in embeddables)
+    api 'commons-lang:commons-lang:2.6'
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-common-jpa-lib'
+
+            pom {
+                name = 'FTGO Common JPA Library'
+                description = 'Shared JPA base classes, converters, and embeddable utilities for FTGO microservices'
+            }
+        }
+    }
 }

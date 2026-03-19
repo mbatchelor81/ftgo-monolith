@@ -1,9 +1,9 @@
 /**
  * Shared JPA infrastructure for FTGO microservices.
  *
- * Contains JPA-specific utilities, converters, and base entity
- * classes shared across services that use JPA persistence.
+ * <p>Contains JPA base entity classes, converters, and utilities
+ * shared across services that use JPA persistence.</p>
  *
- * Package convention: com.ftgo.common.jpa
+ * <p>Package convention: com.ftgo.common.jpa</p>
  */
 package com.ftgo.common.jpa;
