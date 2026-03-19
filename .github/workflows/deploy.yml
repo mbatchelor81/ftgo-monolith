@@ -1,0 +1,161 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      service:
+        description: 'Service to deploy (or "all")'
+        required: true
+        type: choice
+        options:
+          - all
+          - consumer-service
+          - order-service
+          - courier-service
+          - restaurant-service
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+      - 'deployment/kubernetes/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-dev:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+
+      - name: Update image tags
+        working-directory: deployment/kubernetes/overlays/dev
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          TAG="${{ github.event.inputs.image_tag || github.sha }}"
+          for svc in "${SERVICES[@]}"; do
+            kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
+          done
+
+      - name: Deploy to dev
+        run: |
+          kustomize build deployment/kubernetes/overlays/dev | kubectl apply -f -
+          echo "Deployed to dev environment"
+
+      - name: Verify rollout
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          for svc in "${SERVICES[@]}"; do
+            kubectl rollout status deployment/ftgo-${svc} -n ftgo-dev --timeout=300s || true
+          done
+
+  deploy-staging:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.ftgo.example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+
+      - name: Update image tags
+        working-directory: deployment/kubernetes/overlays/staging
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          TAG="${{ github.event.inputs.image_tag }}"
+          for svc in "${SERVICES[@]}"; do
+            kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
+          done
+
+      - name: Deploy to staging
+        run: |
+          kustomize build deployment/kubernetes/overlays/staging | kubectl apply -f -
+
+      - name: Verify rollout
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          for svc in "${SERVICES[@]}"; do
+            kubectl rollout status deployment/ftgo-${svc} -n ftgo-staging --timeout=300s || true
+          done
+
+  deploy-prod:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://ftgo.example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+
+      - name: Update image tags
+        working-directory: deployment/kubernetes/overlays/prod
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          TAG="${{ github.event.inputs.image_tag }}"
+          for svc in "${SERVICES[@]}"; do
+            kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
+          done
+
+      - name: Deploy to production
+        run: |
+          kustomize build deployment/kubernetes/overlays/prod | kubectl apply -f -
+
+      - name: Verify rollout
+        run: |
+          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          for svc in "${SERVICES[@]}"; do
+            kubectl rollout status deployment/ftgo-${svc} -n ftgo-prod --timeout=300s || true
+          done
