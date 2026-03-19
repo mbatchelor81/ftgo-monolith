@@ -1,5 +1,6 @@
 plugins {
     id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
     id 'ftgo.publishing-conventions'
 }
 
