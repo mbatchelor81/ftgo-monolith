@@ -8,11 +8,16 @@ spring:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/ftgo_restaurant_service
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:rootpassword}
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
 
 management:
   endpoints:
