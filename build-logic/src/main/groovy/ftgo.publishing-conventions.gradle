@@ -1,0 +1,41 @@
+// =============================================================================
+// ftgo.publishing-conventions
+// =============================================================================
+// Configures Maven publishing for shared libraries so they can be consumed
+// by other services or published to a Maven repository.
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(Javadoc).configureEach {
+    failOnError = false
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = "FTGO shared library: ${project.name}"
+                url = 'https://github.com/mbatchelor81/ftgo-monolith'
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'local'
+            url = layout.buildDirectory.dir('repo')
+        }
+    }
+}

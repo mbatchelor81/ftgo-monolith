@@ -1,0 +1,25 @@
+// =============================================================================
+// ftgo.docker-conventions
+// =============================================================================
+// Configures Docker image building using Google Jib.
+// Produces OCI-compliant images without requiring a local Docker daemon.
+
+plugins {
+    id 'com.google.cloud.tools.jib'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre-alpine'
+    }
+    to {
+        image = "ftgo/${project.name}"
+        tags = [project.version.toString(), 'latest']
+    }
+    container {
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+        ports = ['8080']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        format = 'OCI'
+    }
+}

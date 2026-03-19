@@ -5,21 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.util.Assert;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MoneySerializationTest {
 
   private static ObjectMapper objectMapper = new ObjectMapper();
 
-  @BeforeClass
-  public static void initialize() {
+  @BeforeAll
+  static void initialize() {
     objectMapper.registerModule(new MoneyModule());
   }
 
@@ -75,15 +74,10 @@ public class MoneySerializationTest {
   }
 
   @Test
-  public void shouldFailToDe() throws IOException  {
-    JsonMappingException jsonMappingException = null;
-    try {
-      objectMapper.readValue("{\"price\": { \"amount\" : \"12.34\"} }", MoneyContainer.class);
-      fail("expected exception");
-    } catch (JsonMappingException e) {
-      jsonMappingException = e;
-    }
-    Assert.notNull(jsonMappingException);
+  public void shouldFailToDe() {
+    assertThrows(JsonMappingException.class, () ->
+      objectMapper.readValue("{\"price\": { \"amount\" : \"12.34\"} }", MoneyContainer.class)
+    );
   }
 
 
