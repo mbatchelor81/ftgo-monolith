@@ -24,9 +24,9 @@
 | 5 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | ✅ Complete | [PR #20](https://github.com/mbatchelor81/ftgo-monolith/pull/20) | Success | None |
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | ✅ Complete | [PR #21](https://github.com/mbatchelor81/ftgo-monolith/pull/21) | Success | None |
 | 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | ✅ Complete | [PR #22](https://github.com/mbatchelor81/ftgo-monolith/pull/22) | Success | None |
-| 6 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | Pending | — | — | — |
-| 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | Pending | — | — | — |
-| 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | Pending | — | — | — |
+| 6 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | ✅ Complete | [PR #23](https://github.com/mbatchelor81/ftgo-monolith/pull/23) | Success | None |
+| 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 4 | ✅ Complete | [PR #24](https://github.com/mbatchelor81/ftgo-monolith/pull/24) | Success | None |
+| 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | ✅ Complete | [PR #25](https://github.com/mbatchelor81/ftgo-monolith/pull/25) | Success [conflicts resolved] | `gradle/libs.versions.toml` — combined Spring Cloud Gateway + Resilience4j entries from EM-38 with EM-44's Resilience4j deps (superset kept) |
 | 7 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | Pending | — | — | — |
 | 7 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | Pending | — | — | — |
 | 7 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | Pending | — | — | — |
