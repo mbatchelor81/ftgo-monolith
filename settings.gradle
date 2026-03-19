@@ -73,6 +73,8 @@ project(":shared-ftgo-domain").projectDir = file("shared/ftgo-domain")
 include "shared-ftgo-security-lib"
 project(":shared-ftgo-security-lib").projectDir = file("shared/ftgo-security-lib")
 
+include "shared-ftgo-metrics-lib"
+project(":shared-ftgo-metrics-lib").projectDir = file("shared/ftgo-metrics-lib")
 // ---------------------------------------------------------------------------
 // New Microservice Modules: Service API Contracts
 // ---------------------------------------------------------------------------

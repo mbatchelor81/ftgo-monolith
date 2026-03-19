@@ -1,0 +1,30 @@
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    api libs.spring.boot.starter.actuator
+    api libs.micrometer.prometheus
+
+    // For MeterRegistry injection
+    implementation libs.spring.boot.starter.web
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-metrics-lib'
+
+            pom {
+                name = 'FTGO Metrics Library'
+                description = 'Shared Micrometer/Prometheus metrics configuration for FTGO microservices'
+            }
+        }
+    }
+}
