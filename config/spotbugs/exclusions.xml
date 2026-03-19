@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude test classes -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+    <Match>
+        <Source name="~.*Tests\.java"/>
+    </Match>
+
+    <!-- Exclude Spring configuration classes (DI patterns trigger false positives) -->
+    <Match>
+        <Class name="~.*Configuration"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude DTOs/records (immutable data carriers) -->
+    <Match>
+        <Class name="~.*Request"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="~.*Response"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude JPA entity equals/hashCode warnings (intentional pattern) -->
+    <Match>
+        <Class name="~.*Entity"/>
+        <Bug pattern="HE_EQUALS_USE_HASHCODE,HE_HASHCODE_USE_OBJECT_HASHCODE"/>
+    </Match>
+
+    <!-- Suppress serialization warnings for Spring-managed beans -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID,SE_BAD_FIELD"/>
+    </Match>
+</FindBugsFilter>

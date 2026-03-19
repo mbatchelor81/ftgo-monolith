@@ -1,0 +1,37 @@
+# Build outputs
+**/build/
+**/bin/
+**/out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Docker
+**/Dockerfile
+docker-compose*.yml
+
+# CI/CD
+.github/
+
+# Documentation
+*.md
+docs/
+LICENSE
+
+# Test data
+**/src/test/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar

@@ -1,11 +1,36 @@
 plugins {
     id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
     id 'ftgo.publishing-conventions'
 }
 
-version = '0.0.1-SNAPSHOT'
+group = 'com.ftgo'
+version = '1.0.0'
 
 dependencies {
+    // Shared value objects (Money, Address, PersonName, CommonConfiguration)
     api project(':shared-ftgo-common')
+
+    // Shared JPA base classes and converters
     api project(':shared-ftgo-common-jpa')
+
+    // Spring Data JPA (for repository interfaces and @EnableJpaRepositories)
+    api libs.spring.boot.starter.data.jpa
+
+    // Apache Commons Lang 2 (for equals/hashCode/toString builders in entities)
+    api 'commons-lang:commons-lang:2.6'
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-domain-lib'
+
+            pom {
+                name = 'FTGO Domain Library'
+                description = 'Shared domain entities, repositories, and configuration for FTGO microservices'
+            }
+        }
+    }
 }

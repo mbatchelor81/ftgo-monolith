@@ -9,8 +9,14 @@ version = '0.0.1-SNAPSHOT'
 dependencies {
     implementation project(':shared-ftgo-common')
     implementation project(':shared-ftgo-domain')
+    implementation project(':shared-ftgo-security-lib')
+    implementation project(':shared-ftgo-metrics-lib')
+    implementation project(':shared-ftgo-openapi-lib')
+    implementation project(':shared-ftgo-tracing-lib')
     implementation project(':services-ftgo-restaurant-service-api')
 
     implementation libs.bundles.spring.boot.service
+    implementation libs.flyway.core
+    implementation libs.flyway.mysql
     runtimeOnly libs.mysql.connector
 }

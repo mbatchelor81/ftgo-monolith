@@ -1,0 +1,33 @@
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    api libs.spring.boot.starter.web
+    api libs.spring.boot.starter.validation
+
+    // Optional: tracing support for including traceId in error responses
+    compileOnly libs.micrometer.tracing.bridge.brave
+
+    // Test dependencies
+    testImplementation libs.spring.boot.starter.test
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-error-handling-lib'
+
+            pom {
+                name = 'FTGO Error Handling Library'
+                description = 'Centralized error handling and exception patterns for FTGO microservices'
+            }
+        }
+    }
+}

@@ -3,9 +3,37 @@
 // =============================================================================
 // Configures Docker image building using Google Jib.
 // Produces OCI-compliant images without requiring a local Docker daemon.
+//
+// Image tagging strategy:
+//   - <registry>/<service>:<version>-<git-sha>   (immutable release tag)
+//   - <registry>/<service>:<version>              (version tag)
+//   - <registry>/<service>:latest                 (rolling tag, main branch only)
+//
+// Registry is configurable via:
+//   - CONTAINER_REGISTRY env var (e.g., ghcr.io/mbatchelor81)
+//   - container.registry project property
+//   Defaults to 'ghcr.io/mbatchelor81' for GitHub Container Registry.
 
 plugins {
     id 'com.google.cloud.tools.jib'
+}
+
+def registryBase = System.getenv('CONTAINER_REGISTRY') ?:
+        (project.findProperty('container.registry') ?: 'ghcr.io/mbatchelor81')
+
+def gitSha = providers.exec {
+    commandLine 'git', 'rev-parse', '--short', 'HEAD'
+}.standardOutput.asText.get().trim()
+
+def imageTags = [
+    project.version.toString(),
+    "${project.version}-${gitSha}".toString(),
+]
+
+// Only add 'latest' tag on main branch builds
+def gitBranch = System.getenv('GITHUB_REF_NAME') ?: ''
+if (gitBranch == 'main') {
+    imageTags.add('latest')
 }
 
 jib {
@@ -13,13 +41,21 @@ jib {
         image = 'eclipse-temurin:17-jre-alpine'
     }
     to {
-        image = "ftgo/${project.name}"
-        tags = [project.version.toString(), 'latest']
+        image = "${registryBase}/${project.name}"
+        tags = imageTags as Set<String>
     }
     container {
-        jvmFlags = ['-Xms256m', '-Xmx512m']
+        jvmFlags = ['-Xms256m', '-XX:+UseG1GC']
         ports = ['8080']
         creationTime = 'USE_CURRENT_TIMESTAMP'
         format = 'OCI'
+        labels = [
+            'org.opencontainers.image.source': 'https://github.com/mbatchelor81/ftgo-monolith',
+            'org.opencontainers.image.revision': gitSha,
+            'org.opencontainers.image.version': project.version.toString(),
+        ]
+        environment = [
+            'JAVA_TOOL_OPTIONS': '-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0',
+        ]
     }
 }

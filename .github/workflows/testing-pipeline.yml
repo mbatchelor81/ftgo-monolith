@@ -1,0 +1,261 @@
+name: FTGO Testing Pipeline
+
+on:
+  push:
+    branches: [ main, feat/microservices-migration ]
+  pull_request:
+    branches: [ main, feat/microservices-migration ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  # =========================================================================
+  # Tier 1: Unit Tests — fast, no external dependencies
+  # =========================================================================
+  unit-tests:
+    name: "Unit Tests (${{ matrix.module }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - shared-ftgo-common
+          - shared-ftgo-common-jpa
+          - shared-ftgo-domain
+          - shared-ftgo-security-lib
+          - shared-ftgo-metrics-lib
+          - shared-ftgo-openapi-lib
+          - shared-ftgo-tracing-lib
+          - shared-ftgo-error-handling-lib
+          - services-ftgo-consumer-service
+          - services-ftgo-order-service
+          - services-ftgo-restaurant-service
+          - services-ftgo-courier-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
+
+      - name: Run unit tests
+        run: ./gradlew :${{ matrix.module }}:test --parallel
+
+      - name: Generate JaCoCo coverage report
+        if: always()
+        run: ./gradlew :${{ matrix.module }}:jacocoTestReport || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-${{ matrix.module }}
+          path: |
+            **/build/reports/tests/test/
+            **/build/reports/jacoco/test/
+          retention-days: 14
+
+  # =========================================================================
+  # Tier 2: Integration Tests — require MySQL service container
+  # =========================================================================
+  integration-tests:
+    name: "Integration Tests (${{ matrix.module }})"
+    runs-on: ubuntu-latest
+    needs: [ unit-tests ]
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - services-ftgo-consumer-service
+          - services-ftgo-order-service
+          - services-ftgo-restaurant-service
+          - services-ftgo-courier-service
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: ftgo_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            if mysqladmin ping -h 127.0.0.1 -u root -prootpassword --silent 2>/dev/null; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+          echo "ERROR: MySQL did not become ready in time"
+          exit 1
+
+      - name: Run Flyway migrations
+        run: |
+          ./gradlew :${{ matrix.module }}:flywayMigrate \
+            -Dflyway.url=jdbc:mysql://127.0.0.1:3306/ftgo_test \
+            -Dflyway.user=root \
+            -Dflyway.password=rootpassword
+
+      - name: Run integration tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/ftgo_test
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: rootpassword
+        run: ./gradlew :${{ matrix.module }}:integrationTest
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results-${{ matrix.module }}
+          path: |
+            **/build/reports/tests/integrationTest/
+          retention-days: 14
+
+  # =========================================================================
+  # Tier 3: End-to-End Tests — full Docker Compose stack
+  # =========================================================================
+  e2e-tests:
+    name: "E2E Tests"
+    runs-on: ubuntu-latest
+    needs: [ integration-tests ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
+
+      - name: Build all services
+        run: ./gradlew assemble -x :ftgo-end-to-end-tests:build -x :ftgo-end-to-end-tests-common:build
+
+      - name: Start Docker Compose stack
+        run: |
+          docker compose up -d mysql
+          sleep 15
+          docker compose up -d
+          sleep 30
+
+      - name: Wait for services to be healthy
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8081/actuator/health > /dev/null 2>&1; then
+              echo "Application is healthy"
+              exit 0
+            fi
+            echo "Waiting for application... ($i/60)"
+            sleep 5
+          done
+          echo "ERROR: Application did not become healthy in time"
+          exit 1
+
+      - name: Run E2E tests
+        env:
+          DOCKER_HOST_IP: 127.0.0.1
+        run: ./gradlew :ftgo-end-to-end-tests:test
+
+      - name: Collect Docker logs
+        if: always()
+        run: docker compose logs > docker-compose-logs.txt 2>&1
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            ftgo-end-to-end-tests/build/reports/tests/
+            docker-compose-logs.txt
+          retention-days: 14
+
+  # =========================================================================
+  # Coverage Aggregation
+  # =========================================================================
+  coverage-report:
+    name: "Coverage Report"
+    runs-on: ubuntu-latest
+    needs: [ unit-tests ]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: true
+
+      - name: Run tests with coverage
+        run: |
+          ./gradlew test jacocoTestReport \
+            -x :ftgo-end-to-end-tests:test \
+            -x :ftgo-end-to-end-tests-common:test \
+            -x :ftgo-end-to-end-tests-common:compileJava \
+            -x :ftgo-application:compileTestJava \
+            -x :ftgo-application:test \
+            --parallel || true
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-reports
+          path: |
+            **/build/reports/jacoco/
+          retention-days: 14

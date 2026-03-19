@@ -1,0 +1,35 @@
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    // Spring Security
+    api libs.spring.boot.starter.security
+    api libs.spring.boot.starter.web
+    api libs.spring.boot.starter.actuator
+
+    // JWT / OAuth2 Resource Server
+    api libs.spring.boot.starter.oauth2.resource.server
+
+    // Test dependencies
+    testImplementation libs.spring.security.test
+}
+
+publishing {
+    publications {
+        mavenJava {
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-security-lib'
+
+            pom {
+                name = 'FTGO Security Library'
+                description = 'Shared Spring Security configuration for FTGO microservices'
+            }
+        }
+    }
+}

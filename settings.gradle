@@ -70,6 +70,29 @@ project(":shared-ftgo-common-jpa").projectDir = file("shared/ftgo-common-jpa")
 include "shared-ftgo-domain"
 project(":shared-ftgo-domain").projectDir = file("shared/ftgo-domain")
 
+include "shared-ftgo-security-lib"
+project(":shared-ftgo-security-lib").projectDir = file("shared/ftgo-security-lib")
+
+include "shared-ftgo-metrics-lib"
+project(":shared-ftgo-metrics-lib").projectDir = file("shared/ftgo-metrics-lib")
+
+include "shared-ftgo-openapi-lib"
+project(":shared-ftgo-openapi-lib").projectDir = file("shared/ftgo-openapi-lib")
+
+include "shared-ftgo-tracing-lib"
+project(":shared-ftgo-tracing-lib").projectDir = file("shared/ftgo-tracing-lib")
+
+include "shared-ftgo-error-handling-lib"
+project(":shared-ftgo-error-handling-lib").projectDir = file("shared/ftgo-error-handling-lib")
+
+include "shared-ftgo-resilience-lib"
+project(":shared-ftgo-resilience-lib").projectDir = file("shared/ftgo-resilience-lib")
+
+include "shared-ftgo-logging-lib"
+project(":shared-ftgo-logging-lib").projectDir = file("shared/ftgo-logging-lib")
+
+include "shared-ftgo-test-lib"
+project(":shared-ftgo-test-lib").projectDir = file("shared/ftgo-test-lib")
 // ---------------------------------------------------------------------------
 // New Microservice Modules: Service API Contracts
 // ---------------------------------------------------------------------------
@@ -105,3 +128,7 @@ project(":services-ftgo-restaurant-service").projectDir = file("services/ftgo-re
 
 include "services-ftgo-courier-service"
 project(":services-ftgo-courier-service").projectDir = file("services/ftgo-courier-service")
+
+include "services-ftgo-api-gateway"
+project(":services-ftgo-api-gateway").projectDir = file("services/ftgo-api-gateway")
+

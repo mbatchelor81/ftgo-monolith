@@ -1,11 +1,13 @@
 // =============================================================================
 // ftgo.testing-conventions
 // =============================================================================
-// Configures JUnit 5 as the test platform and adds common test dependencies
-// from the version catalog.
+// Configures JUnit 5 as the test platform, adds common test dependencies
+// from the version catalog, JaCoCo code coverage, and an integration test
+// source set for tiered test execution.
 
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 dependencies {
@@ -14,6 +16,71 @@ dependencies {
     testImplementation libs.rest.assured.spring
 }
 
+// ---------------------------------------------------------------------------
+// JaCoCo Code Coverage
+// ---------------------------------------------------------------------------
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.0  // Start at 0; increase per-service as coverage improves
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Integration Test Source Set
+// ---------------------------------------------------------------------------
+sourceSets {
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+
+    jvmArgs '-XX:+UseZGC'
+    maxHeapSize = '512m'
+}
+
+// ---------------------------------------------------------------------------
+// Unit Test Configuration
+// ---------------------------------------------------------------------------
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 
@@ -26,4 +93,12 @@ tasks.withType(Test).configureEach {
     // Sensible defaults for test JVM
     jvmArgs '-XX:+UseZGC'
     maxHeapSize = '512m'
+
+    // Enable parallel test execution for faster feedback
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
+
+// Only finalize the unit test task with JaCoCo report (not integrationTest)
+test {
+    finalizedBy jacocoTestReport
 }
