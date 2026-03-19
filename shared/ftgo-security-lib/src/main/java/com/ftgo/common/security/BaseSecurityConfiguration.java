@@ -35,6 +35,12 @@ import java.util.List;
 @EnableWebSecurity
 public class BaseSecurityConfiguration {
 
+    private final SecurityExceptionHandler securityExceptionHandler;
+
+    public BaseSecurityConfiguration(SecurityExceptionHandler securityExceptionHandler) {
+        this.securityExceptionHandler = securityExceptionHandler;
+    }
+
     @Bean
     @Order(1)
     public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -43,6 +49,10 @@ public class BaseSecurityConfiguration {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(securityExceptionHandler)
+                .accessDeniedHandler(securityExceptionHandler)
             )
             .httpBasic(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
@@ -58,6 +68,10 @@ public class BaseSecurityConfiguration {
         http
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(securityExceptionHandler)
+                .accessDeniedHandler(securityExceptionHandler)
             )
             .httpBasic(Customizer.withDefaults())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
