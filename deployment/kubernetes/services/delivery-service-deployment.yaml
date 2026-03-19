@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-delivery-service
+  labels:
+    app: ftgo-delivery-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftgo-delivery-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-delivery-service
+    spec:
+      containers:
+        - name: ftgo-delivery-service
+          image: ftgo-delivery-service:latest
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/ftgo_delivery_service
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-credentials
+                  key: password
+            - name: SERVER_PORT
+              value: "8084"
+            - name: COURIER_SERVICE_URL
+              value: http://ftgo-courier-service:8083
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-delivery-service
+spec:
+  selector:
+    app: ftgo-delivery-service
+  ports:
+    - port: 8084
+      targetPort: 8084
+  type: ClusterIP

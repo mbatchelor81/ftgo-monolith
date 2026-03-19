@@ -3,9 +3,9 @@ package net.chrisrichardson.ftgo.courierservice.domain;
 
 import net.chrisrichardson.ftgo.common.Address;
 import net.chrisrichardson.ftgo.common.PersonName;
-import net.chrisrichardson.ftgo.domain.Courier;
-import net.chrisrichardson.ftgo.domain.CourierRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public class CourierService {
 
@@ -40,6 +40,10 @@ public class CourierService {
 
   public Courier findCourierById(long courierId) {
     return courierRepository.findById(courierId).get();
+  }
+
+  public List<Courier> findAllAvailable() {
+    return courierRepository.findAllAvailable();
   }
 
 }
