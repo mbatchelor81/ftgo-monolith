@@ -119,11 +119,13 @@ jobs:
           for i in $(seq 1 30); do
             if mysqladmin ping -h 127.0.0.1 -u root -prootpassword --silent 2>/dev/null; then
               echo "MySQL is ready"
-              break
+              exit 0
             fi
             echo "Waiting for MySQL... ($i/30)"
             sleep 2
           done
+          echo "ERROR: MySQL did not become ready in time"
+          exit 1
 
       - name: Run Flyway migrations
         run: |
@@ -187,11 +189,13 @@ jobs:
           for i in $(seq 1 60); do
             if curl -sf http://localhost:8081/actuator/health > /dev/null 2>&1; then
               echo "Application is healthy"
-              break
+              exit 0
             fi
             echo "Waiting for application... ($i/60)"
             sleep 5
           done
+          echo "ERROR: Application did not become healthy in time"
+          exit 1
 
       - name: Run E2E tests
         env:
