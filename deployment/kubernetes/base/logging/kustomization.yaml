@@ -1,0 +1,8 @@
+apiVersion: kustomize.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - elasticsearch.yaml
+  - fluentd.yaml
+  - kibana.yaml
+  - log-retention-configmap.yaml
