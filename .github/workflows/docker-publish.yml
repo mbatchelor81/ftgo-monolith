@@ -1,0 +1,156 @@
+name: Build and Publish Docker Images
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/**'
+      - 'shared/**'
+      - 'build-logic/**'
+      - 'buildSrc/**'
+      - 'gradle/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - all
+          - ftgo-consumer-service
+          - ftgo-order-service
+          - ftgo-courier-service
+          - ftgo-restaurant-service
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      consumer: ${{ steps.changes.outputs.consumer }}
+      order: ${{ steps.changes.outputs.order }}
+      courier: ${{ steps.changes.outputs.courier }}
+      restaurant: ${{ steps.changes.outputs.restaurant }}
+      shared: ${{ steps.changes.outputs.shared }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            consumer:
+              - 'services/ftgo-consumer-service/**'
+              - 'services/ftgo-consumer-service-api/**'
+            order:
+              - 'services/ftgo-order-service/**'
+              - 'services/ftgo-order-service-api/**'
+            courier:
+              - 'services/ftgo-courier-service/**'
+              - 'services/ftgo-courier-service-api/**'
+            restaurant:
+              - 'services/ftgo-restaurant-service/**'
+              - 'services/ftgo-restaurant-service-api/**'
+            shared:
+              - 'shared/**'
+              - 'build-logic/**'
+              - 'buildSrc/**'
+              - 'gradle/**'
+              - 'build.gradle'
+              - 'settings.gradle'
+
+  build-and-push:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: ftgo-consumer-service
+            changed: ${{ needs.detect-changes.outputs.consumer == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event.inputs.service == 'ftgo-consumer-service' || github.event.inputs.service == 'all' }}
+          - service: ftgo-order-service
+            changed: ${{ needs.detect-changes.outputs.order == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event.inputs.service == 'ftgo-order-service' || github.event.inputs.service == 'all' }}
+          - service: ftgo-courier-service
+            changed: ${{ needs.detect-changes.outputs.courier == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event.inputs.service == 'ftgo-courier-service' || github.event.inputs.service == 'all' }}
+          - service: ftgo-restaurant-service
+            changed: ${{ needs.detect-changes.outputs.restaurant == 'true' || needs.detect-changes.outputs.shared == 'true' || github.event.inputs.service == 'ftgo-restaurant-service' || github.event.inputs.service == 'all' }}
+
+    steps:
+      - name: Skip if unchanged
+        if: matrix.changed != 'true' && github.event_name != 'workflow_dispatch'
+        run: echo "No changes detected for ${{ matrix.service }}, skipping."
+
+      - name: Checkout code
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: true
+
+      - name: Log in to GitHub Container Registry
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        id: meta
+        run: |
+          VERSION=$(grep "^version" services/${{ matrix.service }}/build.gradle | sed "s/.*'\(.*\)'/\1/")
+          SHORT_SHA=$(echo "${{ github.sha }}" | head -c 7)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE_PREFIX}/services-${{ matrix.service }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push with Jib
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          CONTAINER_REGISTRY: ${{ env.IMAGE_PREFIX }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |
+          ./gradlew :services-${{ matrix.service }}:jib \
+            -Djib.to.auth.username=${{ github.actor }} \
+            -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }} \
+            --no-daemon
+
+      - name: Scan image for vulnerabilities
+        if: matrix.changed == 'true' || github.event_name == 'workflow_dispatch'
+        uses: aquasecurity/trivy-action@v0.28.0
+        with:
+          image-ref: '${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.short_sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Upload Trivy scan results
+        if: (matrix.changed == 'true' || github.event_name == 'workflow_dispatch') && always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
