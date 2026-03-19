@@ -25,6 +25,10 @@ resources:
   - api-gateway/service.yaml
   - api-gateway/configmap.yaml
   - api-gateway/hpa.yaml
+  - logging/elasticsearch.yaml
+  - logging/fluentd.yaml
+  - logging/kibana.yaml
+  - logging/log-retention-configmap.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: ftgo

@@ -88,6 +88,9 @@ project(":shared-ftgo-error-handling-lib").projectDir = file("shared/ftgo-error-
 include "shared-ftgo-resilience-lib"
 project(":shared-ftgo-resilience-lib").projectDir = file("shared/ftgo-resilience-lib")
 
+include "shared-ftgo-logging-lib"
+project(":shared-ftgo-logging-lib").projectDir = file("shared/ftgo-logging-lib")
+
 // ---------------------------------------------------------------------------
 // New Microservice Modules: Service API Contracts
 // ---------------------------------------------------------------------------

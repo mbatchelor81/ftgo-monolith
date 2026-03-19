@@ -24,6 +24,7 @@ mysqlConnector          = "8.3.0"
 micrometer              = "1.12.5"
 micrometerTracing       = "1.2.5"
 zipkinReporter          = "2.17.2"
+logstashLogbackEncoder  = "7.4"
 
 # --- API Documentation ---
 springdocOpenapi        = "2.4.0"
@@ -73,6 +74,7 @@ micrometer-prometheus   = { module = "io.micrometer:micrometer-registry-promethe
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometerTracing" }
 zipkin-reporter-brave   = { module = "io.zipkin.reporter2:zipkin-reporter-brave",      version.ref = "zipkinReporter" }
 zipkin-sender-urlconnection = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkinReporter" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogbackEncoder" }
 
 # API Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }

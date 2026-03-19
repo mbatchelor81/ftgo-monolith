@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FTGO Service Logback Configuration Template
+  Copy this file to your service's src/main/resources/logback-spring.xml
+  and customize as needed.
+-->
+<configuration>
+    <include resource="ftgo-logback-defaults.xml"/>
+
+    <!-- Use JSON logging in non-local profiles (staging, prod) -->
+    <springProfile name="!local &amp; !dev">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Use plain console logging for local development -->
+    <springProfile name="local | dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_PLAIN"/>
+        </root>
+    </springProfile>
+
+    <!-- Service-specific log levels -->
+    <logger name="com.ftgo" level="DEBUG"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+</configuration>
