@@ -1,5 +1,16 @@
 
 // =============================================================================
+// Build Logic — Convention Plugins (included build)
+// =============================================================================
+// The build-logic project contains precompiled script plugins that standardise
+// Java version, Spring Boot, testing, Docker, and publishing configuration
+// across all new microservice modules.
+
+pluginManagement {
+    includeBuild('build-logic')
+}
+
+// =============================================================================
 // FTGO Mono-Repo: Gradle Settings
 // =============================================================================
 // This file defines all Gradle subprojects for both the legacy monolith

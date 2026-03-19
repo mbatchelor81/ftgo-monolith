@@ -1,0 +1,29 @@
+// =============================================================================
+// ftgo.testing-conventions
+// =============================================================================
+// Configures JUnit 5 as the test platform and adds common test dependencies
+// from the version catalog.
+
+plugins {
+    id 'java'
+}
+
+dependencies {
+    testImplementation libs.bundles.testing
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.spring
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+
+    // Sensible defaults for test JVM
+    jvmArgs '-XX:+UseZGC'
+    maxHeapSize = '512m'
+}

@@ -1,35 +1,30 @@
 plugins {
-    id 'java-library'
+    id 'ftgo.java-conventions'
+    id 'ftgo.publishing-conventions'
     id 'maven-publish'
 }
 
 group = 'com.ftgo'
 version = ftgoCommonLibVersion
-sourceCompatibility = '1.8'
 
 dependencies {
     // JPA annotations for @Embeddable value objects
-    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api libs.spring.boot.starter.data.jpa
 
     // Jackson serialization support
-    api 'com.fasterxml.jackson.core:jackson-core'
-    api 'com.fasterxml.jackson.core:jackson-databind'
-    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    api libs.bundles.jackson
 
     // Apache Commons Lang for equals/hashCode/toString builders
-    api 'commons-lang:commons-lang:2.6'
+    api libs.commons.lang3
 
     // MySQL connector (runtime only)
-    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly libs.mysql.connector
 
     // JAXB for Java 9+ compatibility
     runtimeOnly 'javax.xml.bind:jaxb-api:2.2.11'
     runtimeOnly 'com.sun.xml.bind:jaxb-core:2.2.11'
     runtimeOnly 'com.sun.xml.bind:jaxb-impl:2.2.11'
     runtimeOnly 'javax.activation:activation:1.1.1'
-
-    // Test dependencies
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 // ---------------------------------------------------------------------------

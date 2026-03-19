@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootPluginVersion}"
         classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementPluginVersion"
     }
 
@@ -14,10 +14,17 @@ plugins {
     id "com.github.ben-manes.versions" version "0.20.0"
 }
 
+// ---------------------------------------------------------------------------
+// Legacy Monolith Modules Configuration
+// ---------------------------------------------------------------------------
+// These modules predate the microservices migration and still use the old
+// 'compile' / 'testCompile' / 'runtime' dependency configurations that were
+// removed in Gradle 7+.  We re-register those configurations here so that
+// the legacy build.gradle files continue to work without modification.
 
-subprojects {
+configure(subprojects.findAll { !it.path.startsWith(':services-') && !it.path.startsWith(':shared-') }) {
 
-    apply plugin: "java"
+    apply plugin: "java-library"
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 
@@ -25,37 +32,38 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
-
-        // Commenting out problematic repositories that require authentication or are no longer available
-        // eventuateMavenRepoUrl.split(',').each { repoUrl -> maven { url repoUrl } }
-
-        // maven {
-        //     url 'https://repo.spring.io/libs-milestone'
-        // }
 
         maven {
             url "${project.rootDir}/build/repo"
         }
-
     }
 
+    // Backward-compatible configurations for legacy modules.
+    // The old Gradle 'compile' was fully transitive (like 'api'), so we map
+    // compile → api, testCompile → testImplementation, runtime → runtimeOnly.
+    configurations {
+        create('compile')
+        create('testCompile')
+        create('runtime')
+        api.extendsFrom(configurations.getByName('compile'))
+        testImplementation.extendsFrom(configurations.getByName('testCompile'))
+        runtimeOnly.extendsFrom(configurations.getByName('runtime'))
+    }
 }
 
 // ---------------------------------------------------------------------------
 // New Microservice Modules Configuration
 // ---------------------------------------------------------------------------
-// Override group and dependency management for modules under services/ and shared/.
-// These use the new 'com.ftgo' group and Spring Boot dependency management.
+// Modules under services/ and shared/ use convention plugins from build-logic
+// and the Gradle version catalog for dependency management.  The convention
+// plugins (ftgo.java-conventions, ftgo.spring-boot-conventions, etc.) are
+// applied in each module's own build.gradle — the root build only sets the
+// shared group here.
 
 configure(subprojects.findAll { it.path.startsWith(':services-') || it.path.startsWith(':shared-') }) {
     group = 'com.ftgo'
 
-    apply plugin: 'io.spring.dependency-management'
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
-        }
+    repositories {
+        mavenCentral()
     }
 }
