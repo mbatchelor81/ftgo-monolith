@@ -13,8 +13,9 @@ dependencies {
     // Jackson serialization support
     api libs.bundles.jackson
 
-    // Apache Commons Lang for equals/hashCode/toString builders
-    api libs.commons.lang3
+    // Apache Commons Lang 2 for equals/hashCode/toString builders
+    // (ported from original monolith which uses org.apache.commons.lang v2 package)
+    api 'commons-lang:commons-lang:2.6'
 
     // MySQL connector (runtime only)
     runtimeOnly libs.mysql.connector
