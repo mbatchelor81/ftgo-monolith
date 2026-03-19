@@ -54,6 +54,7 @@ spring-boot-starter-actuator    = { module = "org.springframework.boot:spring-bo
 spring-boot-starter-validation  = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-security    = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
 spring-security-test            = { module = "org.springframework.security:spring-security-test" }
 
 # Database

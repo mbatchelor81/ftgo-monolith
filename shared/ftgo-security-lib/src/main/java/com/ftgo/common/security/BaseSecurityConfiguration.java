@@ -1,5 +1,8 @@
 package com.ftgo.common.security;
 
+import com.ftgo.common.security.jwt.JwtAuthenticationConverter;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -26,7 +30,8 @@ import java.util.List;
  *   <li>Uses stateless session management</li>
  *   <li>Permits unauthenticated access to actuator health and info endpoints</li>
  *   <li>Requires authentication for all other endpoints</li>
- *   <li>Supports HTTP Basic authentication as a baseline</li>
+ *   <li>Supports JWT bearer token authentication when a {@link JwtDecoder} bean is available</li>
+ *   <li>Falls back to HTTP Basic authentication when JWT is not configured</li>
  * </ul>
  *
  * <p>Services can override this bean by defining their own {@link SecurityFilterChain}.
@@ -36,9 +41,16 @@ import java.util.List;
 public class BaseSecurityConfiguration {
 
     private final SecurityExceptionHandler securityExceptionHandler;
+    private final ObjectProvider<JwtDecoder> jwtDecoderProvider;
+    private final ObjectProvider<JwtAuthenticationConverter> jwtConverterProvider;
 
-    public BaseSecurityConfiguration(SecurityExceptionHandler securityExceptionHandler) {
+    public BaseSecurityConfiguration(
+            SecurityExceptionHandler securityExceptionHandler,
+            ObjectProvider<JwtDecoder> jwtDecoderProvider,
+            ObjectProvider<JwtAuthenticationConverter> jwtConverterProvider) {
         this.securityExceptionHandler = securityExceptionHandler;
+        this.jwtDecoderProvider = jwtDecoderProvider;
+        this.jwtConverterProvider = jwtConverterProvider;
     }
 
     @Bean
@@ -73,10 +85,25 @@ public class BaseSecurityConfiguration {
                 .authenticationEntryPoint(securityExceptionHandler)
                 .accessDeniedHandler(securityExceptionHandler)
             )
-            .httpBasic(Customizer.withDefaults())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Use JWT bearer token auth when a JwtDecoder is available; fall back to HTTP Basic
+        JwtDecoder decoder = jwtDecoderProvider.getIfAvailable();
+        if (decoder != null) {
+            JwtAuthenticationConverter converter = jwtConverterProvider.getIfAvailable();
+            http.oauth2ResourceServer(oauth2 -> {
+                oauth2.jwt(jwt -> {
+                    jwt.decoder(decoder);
+                    if (converter != null) {
+                        jwt.jwtAuthenticationConverter(converter);
+                    }
+                });
+            });
+        } else {
+            http.httpBasic(Customizer.withDefaults());
+        }
 
         return http.build();
     }

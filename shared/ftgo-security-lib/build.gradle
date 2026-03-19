@@ -13,6 +13,9 @@ dependencies {
     api libs.spring.boot.starter.web
     api libs.spring.boot.starter.actuator
 
+    // JWT / OAuth2 Resource Server
+    api libs.spring.boot.starter.oauth2.resource.server
+
     // Test dependencies
     testImplementation libs.spring.security.test
 }
