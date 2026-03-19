@@ -59,9 +59,17 @@ jobs:
 
       - name: Update image tags
         working-directory: deployment/kubernetes/overlays/dev
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
+          SELECTED_SERVICE: ${{ github.event.inputs.service || 'all' }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
-          TAG="${{ github.event.inputs.image_tag || github.sha }}"
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
+          TAG="${IMAGE_TAG}"
           for svc in "${SERVICES[@]}"; do
             kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
           done
@@ -72,8 +80,15 @@ jobs:
           echo "Deployed to dev environment"
 
       - name: Verify rollout
+        env:
+          SELECTED_SERVICE: ${{ github.event.inputs.service || 'all' }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
           for svc in "${SERVICES[@]}"; do
             kubectl rollout status deployment/ftgo-${svc} -n ftgo-dev --timeout=300s || true
           done
@@ -101,9 +116,17 @@ jobs:
 
       - name: Update image tags
         working-directory: deployment/kubernetes/overlays/staging
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          SELECTED_SERVICE: ${{ github.event.inputs.service }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
-          TAG="${{ github.event.inputs.image_tag }}"
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
+          TAG="${IMAGE_TAG}"
           for svc in "${SERVICES[@]}"; do
             kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
           done
@@ -113,8 +136,15 @@ jobs:
           kustomize build deployment/kubernetes/overlays/staging | kubectl apply -f -
 
       - name: Verify rollout
+        env:
+          SELECTED_SERVICE: ${{ github.event.inputs.service }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
           for svc in "${SERVICES[@]}"; do
             kubectl rollout status deployment/ftgo-${svc} -n ftgo-staging --timeout=300s || true
           done
@@ -142,9 +172,17 @@ jobs:
 
       - name: Update image tags
         working-directory: deployment/kubernetes/overlays/prod
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          SELECTED_SERVICE: ${{ github.event.inputs.service }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
-          TAG="${{ github.event.inputs.image_tag }}"
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
+          TAG="${IMAGE_TAG}"
           for svc in "${SERVICES[@]}"; do
             kustomize edit set image "ghcr.io/mbatchelor81/services-ftgo-${svc}=ghcr.io/mbatchelor81/services-ftgo-${svc}:${TAG}"
           done
@@ -154,8 +192,15 @@ jobs:
           kustomize build deployment/kubernetes/overlays/prod | kubectl apply -f -
 
       - name: Verify rollout
+        env:
+          SELECTED_SERVICE: ${{ github.event.inputs.service }}
         run: |
-          SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          ALL_SERVICES=("consumer-service" "order-service" "courier-service" "restaurant-service")
+          if [ "${SELECTED_SERVICE}" = "all" ]; then
+            SERVICES=("${ALL_SERVICES[@]}")
+          else
+            SERVICES=("${SELECTED_SERVICE}")
+          fi
           for svc in "${SERVICES[@]}"; do
             kubectl rollout status deployment/ftgo-${svc} -n ftgo-prod --timeout=300s || true
           done
