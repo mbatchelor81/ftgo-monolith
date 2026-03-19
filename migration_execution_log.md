@@ -17,10 +17,10 @@
 | 3 | EM-39 | Implement Spring Security Foundation and Authentication Configuration | Phase 3 | ✅ Complete | [PR #13](https://github.com/mbatchelor81/ftgo-monolith/pull/13) | Success | None |
 | 3 | EM-41 | Upgrade Micrometer/Prometheus Metrics and Add Service-Level Dashboards | Phase 4 | ✅ Complete | [PR #14](https://github.com/mbatchelor81/ftgo-monolith/pull/14) | Success [conflicts resolved] | `services/*/build.gradle`, `settings.gradle` — combined security-lib + metrics-lib entries; `docker-compose.monitoring.yml` — env vars for Grafana creds |
 | 3 | EM-45 | Define REST API Standards and Migrate from Springfox to SpringDoc OpenAPI 3 | Phase 5 | ✅ Complete | [PR #15](https://github.com/mbatchelor81/ftgo-monolith/pull/15) | Success [conflicts resolved] | `services/*/build.gradle`, `settings.gradle`, `.github/workflows/shared-libs.yml` — combined security-lib + metrics-lib + openapi-lib entries |
-| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | Pending | — | — | — |
-| 4 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | Pending | — | — | — |
-| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | Pending | — | — | — |
-| 4 | EM-42 | Implement Distributed Tracing with Spring Cloud Sleuth and Zipkin/Jaeger | Phase 4 | Pending | — | — | — |
+| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | ✅ Complete | [PR #16](https://github.com/mbatchelor81/ftgo-monolith/pull/16) | Success | None |
+| 4 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | ✅ Complete | [PR #17](https://github.com/mbatchelor81/ftgo-monolith/pull/17) | Success | None |
+| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | ✅ Complete | [PR #18](https://github.com/mbatchelor81/ftgo-monolith/pull/18) | Success | None |
+| 4 | EM-42 | Implement Distributed Tracing with Micrometer Tracing | Phase 4 | ✅ Complete | [PR #19](https://github.com/mbatchelor81/ftgo-monolith/pull/19) | Success | None |
 | 5 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | Pending | — | — | — |
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | Pending | — | — | — |
 | 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | Pending | — | — | — |
