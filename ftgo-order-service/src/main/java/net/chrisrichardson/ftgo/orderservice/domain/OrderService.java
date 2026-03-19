@@ -1,8 +1,6 @@
 package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
-import net.chrisrichardson.ftgo.domain.*;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 
@@ -23,40 +19,39 @@ public class OrderService {
 
   private OrderRepository orderRepository;
 
-  private RestaurantRepository restaurantRepository;
+  private RestaurantServiceClient restaurantServiceClient;
 
   private Optional<MeterRegistry> meterRegistry;
 
-  private ConsumerService consumerService;
-  private CourierRepository courierRepository;
-  private Random random = new Random();
+  private ConsumerServiceClient consumerServiceClient;
+  private DeliveryServiceClient deliveryServiceClient;
 
   public OrderService(OrderRepository orderRepository,
-                      RestaurantRepository restaurantRepository,
+                      RestaurantServiceClient restaurantServiceClient,
                       Optional<MeterRegistry> meterRegistry,
-                      ConsumerService consumerService, CourierRepository courierRepository) {
+                      ConsumerServiceClient consumerServiceClient,
+                      DeliveryServiceClient deliveryServiceClient) {
 
     this.orderRepository = orderRepository;
-    this.restaurantRepository = restaurantRepository;
+    this.restaurantServiceClient = restaurantServiceClient;
     this.meterRegistry = meterRegistry;
-    this.consumerService = consumerService;
-    this.courierRepository = courierRepository;
+    this.consumerServiceClient = consumerServiceClient;
+    this.deliveryServiceClient = deliveryServiceClient;
   }
 
   @Transactional
   public Order createOrder(long consumerId, long restaurantId,
                            List<MenuItemIdAndQuantity> lineItems) {
-    Restaurant restaurant = restaurantRepository.findById(restaurantId)
-            .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
-
+    RestaurantDTO restaurant = restaurantServiceClient.findById(restaurantId);
+    if (restaurant == null) {
+      throw new RestaurantNotFoundException(restaurantId);
+    }
 
     List<OrderLineItem> orderLineItems = makeOrderLineItems(lineItems, restaurant);
 
-    Order order = new Order(consumerId, restaurant, orderLineItems);
+    Order order = new Order(consumerId, restaurantId, restaurant.getName(), orderLineItems);
 
-    consumerService.validateOrderForConsumer(consumerId, order.getOrderTotal());
-
-    // TODO - charge a credit card too
+    consumerServiceClient.validateOrderForConsumer(consumerId, order.getOrderTotal());
 
     orderRepository.save(order);
 
@@ -67,9 +62,12 @@ public class OrderService {
     return order;
   }
 
-  private List<OrderLineItem> makeOrderLineItems(List<MenuItemIdAndQuantity> lineItems, Restaurant restaurant) {
+  private List<OrderLineItem> makeOrderLineItems(List<MenuItemIdAndQuantity> lineItems, RestaurantDTO restaurant) {
     return lineItems.stream().map(li -> {
-      MenuItem om = restaurant.findMenuItem(li.getMenuItemId()).orElseThrow(() -> new InvalidMenuItemIdException(li.getMenuItemId()));
+      MenuItemDTO om = restaurant.getMenuItems().stream()
+              .filter(mi -> mi.getId().equals(li.getMenuItemId()))
+              .findFirst()
+              .orElseThrow(() -> new InvalidMenuItemIdException(li.getMenuItemId()));
       return new OrderLineItem(li.getMenuItemId(), om.getName(), om.getPrice(), li.getQuantity());
     }).collect(toList());
   }
@@ -93,20 +91,9 @@ public class OrderService {
   public void accept(long orderId, LocalDateTime readyBy) {
     Order order = tryToFindOrder(orderId);
     order.acceptTicket(readyBy);
-    scheduleDelivery(order, readyBy);
-  }
 
-  public void scheduleDelivery(Order order, LocalDateTime readyBy) {
-
-    // Stupid implementation
-
-    List<Courier> couriers = courierRepository.findAllAvailable();
-    Courier courier = couriers.get(random.nextInt(couriers.size()));
-    courier.addAction(Action.makePickup(order));
-    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(30)));
-
-    order.schedule(courier);
-
+    DeliveryDTO delivery = deliveryServiceClient.scheduleDelivery(order.getId(), readyBy);
+    order.scheduleWithCourier(delivery.getCourierId());
   }
 
 

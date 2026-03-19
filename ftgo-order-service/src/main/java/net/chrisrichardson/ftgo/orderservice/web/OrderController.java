@@ -1,18 +1,22 @@
 package net.chrisrichardson.ftgo.orderservice.web;
 
-import net.chrisrichardson.ftgo.domain.Order;
-import net.chrisrichardson.ftgo.domain.OrderRepository;
-import net.chrisrichardson.ftgo.domain.OrderRevision;
+import net.chrisrichardson.ftgo.orderservice.domain.DeliveryActionDTO;
+import net.chrisrichardson.ftgo.orderservice.domain.DeliveryDTO;
+import net.chrisrichardson.ftgo.orderservice.domain.DeliveryServiceClient;
+import net.chrisrichardson.ftgo.orderservice.domain.Order;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderNotFoundException;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRepository;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderRevision;
+import net.chrisrichardson.ftgo.orderservice.domain.OrderService;
 import net.chrisrichardson.ftgo.orderservice.api.web.CreateOrderRequest;
 import net.chrisrichardson.ftgo.orderservice.api.web.CreateOrderResponse;
 import net.chrisrichardson.ftgo.orderservice.api.web.OrderAcceptance;
 import net.chrisrichardson.ftgo.orderservice.api.web.ReviseOrderRequest;
-import net.chrisrichardson.ftgo.orderservice.domain.OrderNotFoundException;
-import net.chrisrichardson.ftgo.orderservice.domain.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,10 +31,12 @@ public class OrderController {
 
   private OrderRepository orderRepository;
 
+  private DeliveryServiceClient deliveryServiceClient;
 
-  public OrderController(OrderService orderService, OrderRepository orderRepository) {
+  public OrderController(OrderService orderService, OrderRepository orderRepository, DeliveryServiceClient deliveryServiceClient) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
+    this.deliveryServiceClient = deliveryServiceClient;
   }
 
   @RequestMapping(method = RequestMethod.POST)
@@ -60,12 +66,24 @@ public class OrderController {
   }
 
   private GetOrderResponse makeGetOrderResponse(Order order) {
+    List<DeliveryActionDTO> courierActions = Collections.emptyList();
+    if (order.getAssignedCourierId() != null) {
+      try {
+        List<DeliveryDTO> deliveries = deliveryServiceClient.findByOrderId(order.getId());
+        if (deliveries != null && !deliveries.isEmpty()) {
+          courierActions = deliveries.get(0).getActions();
+        }
+      } catch (Exception e) {
+        // Delivery service unavailable, return empty actions
+      }
+    }
+
     return new GetOrderResponse(order.getId(),
             order.getOrderState().name(),
             order.getOrderTotal(),
-            order.getRestaurant().getName(),
-            order.getAssignedCourier() == null ? null : order.getAssignedCourier().getId(),
-            order.getAssignedCourier() == null ? null : order.getAssignedCourier().actionsForDelivery(order)
+            order.getRestaurantName(),
+            order.getAssignedCourierId(),
+            courierActions
     );
   }
 

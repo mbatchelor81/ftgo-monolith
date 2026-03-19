@@ -3,11 +3,14 @@ package net.chrisrichardson.ftgo.courierservice.web;
 import net.chrisrichardson.ftgo.courierservice.api.CourierAvailability;
 import net.chrisrichardson.ftgo.courierservice.api.CreateCourierRequest;
 import net.chrisrichardson.ftgo.courierservice.api.CreateCourierResponse;
+import net.chrisrichardson.ftgo.courierservice.domain.Courier;
 import net.chrisrichardson.ftgo.courierservice.domain.CourierService;
-import net.chrisrichardson.ftgo.domain.Courier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class CourierController {
@@ -34,6 +37,14 @@ public class CourierController {
   public ResponseEntity<Courier> get(@PathVariable long courierId) {
     Courier courier = courierService.findCourierById(courierId);
     return new ResponseEntity<>(courier, HttpStatus.OK);
+  }
+
+  @RequestMapping(path="/couriers/available", method= RequestMethod.GET)
+  public ResponseEntity<List<CourierDTO>> getAvailable() {
+    List<CourierDTO> couriers = courierService.findAllAvailable().stream()
+            .map(c -> new CourierDTO(c.getId(), c.isAvailable()))
+            .collect(Collectors.toList());
+    return new ResponseEntity<>(couriers, HttpStatus.OK);
   }
 
 }

@@ -1,32 +1,59 @@
 package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
-import net.chrisrichardson.ftgo.domain.CourierRepository;
-import net.chrisrichardson.ftgo.domain.DomainConfiguration;
-import net.chrisrichardson.ftgo.domain.OrderRepository;
-import net.chrisrichardson.ftgo.domain.RestaurantRepository;
+import net.chrisrichardson.ftgo.common.CommonConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
 @Configuration
-@Import(DomainConfiguration.class)
+@EnableAutoConfiguration
+@EntityScan
+@EnableJpaRepositories
+@Import(CommonConfiguration.class)
 public class OrderConfiguration {
-  // TODO move to framework
+
   @Bean
-  public OrderService orderService(RestaurantRepository restaurantRepository,
-                                   OrderRepository orderRepository,
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
+
+  @Bean
+  public RestaurantServiceClient restaurantServiceClient(RestTemplate restTemplate,
+                                                          @Value("${restaurant.service.url}") String restaurantServiceUrl) {
+    return new RestaurantServiceClient(restTemplate, restaurantServiceUrl);
+  }
+
+  @Bean
+  public ConsumerServiceClient consumerServiceClient(RestTemplate restTemplate,
+                                                      @Value("${consumer.service.url}") String consumerServiceUrl) {
+    return new ConsumerServiceClient(restTemplate, consumerServiceUrl);
+  }
+
+  @Bean
+  public DeliveryServiceClient deliveryServiceClient(RestTemplate restTemplate,
+                                                      @Value("${delivery.service.url}") String deliveryServiceUrl) {
+    return new DeliveryServiceClient(restTemplate, deliveryServiceUrl);
+  }
+
+  @Bean
+  public OrderService orderService(OrderRepository orderRepository,
+                                   RestaurantServiceClient restaurantServiceClient,
                                    Optional<MeterRegistry> meterRegistry,
-                                   ConsumerService consumerService, CourierRepository courierRepository) {
+                                   ConsumerServiceClient consumerServiceClient,
+                                   DeliveryServiceClient deliveryServiceClient) {
     return new OrderService(orderRepository,
-            restaurantRepository,
+            restaurantServiceClient,
             meterRegistry,
-            consumerService, courierRepository);
+            consumerServiceClient, deliveryServiceClient);
   }
 
   @Bean

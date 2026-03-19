@@ -26,4 +26,10 @@ public class ConsumerController {
             .map(consumer -> new ResponseEntity<>(new GetConsumerResponse(consumer.getName()), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
+
+  @RequestMapping(method= RequestMethod.POST, path="/{consumerId}/validate")
+  public ResponseEntity<Void> validate(@PathVariable long consumerId, @RequestBody ValidateOrderForConsumerRequest request) {
+    consumerService.validateOrderForConsumer(consumerId, request.getOrderTotal());
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 }

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: ftgo-delivery-service
+  datasource:
+    url: jdbc:mysql://${DOCKER_HOST_IP:localhost}/ftgo_delivery_service
+    username: ${SPRING_DATASOURCE_USERNAME:mysqluser}
+    password: ${SPRING_DATASOURCE_PASSWORD:mysqlpw}
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL57Dialect
+  flyway:
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8084}
+
+courier:
+  service:
+    url: ${COURIER_SERVICE_URL:http://localhost:8083}

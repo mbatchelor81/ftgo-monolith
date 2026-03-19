@@ -23,6 +23,8 @@ include "ftgo-restaurant-service"
 include "ftgo-courier-service-api"
 include "ftgo-courier-service"
 
+include "ftgo-delivery-service"
+
 include "ftgo-application"
 
 include "ftgo-end-to-end-tests-common"
