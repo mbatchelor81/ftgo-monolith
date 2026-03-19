@@ -1,20 +1,86 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 group = 'com.ftgo'
-version = '0.0.1-SNAPSHOT'
+version = ftgoCommonLibVersion
 sourceCompatibility = '1.8'
 
 dependencies {
+    // JPA annotations for @Embeddable value objects
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // Jackson serialization support
     api 'com.fasterxml.jackson.core:jackson-core'
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // Apache Commons Lang for equals/hashCode/toString builders
     api 'commons-lang:commons-lang:2.6'
 
+    // MySQL connector (runtime only)
     runtimeOnly 'mysql:mysql-connector-java'
 
+    // JAXB for Java 9+ compatibility
+    runtimeOnly 'javax.xml.bind:jaxb-api:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-core:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    runtimeOnly 'javax.activation:activation:1.1.1'
+
+    // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// ---------------------------------------------------------------------------
+// Maven Publishing Configuration
+// ---------------------------------------------------------------------------
+// Publishes the library as com.ftgo:ftgo-common-lib:1.0.0 to both a local
+// file-based repository (for CI/local development) and a configurable remote
+// repository (for artifact repository publishing).
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'com.ftgo'
+            artifactId = 'ftgo-common-lib'
+            version = project.version
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, serialization modules, and utilities for FTGO microservices'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        // Local file-based repository for CI and local development
+        maven {
+            name = 'local'
+            url = "${rootProject.buildDir}/repo"
+        }
+
+        // Remote artifact repository (configure via Gradle properties)
+        // Usage: ./gradlew publish -PrepoUrl=https://your-repo.example.com/releases
+        //                          -PrepoUsername=user -PrepoPassword=pass
+        if (project.hasProperty('repoUrl')) {
+            maven {
+                name = 'remote'
+                url = project.property('repoUrl')
+                credentials {
+                    username = project.findProperty('repoUsername') ?: ''
+                    password = project.findProperty('repoPassword') ?: ''
+                }
+            }
+        }
+    }
 }
