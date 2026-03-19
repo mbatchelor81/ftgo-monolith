@@ -1,0 +1,11 @@
+spring:
+  security:
+    user:
+      name: user
+      password: test-password
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
