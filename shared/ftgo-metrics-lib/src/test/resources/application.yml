@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: test-service
+
+ftgo:
+  metrics:
+    environment: test
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus

@@ -35,6 +35,8 @@ jobs:
             dir: shared/ftgo-common-jpa
           - module: shared-ftgo-domain
             dir: shared/ftgo-domain
+          - module: shared-ftgo-metrics-lib
+            dir: shared/ftgo-metrics-lib
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
