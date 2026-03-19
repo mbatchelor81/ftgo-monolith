@@ -45,7 +45,7 @@ jib {
         tags = imageTags as Set<String>
     }
     container {
-        jvmFlags = ['-Xms256m', '-Xmx512m', '-XX:+UseG1GC']
+        jvmFlags = ['-Xms256m', '-XX:+UseG1GC']
         ports = ['8080']
         creationTime = 'USE_CURRENT_TIMESTAMP'
         format = 'OCI'
