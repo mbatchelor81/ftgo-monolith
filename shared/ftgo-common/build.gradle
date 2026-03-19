@@ -1,7 +1,6 @@
 plugins {
     id 'ftgo.java-conventions'
     id 'ftgo.publishing-conventions'
-    id 'maven-publish'
 }
 
 group = 'com.ftgo'
@@ -28,20 +27,17 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------------
-// Maven Publishing Configuration
+// Maven Publishing Configuration (extends ftgo.publishing-conventions)
 // ---------------------------------------------------------------------------
-// Publishes the library as com.ftgo:ftgo-common-lib:1.0.0 to both a local
-// file-based repository (for CI/local development) and a configurable remote
-// repository (for artifact repository publishing).
+// Customizes the publication from the convention plugin with ftgo-common-lib
+// specific metadata. The convention plugin already creates a 'mavenJava'
+// publication with components.java and a local repo.
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
+        mavenJava {
             groupId = 'com.ftgo'
             artifactId = 'ftgo-common-lib'
-            version = project.version
 
             pom {
                 name = 'FTGO Common Library'
@@ -58,12 +54,6 @@ publishing {
     }
 
     repositories {
-        // Local file-based repository for CI and local development
-        maven {
-            name = 'local'
-            url = "${rootProject.buildDir}/repo"
-        }
-
         // Remote artifact repository (configure via Gradle properties)
         // Usage: ./gradlew publish -PrepoUrl=https://your-repo.example.com/releases
         //                          -PrepoUsername=user -PrepoPassword=pass
