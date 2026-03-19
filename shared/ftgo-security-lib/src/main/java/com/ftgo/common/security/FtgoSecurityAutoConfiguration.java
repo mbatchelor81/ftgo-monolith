@@ -1,6 +1,8 @@
 package com.ftgo.common.security;
 
 import com.ftgo.common.security.jwt.JwtSecurityConfiguration;
+import com.ftgo.common.security.rbac.MethodSecurityConfiguration;
+import com.ftgo.common.security.rbac.ResourceOwnershipEvaluator;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -16,9 +18,12 @@ import org.springframework.context.annotation.Import;
  *   <li>{@link SecurityExceptionHandler} — unified 401/403 JSON responses</li>
  *   <li>{@link JwtSecurityConfiguration} — JWT token provider and decoder
  *       (conditional on {@code ftgo.security.jwt.secret} property)</li>
+ *   <li>{@link MethodSecurityConfiguration} — method-level security with role hierarchy</li>
+ *   <li>{@link ResourceOwnershipEvaluator} — custom permission evaluator for ownership checks</li>
  * </ul>
  */
 @AutoConfiguration
-@Import({BaseSecurityConfiguration.class, SecurityExceptionHandler.class, JwtSecurityConfiguration.class})
+@Import({BaseSecurityConfiguration.class, SecurityExceptionHandler.class, JwtSecurityConfiguration.class,
+        MethodSecurityConfiguration.class, ResourceOwnershipEvaluator.class})
 public class FtgoSecurityAutoConfiguration {
 }
