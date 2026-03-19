@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-dev
+
+resources:
+  - ../../base
+
+namePrefix: ""
+
+patches:
+  - target:
+      kind: Namespace
+      name: ftgo
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: ftgo-dev
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 3
+
+commonLabels:
+  environment: dev

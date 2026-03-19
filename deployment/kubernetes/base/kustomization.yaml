@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace/namespace.yaml
+  - mysql/mysql-statefulset.yaml
+  - mysql/mysql-service.yaml
+  - consumer-service/deployment.yaml
+  - consumer-service/service.yaml
+  - consumer-service/configmap.yaml
+  - consumer-service/hpa.yaml
+  - order-service/deployment.yaml
+  - order-service/service.yaml
+  - order-service/configmap.yaml
+  - order-service/hpa.yaml
+  - courier-service/deployment.yaml
+  - courier-service/service.yaml
+  - courier-service/configmap.yaml
+  - courier-service/hpa.yaml
+  - restaurant-service/deployment.yaml
+  - restaurant-service/service.yaml
+  - restaurant-service/configmap.yaml
+  - restaurant-service/hpa.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: ftgo
+  app.kubernetes.io/managed-by: kustomize
