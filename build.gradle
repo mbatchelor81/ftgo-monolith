@@ -41,3 +41,21 @@ subprojects {
     }
 
 }
+
+// ---------------------------------------------------------------------------
+// New Microservice Modules Configuration
+// ---------------------------------------------------------------------------
+// Override group and dependency management for modules under services/ and shared/.
+// These use the new 'com.ftgo' group and Spring Boot dependency management.
+
+configure(subprojects.findAll { it.path.startsWith(':services-') || it.path.startsWith(':shared-') }) {
+    group = 'com.ftgo'
+
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        }
+    }
+}

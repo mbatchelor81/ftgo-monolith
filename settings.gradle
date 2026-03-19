@@ -1,4 +1,20 @@
 
+// =============================================================================
+// FTGO Mono-Repo: Gradle Settings
+// =============================================================================
+// This file defines all Gradle subprojects for both the legacy monolith
+// modules and the new microservice modules.
+//
+// Module naming convention:
+//   - Legacy monolith modules:  include "<module-name>"
+//   - New shared libraries:     include "shared-<lib-name>"   -> shared/<lib-name>/
+//   - New service modules:      include "services-<svc-name>" -> services/<svc-name>/
+//   - New service API modules:  include "services-<svc-name>" -> services/<svc-name>/
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Legacy Monolith Modules (unchanged)
+// ---------------------------------------------------------------------------
 
 include "common-swagger"
 
@@ -27,4 +43,55 @@ include "ftgo-application"
 
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
+
+// ---------------------------------------------------------------------------
+// New Microservice Modules: Shared Libraries
+// ---------------------------------------------------------------------------
+// Shared libraries live under shared/ and use the "shared-" prefix in their
+// Gradle project name to avoid collisions with legacy module names.
+
+include "shared-ftgo-common"
+project(":shared-ftgo-common").projectDir = file("shared/ftgo-common")
+
+include "shared-ftgo-common-jpa"
+project(":shared-ftgo-common-jpa").projectDir = file("shared/ftgo-common-jpa")
+
+include "shared-ftgo-domain"
+project(":shared-ftgo-domain").projectDir = file("shared/ftgo-domain")
+
+// ---------------------------------------------------------------------------
+// New Microservice Modules: Service API Contracts
+// ---------------------------------------------------------------------------
+// API modules contain DTOs, event definitions, and contracts that other
+// services depend on. They live under services/ alongside their service.
+
+include "services-ftgo-consumer-service-api"
+project(":services-ftgo-consumer-service-api").projectDir = file("services/ftgo-consumer-service-api")
+
+include "services-ftgo-order-service-api"
+project(":services-ftgo-order-service-api").projectDir = file("services/ftgo-order-service-api")
+
+include "services-ftgo-restaurant-service-api"
+project(":services-ftgo-restaurant-service-api").projectDir = file("services/ftgo-restaurant-service-api")
+
+include "services-ftgo-courier-service-api"
+project(":services-ftgo-courier-service-api").projectDir = file("services/ftgo-courier-service-api")
+
+// ---------------------------------------------------------------------------
+// New Microservice Modules: Services
+// ---------------------------------------------------------------------------
+// Each service is an independently deployable Spring Boot application.
+// Services live under services/ and use the "services-" prefix.
+
+include "services-ftgo-consumer-service"
+project(":services-ftgo-consumer-service").projectDir = file("services/ftgo-consumer-service")
+
+include "services-ftgo-order-service"
+project(":services-ftgo-order-service").projectDir = file("services/ftgo-order-service")
+
+include "services-ftgo-restaurant-service"
+project(":services-ftgo-restaurant-service").projectDir = file("services/ftgo-restaurant-service")
+
+include "services-ftgo-courier-service"
+project(":services-ftgo-courier-service").projectDir = file("services/ftgo-courier-service")
 

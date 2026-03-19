@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.ftgo'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+dependencies {
+    api project(':shared-ftgo-common')
+    api project(':shared-ftgo-common-jpa')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

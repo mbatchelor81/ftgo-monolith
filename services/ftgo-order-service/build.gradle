@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'java'
+}
+
+group = 'com.ftgo'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+dependencies {
+    implementation project(':shared-ftgo-common')
+    implementation project(':shared-ftgo-domain')
+    implementation project(':services-ftgo-order-service-api')
+    implementation project(':services-ftgo-consumer-service-api')
+    implementation project(':services-ftgo-restaurant-service-api')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
