@@ -51,7 +51,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/feat/microservices-migration' }}
 
       - name: Build all modules
-        run: ./gradlew build -x :ftgo-end-to-end-tests:test -x :ftgo-end-to-end-tests-common:test
+        run: ./gradlew build -x :ftgo-end-to-end-tests:build -x :ftgo-end-to-end-tests-common:build
 
       - name: Upload test reports
         if: always()
