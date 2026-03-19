@@ -37,6 +37,8 @@ jobs:
             dir: shared/ftgo-domain
           - module: shared-ftgo-metrics-lib
             dir: shared/ftgo-metrics-lib
+          - module: shared-ftgo-openapi-lib
+            dir: shared/ftgo-openapi-lib
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

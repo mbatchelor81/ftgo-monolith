@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: test-service
+
+ftgo:
+  openapi:
+    version: 2.0.0
+    description: Test API Description

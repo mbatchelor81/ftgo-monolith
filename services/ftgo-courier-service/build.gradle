@@ -11,6 +11,7 @@ dependencies {
     implementation project(':shared-ftgo-domain')
     implementation project(':shared-ftgo-security-lib')
     implementation project(':shared-ftgo-metrics-lib')
+    implementation project(':shared-ftgo-openapi-lib')
     implementation project(':services-ftgo-courier-service-api')
 
     implementation libs.bundles.spring.boot.service

@@ -23,6 +23,9 @@ mysqlConnector          = "8.3.0"
 # --- Observability ---
 micrometer              = "1.12.5"
 
+# --- API Documentation ---
+springdocOpenapi        = "2.4.0"
+
 # --- Serialization ---
 jacksonBom              = "2.17.0"
 
@@ -60,6 +63,9 @@ mysql-connector         = { module = "com.mysql:mysql-connector-j",             
 
 # Observability
 micrometer-prometheus   = { module = "io.micrometer:micrometer-registry-prometheus",  version.ref = "micrometer" }
+
+# API Documentation
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
 
 # Jackson
 jackson-bom             = { module = "com.fasterxml.jackson:jackson-bom",             version.ref = "jacksonBom" }
