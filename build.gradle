@@ -23,6 +23,8 @@ subprojects {
 
     group = "net.chrisrichardson.ftgo"
 
+    ext['mysql.version'] = '8.0.33'
+
     repositories {
         mavenCentral()
         jcenter()
