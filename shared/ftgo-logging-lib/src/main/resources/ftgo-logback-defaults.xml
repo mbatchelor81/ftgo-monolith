@@ -7,19 +7,29 @@
     <include resource="ftgo-logback-defaults.xml"/>
 
   Provides:
+    - PII masking via MaskingConverter (credit cards, passwords, tokens)
     - JSON console appender (CONSOLE_JSON) using logstash-logback-encoder
+    - Plain-text console appender (CONSOLE_PLAIN) for local development
+    - Rolling file appender (FILE_LOCAL) for local development
     - Async wrapper (ASYNC_CONSOLE_JSON) for non-blocking log writes
-    - MDC fields: traceId, spanId, correlationId, service, requestMethod, requestUri
+    - MDC fields: traceId, spanId, correlationId, userId, requestId,
+      requestMethod, requestUri, serviceName
     - Standard timestamp format (ISO-8601 UTC)
   ============================================================================
 -->
 <included>
 
+    <!-- Register masking converter for plain-text patterns -->
+    <conversionRule conversionWord="maskedMsg"
+                    converterClass="com.ftgo.logging.mask.MaskingConverter"/>
+
     <!-- Service name from Spring property (set in application.yml) -->
     <springProperty scope="context" name="SERVICE_NAME"
                     source="spring.application.name" defaultValue="unknown-service"/>
 
-    <!-- JSON console appender via logstash-logback-encoder -->
+    <!-- ================================================================= -->
+    <!-- JSON console appender (deployed environments: dev, staging, prod)  -->
+    <!-- ================================================================= -->
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- ISO-8601 UTC timestamps -->
@@ -29,12 +39,22 @@
             <!-- Always include service name -->
             <customFields>{"service":"${SERVICE_NAME}"}</customFields>
 
-            <!-- Include MDC fields: traceId, spanId, correlationId, etc. -->
+            <!-- Mask sensitive data in JSON message field -->
+            <provider class="com.ftgo.logging.mask.MaskingMessageJsonProvider"/>
+            <!-- Suppress the default message field (replaced by masking provider) -->
+            <fieldNames>
+                <message>[ignore]</message>
+            </fieldNames>
+
+            <!-- Include MDC fields: traceId, spanId, correlationId, userId, requestId -->
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>spanId</includeMdcKeyName>
             <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>requestId</includeMdcKeyName>
             <includeMdcKeyName>requestMethod</includeMdcKeyName>
             <includeMdcKeyName>requestUri</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
 
             <!-- Shorten logger names for readability -->
             <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
@@ -49,7 +69,34 @@
         </encoder>
     </appender>
 
-    <!-- Async wrapper — non-blocking log writes to avoid impacting service performance -->
+    <!-- ================================================================= -->
+    <!-- Plain-text console appender (local development)                   -->
+    <!-- ================================================================= -->
+    <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId:-}] [%X{traceId:-}] [%X{userId:-}] - %maskedMsg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================= -->
+    <!-- Rolling file appender (local development only)                    -->
+    <!-- ================================================================= -->
+    <appender name="FILE_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>3</maxHistory>
+            <totalSizeCap>50MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId:-}] [%X{traceId:-}] [%X{userId:-}] - %maskedMsg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================= -->
+    <!-- Async wrapper — non-blocking log writes for deployed environments -->
+    <!-- ================================================================= -->
     <appender name="ASYNC_CONSOLE_JSON" class="ch.qos.logback.classic.AsyncAppender">
         <!-- Queue capacity: 512 entries (default 256) -->
         <queueSize>512</queueSize>
