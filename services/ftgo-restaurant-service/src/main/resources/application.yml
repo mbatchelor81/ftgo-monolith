@@ -75,21 +75,8 @@ ftgo:
     title: FTGO Restaurant Service
     description: Manages restaurant registration and menu management
     version: 1.0.0
-
-# --- SpringDoc OpenAPI ---
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-
-ftgo:
-  api:
-    title: FTGO Restaurant Service
-    description: Manages restaurant registration and menu management
-    version: 1.0.0
+  service-discovery:
+    namespace: ${FTGO_NAMESPACE:ftgo}
 
 logging:
   pattern:
@@ -98,8 +85,3 @@ logging:
     com.ftgo.restaurant: INFO
     org.springframework: WARN
     io.github.resilience4j: INFO
-
-# --- Service Discovery ---
-ftgo:
-  service-discovery:
-    namespace: ${FTGO_NAMESPACE:ftgo}
