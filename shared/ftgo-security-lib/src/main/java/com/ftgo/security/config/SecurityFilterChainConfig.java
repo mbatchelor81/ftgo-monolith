@@ -3,6 +3,7 @@ package com.ftgo.security.config;
 import java.util.Collections;
 import java.util.List;
 
+import com.ftgo.security.jwt.JwtAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Base Spring Security configuration for FTGO microservices.
@@ -51,10 +53,13 @@ public class SecurityFilterChainConfig {
     private String[] publicPaths;
 
     private final List<ServiceSecurityConfigurer> serviceConfigurers;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityFilterChainConfig(
-            @Autowired(required = false) List<ServiceSecurityConfigurer> serviceConfigurers) {
+            @Autowired(required = false) List<ServiceSecurityConfigurer> serviceConfigurers,
+            @Autowired(required = false) JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.serviceConfigurers = serviceConfigurers != null ? serviceConfigurers : Collections.emptyList();
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     /**
@@ -108,6 +113,12 @@ public class SecurityFilterChainConfig {
             // HTTP Basic auth as baseline (JWT can be layered on top)
             // Pass custom entry point so failed credentials return JSON, not HTML
             .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(authenticationEntryPoint));
+
+        // Register JWT authentication filter if JWT is enabled
+        if (jwtAuthenticationFilter != null) {
+            log.info("JWT authentication filter registered");
+            http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        }
 
         // Apply per-service HttpSecurity customizations (filters, OAuth2, etc.)
         for (ServiceSecurityConfigurer configurer : serviceConfigurers) {

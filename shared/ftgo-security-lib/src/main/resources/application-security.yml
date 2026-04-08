@@ -21,6 +21,19 @@ ftgo:
     logging:
       enabled: true
 
+    # JWT authentication configuration
+    jwt:
+      enabled: false
+      # Secret MUST be set via environment variable: FTGO_JWT_SECRET
+      # Minimum 32 characters (256 bits) for HMAC-SHA256
+      secret: ${FTGO_JWT_SECRET:}
+      # Access token expiration in seconds (default: 30 minutes)
+      expiration: 1800
+      # Refresh token expiration in seconds (default: 24 hours)
+      refresh-expiration: 86400
+      # Token issuer claim
+      issuer: ftgo-platform
+
     # CORS configuration
     cors:
       allowed-origins: "*"

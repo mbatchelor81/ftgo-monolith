@@ -26,6 +26,7 @@ h2                  = "2.2.224"
 
 # --- Security ---
 spring-security     = "6.2.4"
+jjwt                = "0.12.5"
 
 # --- Observability ---
 micrometer          = "1.12.4"
@@ -70,6 +71,11 @@ spring-boot-devtools           = { module = "org.springframework.boot:spring-boo
 spring-security-test           = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security" }
 spring-security-config         = { module = "org.springframework.security:spring-security-config", version.ref = "spring-security" }
 spring-security-web            = { module = "org.springframework.security:spring-security-web", version.ref = "spring-security" }
+spring-security-oauth2-resource-server = { module = "org.springframework.security:spring-security-oauth2-resource-server", version.ref = "spring-security" }
+spring-security-oauth2-jose    = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security" }
+jjwt-api                       = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl                      = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson                   = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Database
 flyway-core          = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
