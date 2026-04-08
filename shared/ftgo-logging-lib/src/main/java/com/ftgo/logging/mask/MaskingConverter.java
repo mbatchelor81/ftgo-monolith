@@ -3,6 +3,7 @@ package com.ftgo.logging.mask;
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -28,7 +29,7 @@ public class MaskingConverter extends ClassicConverter {
 
     // Credit card: 13-19 digits optionally separated by dashes or spaces
     private static final Pattern CREDIT_CARD_PATTERN = Pattern.compile(
-            "\\b([0-9]{4})[- ]?([0-9]{4})[- ]?([0-9]{4})[- ]?([0-9]{1,7})\\b"
+            "\\b([0-9]{4}[- ]?){2,4}[0-9]{1,4}\\b"
     );
 
     // Passwords in JSON: "password":"value" or "secret":"value" etc.
@@ -86,7 +87,19 @@ public class MaskingConverter extends ClassicConverter {
         masked = AUTH_HEADER_PATTERN.matcher(masked).replaceAll("$1[REDACTED]");
 
         // Mask credit card numbers — preserve last 4 digits
-        masked = CREDIT_CARD_PATTERN.matcher(masked).replaceAll("************$4");
+        Matcher ccMatcher = CREDIT_CARD_PATTERN.matcher(masked);
+        StringBuilder sb = new StringBuilder();
+        while (ccMatcher.find()) {
+            String match = ccMatcher.group();
+            String digitsOnly = match.replaceAll("[- ]", "");
+            if (digitsOnly.length() >= 13) {
+                String lastFour = digitsOnly.substring(digitsOnly.length() - 4);
+                String replacement = "*".repeat(digitsOnly.length() - 4) + lastFour;
+                ccMatcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+            }
+        }
+        ccMatcher.appendTail(sb);
+        masked = sb.toString();
 
         return masked;
     }

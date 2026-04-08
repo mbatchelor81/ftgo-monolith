@@ -32,6 +32,38 @@ class MaskingConverterTest {
     }
 
     @Test
+    void maskSensitiveData_creditCard13Digits_masksAllButLastFour() {
+        String input = "Card: 4222222222225";
+        String result = MaskingConverter.maskSensitiveData(input);
+        assertThat(result).contains("*********2225");
+        assertThat(result).doesNotContain("4222");
+    }
+
+    @Test
+    void maskSensitiveData_creditCard15Digits_masksAllButLastFour() {
+        String input = "Amex: 378282246310005";
+        String result = MaskingConverter.maskSensitiveData(input);
+        assertThat(result).contains("***********0005");
+        assertThat(result).doesNotContain("3782");
+    }
+
+    @Test
+    void maskSensitiveData_creditCard17Digits_masksAllButLastFour() {
+        String input = "Maestro: 41111111111111113";
+        String result = MaskingConverter.maskSensitiveData(input);
+        assertThat(result).contains("*************1113");
+        assertThat(result).doesNotContain("4111");
+    }
+
+    @Test
+    void maskSensitiveData_creditCard19Digits_masksAllButLastFour() {
+        String input = "UnionPay: 4111111111111111309";
+        String result = MaskingConverter.maskSensitiveData(input);
+        assertThat(result).contains("***************1309");
+        assertThat(result).doesNotContain("4111");
+    }
+
+    @Test
     void maskSensitiveData_passwordInJson_masksValue() {
         String input = "{\"password\":\"s3cr3t!\"}";
         String result = MaskingConverter.maskSensitiveData(input);
