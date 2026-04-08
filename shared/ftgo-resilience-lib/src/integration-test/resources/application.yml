@@ -1,0 +1,16 @@
+# Integration test configuration for ftgo-resilience-lib
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+# Service discovery defaults for testing
+ftgo:
+  service-discovery:
+    namespace: ftgo
+    cluster-domain: cluster.local
+    default-port: 8080
+    default-scheme: http
+  health:
+    disk-space:
+      threshold-mb: 1
+      path: /

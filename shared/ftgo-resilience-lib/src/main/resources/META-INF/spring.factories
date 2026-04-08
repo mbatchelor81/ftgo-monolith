@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.ftgo.resilience.config.FtgoResilienceAutoConfiguration
+
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  com.ftgo.resilience.config.FtgoResilienceEnvironmentPostProcessor
