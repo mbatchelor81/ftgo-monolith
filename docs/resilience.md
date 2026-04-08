@@ -73,7 +73,8 @@ auto-configuration. No additional `@Import` or `@Enable*` annotations needed.
 | Class | Purpose |
 |-------|---------|
 | `FtgoResilienceAutoConfiguration` | Entry point; imports all config classes |
-| `ResilienceConfiguration` | Resilience4j registry beans with FTGO defaults |
+| `FtgoResilienceEnvironmentPostProcessor` | Loads `ftgo-resilience-defaults.yml` as default properties |
+| `ResilienceConfiguration` | Marker config; Resilience4j registries auto-configured from YAML |
 | `GracefulShutdownConfiguration` | Tomcat connector customization for graceful shutdown |
 | `ServiceDiscoveryConfiguration` | K8s DNS service registry bean |
 | `KubernetesServiceRegistry` | Resolves service names to cluster-internal URLs |
@@ -313,7 +314,7 @@ implementation 'org.springframework.boot:spring-boot-starter-aop'  // Required f
 ### Unit Tests
 
 Located in `shared/ftgo-resilience-lib/src/test/`:
-- `ResilienceConfigurationTest` — Validates registry defaults
+- `ResilienceConfigurationTest` — Validates EnvironmentPostProcessor loads YAML defaults
 - `KubernetesServiceRegistryTest` — Validates DNS URL resolution
 - `DiskSpaceHealthIndicatorTest` — Validates disk space checks
 
