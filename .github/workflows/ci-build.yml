@@ -376,12 +376,10 @@ jobs:
       - name: Run Flyway database migrations
         run: ./gradlew :ftgo-flyway:flywayMigrate --no-daemon
         env:
+          DOCKER_HOST_IP: 127.0.0.1
           SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
           SPRING_DATASOURCE_USERNAME: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
           SPRING_DATASOURCE_PASSWORD: ${{ vars.CI_MYSQL_PASS || 'cipass' }}
-          FLYWAY_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
-          FLYWAY_USER: root
-          FLYWAY_PASSWORD: ${{ vars.CI_MYSQL_ROOT_PASS || 'rootpassword' }}
 
       - name: Run integration tests
         run: |
