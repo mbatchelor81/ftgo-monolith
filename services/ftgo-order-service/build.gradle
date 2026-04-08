@@ -3,6 +3,11 @@
 
 apply plugin: FtgoMicroservicePlugin
 
+// NOTE: bootJar is disabled by default in FtgoMicroservicePlugin.
+// Re-enable it once this service has a @SpringBootApplication main class:
+//   bootJar { enabled = true }
+//   jar { enabled = false }
+
 dependencies {
     implementation project(":services:ftgo-order-service-api")
     implementation project(":services:ftgo-consumer-service-api")
