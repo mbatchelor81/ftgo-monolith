@@ -1,0 +1,44 @@
+# =============================================================================
+# FTGO Alert: High Error Count
+# =============================================================================
+# Triggers when any FTGO service exceeds a threshold of errors within
+# a 5-minute window.
+# =============================================================================
+
+name: "FTGO High Error Count"
+type: frequency
+
+index: ftgo-logs-*
+timestamp_field: "@timestamp"
+
+# Alert if more than 50 errors in 5 minutes for any service
+num_events: 50
+timeframe:
+  minutes: 5
+
+# Only count ERROR-level log entries
+filter:
+  - term:
+      level: "ERROR"
+
+# Group by service
+query_key: "service"
+
+# Alert configuration
+alert:
+  - debug
+
+alert_subject: "FTGO High Error Count — {service}"
+alert_text: |
+  High error count detected for service: {service}
+
+  Error count: {num_events} errors in {timeframe}
+  Threshold: 50 errors per 5 minutes
+
+  Recent errors:
+  {hits}
+
+  Investigate in Kibana:
+    - Open the [FTGO] Service Logs Dashboard
+    - Filter by service = {service} AND level = ERROR
+alert_text_type: alert_text_only

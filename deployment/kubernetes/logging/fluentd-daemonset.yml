@@ -1,0 +1,184 @@
+# =============================================================================
+# Fluentd DaemonSet for FTGO K8s log collection
+# =============================================================================
+# Runs on every node to collect container logs from /var/log/containers
+# and forward them to Elasticsearch.
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluentd
+  namespace: ftgo-logging
+  labels:
+    app: fluentd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fluentd
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fluentd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fluentd
+subjects:
+  - kind: ServiceAccount
+    name: fluentd
+    namespace: ftgo-logging
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: ftgo-logging
+  labels:
+    app: fluentd
+data:
+  fluent.conf: |
+    # =============================================================================
+    # Fluentd K8s Configuration — FTGO Microservices
+    # =============================================================================
+
+    # Collect container logs from Kubernetes
+    <source>
+      @type tail
+      path /var/log/containers/ftgo-*.log
+      pos_file /var/log/fluentd-ftgo-containers.log.pos
+      tag kubernetes.*
+      read_from_head true
+      <parse>
+        @type json
+        time_key time
+        time_format %Y-%m-%dT%H:%M:%S.%NZ
+        keep_time_key true
+      </parse>
+    </source>
+
+    # Enrich with Kubernetes metadata (pod name, namespace, labels)
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+      @id filter_kube_metadata
+    </filter>
+
+    # Parse the nested JSON log field from FTGO services
+    <filter kubernetes.**>
+      @type parser
+      key_name log
+      reserve_data true
+      remove_key_name_field true
+      <parse>
+        @type json
+        time_key @timestamp
+        time_format %Y-%m-%dT%H:%M:%S.%L%Z
+        keep_time_key true
+      </parse>
+    </filter>
+
+    # Add environment label from K8s namespace
+    <filter kubernetes.**>
+      @type record_transformer
+      <record>
+        environment ${record.dig("kubernetes", "namespace_name") || "unknown"}
+        k8s_pod ${record.dig("kubernetes", "pod_name") || "unknown"}
+        k8s_node ${record.dig("kubernetes", "host") || "unknown"}
+      </record>
+    </filter>
+
+    # Output to Elasticsearch
+    <match kubernetes.**>
+      @type elasticsearch
+      host elasticsearch.ftgo-logging.svc.cluster.local
+      port 9200
+      scheme http
+      logstash_format true
+      logstash_prefix ftgo-logs
+      logstash_dateformat %Y.%m.%d
+      include_tag_key true
+      tag_key fluentd_tag
+      suppress_type_name true
+
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers/ftgo
+        flush_interval 5s
+        flush_thread_count 2
+        chunk_limit_size 8m
+        total_limit_size 512m
+        retry_max_interval 30s
+        retry_forever true
+        overflow_action block
+      </buffer>
+    </match>
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: ftgo-logging
+  labels:
+    app: fluentd
+    app.kubernetes.io/part-of: ftgo
+    app.kubernetes.io/component: logging
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      serviceAccountName: fluentd
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+      containers:
+        - name: fluentd
+          image: fluent/fluentd-kubernetes-daemonset:v1.16-debian-elasticsearch8-1
+          env:
+            - name: FLUENT_ELASTICSEARCH_HOST
+              value: "elasticsearch.ftgo-logging.svc.cluster.local"
+            - name: FLUENT_ELASTICSEARCH_PORT
+              value: "9200"
+            - name: FLUENT_ELASTICSEARCH_SCHEME
+              value: "http"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: containers
+              mountPath: /var/log/containers
+              readOnly: true
+            - name: fluentd-config
+              mountPath: /fluentd/etc
+            - name: buffer
+              mountPath: /var/log/fluentd-buffers
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: containers
+          hostPath:
+            path: /var/log/containers
+        - name: fluentd-config
+          configMap:
+            name: fluentd-config
+        - name: buffer
+          emptyDir: {}

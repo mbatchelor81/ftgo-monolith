@@ -3,6 +3,7 @@
 
 plugins {
     id 'ftgo.spring-boot-conventions'
+    id 'ftgo.logging-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.docker-conventions'
 }

@@ -49,6 +49,7 @@ include "shared:common-swagger"
 include "shared:ftgo-security-lib"
 include "shared:ftgo-resilience-lib"
 include "shared:ftgo-tracing-lib"
+include "shared:ftgo-logging-lib"
 
 // Order bounded context
 include "services:ftgo-order-service"

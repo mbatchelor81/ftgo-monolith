@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FTGO Service Logback Configuration Template
+  ============================================================================
+  Copy this file to each service's src/main/resources/logback-spring.xml
+  and adjust the service-specific log levels as needed.
+
+  This configuration:
+    - Includes the shared ftgo-logback-defaults.xml from ftgo-logging-lib
+    - Uses the ASYNC_CONSOLE_JSON appender for all profiles
+    - Provides a plain-text CONSOLE appender for local development
+    - Configures per-profile log levels
+  ============================================================================
+-->
+<configuration>
+
+    <!-- Import shared FTGO logging defaults (JSON appender + async wrapper) -->
+    <include resource="ftgo-logback-defaults.xml"/>
+
+    <!-- Plain-text console appender for local development readability -->
+    <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId:-}] [%X{traceId:-}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================= -->
+    <!-- Profile: local — human-readable plain-text console output         -->
+    <!-- ================================================================= -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_PLAIN"/>
+        </root>
+        <logger name="com.ftgo" level="DEBUG"/>
+    </springProfile>
+
+    <!-- ================================================================= -->
+    <!-- Profile: dev — JSON output, DEBUG level for FTGO packages         -->
+    <!-- ================================================================= -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE_JSON"/>
+        </root>
+        <logger name="com.ftgo" level="DEBUG"/>
+    </springProfile>
+
+    <!-- ================================================================= -->
+    <!-- Profile: staging — JSON output, INFO level                        -->
+    <!-- ================================================================= -->
+    <springProfile name="staging">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE_JSON"/>
+        </root>
+        <logger name="com.ftgo" level="INFO"/>
+    </springProfile>
+
+    <!-- ================================================================= -->
+    <!-- Profile: prod — JSON output, WARN for noisy frameworks            -->
+    <!-- ================================================================= -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE_JSON"/>
+        </root>
+        <logger name="com.ftgo" level="INFO"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.springframework" level="WARN"/>
+    </springProfile>
+
+    <!-- ================================================================= -->
+    <!-- Default (no profile) — JSON output                                -->
+    <!-- ================================================================= -->
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE_JSON"/>
+        </root>
+        <logger name="com.ftgo" level="DEBUG"/>
+    </springProfile>
+
+</configuration>

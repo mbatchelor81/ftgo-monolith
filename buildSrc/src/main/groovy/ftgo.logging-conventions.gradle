@@ -1,0 +1,31 @@
+// =============================================================================
+// ftgo.logging-conventions — Structured JSON logging with Logback
+// =============================================================================
+// Adds logstash-logback-encoder for structured JSON log output, SLF4J API,
+// and includes the shared logback configuration from ftgo-logging-lib.
+//
+// All services applying this plugin will:
+//   - Output structured JSON logs (timestamp, level, service, traceId, spanId, message)
+//   - Use an async appender for non-blocking log writes
+//   - Propagate correlation IDs via MDC (Mapped Diagnostic Context)
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.logging-conventions'
+//   }
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+}
+
+dependencies {
+    // Structured JSON logging
+    implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstash.logback.get()}"
+
+    // SLF4J API
+    implementation "org.slf4j:slf4j-api:${libs.versions.slf4j.get()}"
+
+    // Shared logging library — MDC filter, correlation ID propagation, logback config
+    implementation project(':shared:ftgo-logging-lib')
+}

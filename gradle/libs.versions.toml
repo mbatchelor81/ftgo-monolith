@@ -26,11 +26,13 @@ h2                  = "2.2.224"
 
 # --- Security ---
 spring-security     = "6.2.4"
+jjwt                = "0.12.5"
 
 # --- Observability ---
 micrometer          = "1.12.4"
 tracing             = "1.2.4"
 zipkin-reporter     = "2.17.2"
+logstash-logback    = "7.4"
 
 # --- Resilience ---
 resilience4j        = "2.2.0"
@@ -70,6 +72,11 @@ spring-boot-devtools           = { module = "org.springframework.boot:spring-boo
 spring-security-test           = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security" }
 spring-security-config         = { module = "org.springframework.security:spring-security-config", version.ref = "spring-security" }
 spring-security-web            = { module = "org.springframework.security:spring-security-web", version.ref = "spring-security" }
+spring-security-oauth2-resource-server = { module = "org.springframework.security:spring-security-oauth2-resource-server", version.ref = "spring-security" }
+spring-security-oauth2-jose    = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security" }
+jjwt-api                       = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl                      = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson                   = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Database
 flyway-core          = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
@@ -84,6 +91,7 @@ micrometer-tracing             = { module = "io.micrometer:micrometer-tracing", 
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "tracing" }
 zipkin-reporter-brave          = { module = "io.zipkin.reporter2:zipkin-reporter-brave", version.ref = "zipkin-reporter" }
 zipkin-sender-urlconnection    = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkin-reporter" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
 
 # Resilience
 resilience4j-spring-boot3     = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
@@ -120,6 +128,11 @@ slf4j-api            = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [bundles]
+# Logging bundle
+logging = [
+    "logstash-logback-encoder",
+]
+
 # Common test dependencies for microservices
 testing = [
     "spring-boot-starter-test",

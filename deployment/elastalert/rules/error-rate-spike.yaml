@@ -1,0 +1,50 @@
+# =============================================================================
+# FTGO Alert: Error Rate Spike
+# =============================================================================
+# Triggers when the error rate for any FTGO service spikes significantly
+# above the baseline over a 10-minute window.
+# =============================================================================
+
+name: "FTGO Error Rate Spike"
+type: spike
+
+index: ftgo-logs-*
+timestamp_field: "@timestamp"
+
+# Spike detection: current window must have 3x more errors than reference
+spike_height: 3
+spike_type: "up"
+timeframe:
+  minutes: 10
+
+# Only count ERROR-level log entries
+filter:
+  - term:
+      level: "ERROR"
+
+# Group by service to detect per-service spikes
+query_key: "service"
+
+# Minimum events in the reference window to avoid false positives
+threshold_ref: 5
+
+# Alert configuration
+alert:
+  - debug
+
+alert_subject: "FTGO Error Rate Spike — {service}"
+alert_text: |
+  Error rate spike detected for service: {service}
+
+  Current error count: {count}
+  Reference error count: {reference_count}
+  Spike ratio: {spike_ratio}x
+
+  Time window: {timeframe}
+  Environment: Check the 'environment' field in Elasticsearch
+
+  Investigate in Kibana:
+    - Open the [FTGO] Service Logs Dashboard
+    - Filter by service = {service}
+    - Check the error details and stack traces
+alert_text_type: alert_text_only
