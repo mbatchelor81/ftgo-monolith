@@ -23,11 +23,11 @@
 | 3 | EM-39 | Implement Spring Security Foundation and Authentication Configuration | Phase 3 | ✅ Completed | [PR #40](https://github.com/mbatchelor81/ftgo-monolith/pull/40) | ✅ Squashed | None |
 | 3 | EM-41 | Upgrade Micrometer/Prometheus Metrics and Add Service-Level Dashboards | Phase 4 | ✅ Completed | [PR #41](https://github.com/mbatchelor81/ftgo-monolith/pull/41) | ✅ Squashed | None |
 | 3 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | ✅ Completed | [PR #42](https://github.com/mbatchelor81/ftgo-monolith/pull/42) | ✅ Squashed | settings.gradle (combined ftgo-security-lib + ftgo-resilience-lib), 4× build.gradle (kept convention plugin deps, added AOP), 4× application.yml (combined metrics + health probes) |
-| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | Pending | — | — | — |
-| 4 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | Pending | — | — | — |
-| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | Pending | — | — | — |
-| 4 | EM-42 | Implement Distributed Tracing with Spring Cloud Sleuth and Zipkin/Jaeger | Phase 4 | Pending | — | — | — |
-| 4 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | Pending | — | — | — |
+| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | ✅ Completed | [PR #44](https://github.com/mbatchelor81/ftgo-monolith/pull/44) | ✅ Squashed | None |
+| 4 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | ✅ Completed | [PR #47](https://github.com/mbatchelor81/ftgo-monolith/pull/47) | ✅ Squashed | None |
+| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | ✅ Completed | [PR #46](https://github.com/mbatchelor81/ftgo-monolith/pull/46) | ✅ Squashed | gradle/libs.versions.toml (auto-merged jjwt + oauth2 entries with tracing entries) |
+| 4 | EM-42 | Implement Distributed Tracing with Micrometer Tracing and Zipkin | Phase 4 | ✅ Completed | [PR #45](https://github.com/mbatchelor81/ftgo-monolith/pull/45) | ✅ Squashed | None |
+| 4 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | ✅ Completed | [PR #48](https://github.com/mbatchelor81/ftgo-monolith/pull/48) | ✅ Squashed | FtgoMicroservicePlugin.groovy (combined tracing + logging), gradle/libs.versions.toml (combined tracing + logstash entries), settings.gradle (combined tracing-lib + logging-lib) |
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | Pending | — | — | — |
 | 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | Pending | — | — | — |
 | 5 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | Pending | — | — | — |
@@ -53,6 +53,12 @@
 - **services/ftgo-consumer-service/src/main/resources/application.yml**: Same pattern as order-service.
 - **services/ftgo-courier-service/src/main/resources/application.yml**: Same pattern as order-service.
 - **services/ftgo-restaurant-service/src/main/resources/application.yml**: Same pattern as order-service.
+
+### Batch 4
+- **FtgoMicroservicePlugin.groovy**: EM-42 replaced `ftgo.observability-conventions` with `ftgo.tracing-conventions`, EM-43 added `ftgo.logging-conventions` alongside `ftgo.observability-conventions`. Resolution: kept EM-42's `ftgo.tracing-conventions` and added EM-43's `ftgo.logging-conventions`.
+- **gradle/libs.versions.toml**: EM-42 added tracing/zipkin-reporter versions and library entries, EM-43 added logstash-logback version and library entry. Resolution: combined all entries from both sides.
+- **settings.gradle**: EM-42 added `shared:ftgo-tracing-lib`, EM-43 added `shared:ftgo-logging-lib`. Resolution: combined both includes.
+- **gradle/libs.versions.toml** (EM-40): Auto-merged jjwt + oauth2 entries alongside existing tracing entries without conflict.
 
 #### Post-merge fix (Batch 3)
 - **shared/common-swagger/build.gradle**: Added `java-library` plugin and changed `implementation` to `api` scope for `springdoc-openapi` to expose OpenAPI annotations transitively to service modules.
