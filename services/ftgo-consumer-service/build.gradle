@@ -16,6 +16,7 @@ dependencies {
     implementation project(":shared:ftgo-resilience-lib")
     implementation project(":shared:ftgo-tracing-lib")
     implementation project(":shared:ftgo-error-handling-lib")
+    implementation project(":shared:ftgo-security-lib")
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -23,4 +24,5 @@ dependencies {
 
     testImplementation project(":shared:ftgo-test-util")
     testImplementation project(":shared:ftgo-test-lib")
+    testImplementation libs.spring.security.test
 }

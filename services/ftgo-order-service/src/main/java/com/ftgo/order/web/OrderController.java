@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Provides endpoints for creating, retrieving, revising, and
  * progressing orders through their state machine.</p>
+ *
+ * <h3>Authorization Rules</h3>
+ * <ul>
+ *   <li>Create order — CUSTOMER, ADMIN</li>
+ *   <li>Get order — CUSTOMER (own), RESTAURANT_OWNER (related), COURIER (assigned), ADMIN (any)</li>
+ *   <li>Cancel order — CUSTOMER (own), ADMIN</li>
+ *   <li>Accept order — RESTAURANT_OWNER, ADMIN</li>
+ *   <li>Revise order — CUSTOMER (own), ADMIN</li>
+ * </ul>
  */
 @Tag(name = "Orders", description = "Order lifecycle management")
 @RestController
@@ -30,6 +40,8 @@ public class OrderController {
     @Operation(summary = "Create a new order")
     @ApiResponse(responseCode = "201", description = "Order created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request body")
+    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<Void> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         // TODO: delegate to OrderService once domain logic is migrated
@@ -38,7 +50,9 @@ public class OrderController {
 
     @Operation(summary = "Get an order by ID")
     @ApiResponse(responseCode = "200", description = "Order found")
+    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
     @ApiResponse(responseCode = "404", description = "Order not found")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'COURIER')")
     @GetMapping("/{orderId}")
     public ResponseEntity<Void> getOrder(
             @Parameter(description = "Unique order identifier")
@@ -49,8 +63,10 @@ public class OrderController {
 
     @Operation(summary = "Cancel an order")
     @ApiResponse(responseCode = "200", description = "Order cancelled")
+    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
     @ApiResponse(responseCode = "404", description = "Order not found")
     @ApiResponse(responseCode = "409", description = "Order cannot be cancelled in its current state")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(
             @Parameter(description = "Unique order identifier")
@@ -61,8 +77,10 @@ public class OrderController {
 
     @Operation(summary = "Accept an order (restaurant acknowledges)")
     @ApiResponse(responseCode = "200", description = "Order accepted")
+    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
     @ApiResponse(responseCode = "404", description = "Order not found")
     @ApiResponse(responseCode = "409", description = "Order cannot be accepted in its current state")
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PostMapping("/{orderId}/accept")
     public ResponseEntity<Void> acceptOrder(
             @Parameter(description = "Unique order identifier")
@@ -73,8 +91,10 @@ public class OrderController {
 
     @Operation(summary = "Revise order line items")
     @ApiResponse(responseCode = "200", description = "Order revised")
+    @ApiResponse(responseCode = "403", description = "Insufficient permissions")
     @ApiResponse(responseCode = "404", description = "Order not found")
     @ApiResponse(responseCode = "409", description = "Order cannot be revised in its current state")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/{orderId}/revise")
     public ResponseEntity<Void> reviseOrder(
             @Parameter(description = "Unique order identifier")

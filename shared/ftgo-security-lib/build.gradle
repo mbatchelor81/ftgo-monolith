@@ -12,6 +12,7 @@ plugins {
     id 'ftgo.spring-boot-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.publishing-conventions'
+    id 'java-library'
 }
 
 version = '1.0.0'
@@ -34,8 +35,8 @@ jar {
 }
 
 dependencies {
-    // Spring Security
-    implementation libs.spring.boot.starter.security
+    // Spring Security — exposed as api so consumers can use @PreAuthorize, PermissionEvaluator, etc.
+    api libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.actuator
 
