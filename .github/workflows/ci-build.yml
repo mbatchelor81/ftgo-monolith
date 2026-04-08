@@ -481,6 +481,12 @@ jobs:
             echo "Waiting... ($i/30)"
             sleep 2
           done
+          # Fail fast if MySQL never became ready
+          if ! docker compose exec -T mysql mysqladmin ping -h 127.0.0.1 --silent 2>/dev/null; then
+            echo "ERROR: MySQL did not become ready in time"
+            docker compose logs mysql
+            exit 1
+          fi
 
       - name: Run Flyway migrations
         run: ./gradlew :ftgo-flyway:flywayMigrate --no-daemon
@@ -501,6 +507,12 @@ jobs:
             echo "Waiting for app... ($i/20)"
             sleep 3
           done
+          # Fail fast if the app never became healthy
+          if ! curl -sf http://127.0.0.1:8081/actuator/health 2>/dev/null; then
+            echo "ERROR: Application did not become healthy in time"
+            docker compose logs
+            exit 1
+          fi
 
       - name: Run E2E tests
         run: ./gradlew :ftgo-end-to-end-tests:cleanTest :ftgo-end-to-end-tests:test --no-daemon
