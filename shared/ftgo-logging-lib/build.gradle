@@ -24,9 +24,26 @@ dependencies {
     // SLF4J API
     implementation "org.slf4j:slf4j-api:${libs.versions.slf4j.get()}"
 
-    // Spring Web for servlet filter
+    // Logback classic (for MaskingConverter base class)
+    implementation 'ch.qos.logback:logback-classic'
+
+    // Spring Web for servlet filter (compileOnly — provided by the consuming service)
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring AOP for LoggingAspect
+    compileOnly 'org.springframework.boot:spring-boot-starter-aop'
 
     // Spring Boot auto-configuration support
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
+
+    // Annotation processor for configuration properties metadata
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.assertj.core
 }

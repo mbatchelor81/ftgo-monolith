@@ -26,6 +26,9 @@ dependencies {
     // SLF4J API
     implementation "org.slf4j:slf4j-api:${libs.versions.slf4j.get()}"
 
-    // Shared logging library — MDC filter, correlation ID propagation, logback config
+    // Shared logging library — MDC filter, masking, logging aspect, logback config
     implementation project(':shared:ftgo-logging-lib')
+
+    // Spring AOP for LoggingAspect (auto-configured by ftgo-logging-lib)
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
