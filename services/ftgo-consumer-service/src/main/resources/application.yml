@@ -76,6 +76,21 @@ ftgo:
     description: Manages consumer registration and validation
     version: 1.0.0
 
+# --- SpringDoc OpenAPI ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+ftgo:
+  api:
+    title: FTGO Consumer Service
+    description: Manages consumer registration and validation
+    version: 1.0.0
+
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
