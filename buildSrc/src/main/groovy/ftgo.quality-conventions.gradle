@@ -1,0 +1,127 @@
+// =============================================================================
+// ftgo.quality-conventions — Static analysis and code quality gates
+// =============================================================================
+// Configures Checkstyle, SpotBugs, PMD, and JaCoCo coverage verification
+// for FTGO microservices. Quality gate failures will block PR merges in CI.
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.quality-conventions'
+//   }
+//
+// Tasks:
+//   checkstyleMain          — Run Checkstyle on main sources
+//   checkstyleTest          — Run Checkstyle on test sources
+//   spotbugsMain            — Run SpotBugs on main sources
+//   spotbugsTest            — Run SpotBugs on test sources
+//   pmdMain                 — Run PMD on main sources
+//   pmdTest                 — Run PMD on test sources
+//   jacocoTestCoverageVerification — Enforce 70% line coverage minimum
+//   qualityGate             — Aggregate task running all quality checks
+// =============================================================================
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'checkstyle'
+    id 'pmd'
+    id 'com.github.spotbugs'
+}
+
+// ---------------------------------------------------------------------------
+// Checkstyle — style enforcement (Google-based)
+// ---------------------------------------------------------------------------
+checkstyle {
+    toolVersion = libs.versions.checkstyleVersion.get()
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+    maxErrors = 0
+    ignoreFailures = false
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    // Exclude generated sources
+    exclude '**/generated/**'
+}
+
+// ---------------------------------------------------------------------------
+// SpotBugs — bug detection
+// ---------------------------------------------------------------------------
+spotbugs {
+    toolVersion = libs.versions.spotbugsVersion.get()
+    effort.set(com.github.spotbugs.snom.Effort.valueOf('MAX'))
+    reportLevel.set(com.github.spotbugs.snom.Confidence.valueOf('MEDIUM'))
+    ignoreFailures = false
+    excludeFilter = rootProject.file('config/spotbugs/exclude-filter.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    // Generated sources are excluded via the SpotBugs excludeFilter XML
+}
+
+// ---------------------------------------------------------------------------
+// PMD — code quality rules
+// ---------------------------------------------------------------------------
+pmd {
+    toolVersion = libs.versions.pmdVersion.get()
+    ruleSetFiles = rootProject.files('config/pmd/pmd-ruleset.xml')
+    ruleSets = [] // Use only our custom ruleset
+    consoleOutput = true
+    ignoreFailures = false
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    // Exclude generated sources
+    exclude '**/generated/**'
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo — enforce 70% minimum line coverage
+// ---------------------------------------------------------------------------
+// Note: JaCoCo plugin and jacocoTestCoverageVerification task are already
+// configured in ftgo.testing-conventions with minimum = 0.0. When the
+// quality-conventions plugin is applied AFTER testing-conventions (via
+// FtgoMicroservicePlugin), this block updates the existing rule's minimum
+// to enforce the 70% gate. We iterate over existing rules rather than
+// clearing them to avoid UnsupportedOperationException on immutable lists.
+afterEvaluate {
+    if (tasks.findByName('jacocoTestCoverageVerification') != null) {
+        tasks.named('jacocoTestCoverageVerification') {
+            violationRules {
+                rules.each { rule ->
+                    rule.limits.each { limit ->
+                        if (limit.counter == 'LINE' && limit.value == 'COVEREDRATIO') {
+                            limit.minimum = 0.70
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Aggregate quality gate task
+// ---------------------------------------------------------------------------
+tasks.register('qualityGate') {
+    description = 'Runs all static analysis checks (Checkstyle, SpotBugs, PMD).'
+    group = 'verification'
+
+    dependsOn 'checkstyleMain', 'spotbugsMain', 'pmdMain'
+}
+
+// Wire quality gate into the check lifecycle
+tasks.named('check') {
+    dependsOn 'qualityGate'
+}
