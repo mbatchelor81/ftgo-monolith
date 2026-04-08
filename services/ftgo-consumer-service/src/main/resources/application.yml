@@ -15,9 +15,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 server:
   port: 8080
+  shutdown: graceful
 
 management:
   endpoints:
@@ -27,6 +30,13 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState,ftgoDiskSpace
+        readiness:
+          include: readinessState,ftgoDatabase,consumerManagement
     prometheus:
       enabled: true
   metrics:
@@ -42,7 +52,28 @@ management:
       export:
         enabled: true
 
+# --- SpringDoc OpenAPI ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+ftgo:
+  api:
+    title: FTGO Consumer Service
+    description: Manages consumer registration and validation
+    version: 1.0.0
+
 logging:
   level:
     com.ftgo.consumer: INFO
     org.springframework: WARN
+    io.github.resilience4j: INFO
+
+# --- Service Discovery ---
+ftgo:
+  service-discovery:
+    namespace: ${FTGO_NAMESPACE:ftgo}
