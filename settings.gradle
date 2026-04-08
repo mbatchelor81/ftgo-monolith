@@ -63,3 +63,6 @@ include "services:ftgo-restaurant-service-api"
 include "services:ftgo-courier-service"
 include "services:ftgo-courier-service-api"
 
+// API Gateway
+include "services:ftgo-api-gateway"
+
