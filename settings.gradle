@@ -46,6 +46,7 @@ include "shared:ftgo-common-jpa"
 include "shared:ftgo-domain"
 include "shared:ftgo-test-util"
 include "shared:common-swagger"
+include "shared:ftgo-security-lib"
 
 // Order bounded context
 include "services:ftgo-order-service"

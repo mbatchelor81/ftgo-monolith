@@ -1,0 +1,51 @@
+# =============================================================================
+# FTGO Security — Default security profile configuration
+# =============================================================================
+# Activate this profile by adding 'security' to spring.profiles.active:
+#   spring.profiles.active=security
+#
+# Services can override any property in their own application.yml.
+# =============================================================================
+
+ftgo:
+  security:
+    # URL patterns accessible without authentication
+    public-paths:
+      - /actuator/health
+      - /actuator/info
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+
+    # Security audit logging
+    logging:
+      enabled: true
+
+    # CORS configuration
+    cors:
+      allowed-origins: "*"
+      allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+      allowed-headers: Authorization,Content-Type,X-Requested-With,Accept,Origin
+      allow-credentials: false
+      max-age: 3600
+
+# Spring Security defaults for stateless API services
+spring:
+  security:
+    user:
+      # Default credentials for development only — override in production
+      name: ftgo-service
+      password: '{noop}changeme'
+      roles: SERVICE
+
+# Actuator endpoint security
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true

@@ -1,0 +1,51 @@
+// =============================================================================
+// ftgo-security-lib — Shared Spring Security configuration library
+// Version: 1.0.0
+// Package: com.ftgo.security
+//
+// Provides base SecurityFilterChain configuration, CORS filter,
+// security exception handlers, actuator endpoint security,
+// and utility classes for all FTGO microservices.
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = '1.0.0'
+group = 'com.ftgo'
+
+// This is a library — disable Spring Boot's fat-jar packaging
+if (plugins.hasPlugin('org.springframework.boot')) {
+    bootJar { enabled = false }
+    jar { enabled = true }
+}
+
+jar {
+    enabled = true
+    manifest {
+        attributes(
+            'Implementation-Title': 'ftgo-security-lib',
+            'Implementation-Version': version
+        )
+    }
+}
+
+dependencies {
+    // Spring Security
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.actuator
+
+    // Jackson for JSON error responses
+    implementation libs.jackson.databind
+
+    // SLF4J for logging
+    implementation libs.slf4j.api
+
+    // Test dependencies
+    testImplementation libs.spring.security.test
+    testImplementation libs.spring.boot.starter.test
+}
