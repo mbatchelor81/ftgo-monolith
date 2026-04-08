@@ -1,17 +1,33 @@
 // =============================================================================
-// ftgo.testing-conventions — JUnit 5, Rest-Assured, and test configuration
+// ftgo.testing-conventions — JUnit 5, JaCoCo, parallel tests, and reporting
 // =============================================================================
 // Configures JUnit 5 as the test platform, adds common test dependencies,
-// and sets up an integration test source set.
+// sets up an integration test source set, enables JaCoCo code coverage,
+// and configures parallel test execution for faster CI feedback.
 //
 // Usage:
 //   plugins {
 //       id 'ftgo.testing-conventions'
 //   }
+//
+// Tasks:
+//   test              — Unit tests (no external dependencies)
+//   integrationTest   — Integration tests (requires MySQL, etc.)
+//   jacocoTestReport  — Generate HTML/XML coverage report for unit tests
+//   jacocoIntegrationTestReport — Coverage report for integration tests
+//   jacocoMergedReport — Merged coverage across unit + integration tests
 // =============================================================================
 
 plugins {
     id 'ftgo.java-conventions'
+    id 'jacoco'
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo configuration
+// ---------------------------------------------------------------------------
+jacoco {
+    toolVersion = '0.8.11'
 }
 
 // ---------------------------------------------------------------------------
@@ -51,9 +67,9 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------------
-// Test tasks
+// Shared test task configuration (applies to all Test tasks)
 // ---------------------------------------------------------------------------
-tasks.named('test') {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
 
     testLogging {
@@ -62,32 +78,133 @@ tasks.named('test') {
         exceptionFormat = 'full'
     }
 
-    // Fail fast in CI
-    failFast = System.getenv('CI') != null
-
     reports {
         html.required = true
         junitXml.required = true
     }
+
+    // Parallel test execution — use available processors for speed
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+
+    // Fork a new JVM for every 50 test classes to limit memory
+    forkEvery = 50
+
+    // Fail fast in CI to surface errors quickly
+    failFast = System.getenv('CI') != null
+
+    // Enable JaCoCo coverage for all test tasks
+    jacoco {
+        enabled = true
+    }
 }
 
+// ---------------------------------------------------------------------------
+// Unit test task
+// ---------------------------------------------------------------------------
+tasks.named('test') {
+    description = 'Runs unit tests (no external dependencies).'
+    group = 'verification'
+
+    // Enforce a 2-minute timeout per unit test class in CI
+    if (System.getenv('CI') != null) {
+        timeout = java.time.Duration.ofMinutes(2)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Integration test task
+// ---------------------------------------------------------------------------
 tasks.register('integrationTest', Test) {
-    description = 'Runs integration tests.'
+    description = 'Runs integration tests (requires external services).'
     group = 'verification'
 
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 
-    useJUnitPlatform()
-
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-        exceptionFormat = 'full'
-    }
-
     shouldRunAfter tasks.named('test')
+
+    // Integration tests may be slower — give them more time
+    if (System.getenv('CI') != null) {
+        timeout = java.time.Duration.ofMinutes(10)
+    }
 }
 
 tasks.named('check') {
     dependsOn tasks.named('integrationTest')
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo reports — unit tests
+// ---------------------------------------------------------------------------
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo reports — integration tests
+// ---------------------------------------------------------------------------
+tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+    description = 'Generates code coverage report for integration tests.'
+    group = 'verification'
+
+    dependsOn tasks.named('integrationTest')
+
+    executionData tasks.named('integrationTest')
+    sourceDirectories.from(sourceSets.main.java.srcDirs)
+    classDirectories.from(sourceSets.main.output.classesDirs)
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo merged report — unit + integration tests combined
+// ---------------------------------------------------------------------------
+tasks.register('jacocoMergedReport', JacocoReport) {
+    description = 'Generates merged code coverage report (unit + integration).'
+    group = 'verification'
+
+    dependsOn tasks.named('test'), tasks.named('integrationTest')
+
+    executionData tasks.named('test'), tasks.named('integrationTest')
+    sourceDirectories.from(sourceSets.main.java.srcDirs)
+    classDirectories.from(sourceSets.main.output.classesDirs)
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo verification — enforce coverage thresholds
+// ---------------------------------------------------------------------------
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+
+    violationRules {
+        rule {
+            limit {
+                // Target: 70% line coverage minimum
+                // Start at 0; raise to 0.70 as coverage improves
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.0
+            }
+        }
+    }
+}
+
+// Wire coverage verification into the check lifecycle
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
 }
