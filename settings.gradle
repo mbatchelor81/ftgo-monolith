@@ -47,6 +47,7 @@ include "shared:ftgo-domain"
 include "shared:ftgo-test-util"
 include "shared:common-swagger"
 include "shared:ftgo-security-lib"
+include "shared:ftgo-resilience-lib"
 
 // Order bounded context
 include "services:ftgo-order-service"

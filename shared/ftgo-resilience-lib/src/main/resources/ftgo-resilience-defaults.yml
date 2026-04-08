@@ -1,0 +1,100 @@
+# =============================================================================
+# FTGO Resilience Library — Default Configuration
+# =============================================================================
+# These defaults are loaded by services that depend on ftgo-resilience-lib.
+# Services can override any property in their own application.yml.
+# =============================================================================
+
+# --- Graceful Shutdown ---
+server:
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# --- Actuator Health Endpoints ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState,ftgoDiskSpace
+        readiness:
+          include: readinessState,ftgoDatabase
+
+# --- Resilience4j Defaults ---
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 2s
+        eventConsumerBufferSize: 10
+    instances:
+      default:
+        baseConfig: default
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.ResourceAccessException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+    instances:
+      default:
+        baseConfig: default
+
+  bulkhead:
+    configs:
+      default:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 500ms
+    instances:
+      default:
+        baseConfig: default
+
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+        timeoutDuration: 500ms
+    instances:
+      default:
+        baseConfig: default
+
+# --- Service Discovery Defaults ---
+ftgo:
+  service-discovery:
+    namespace: ftgo
+    cluster-domain: cluster.local
+    default-port: 8080
+    default-scheme: http
+  graceful-shutdown:
+    enabled: true
+  health:
+    disk-space:
+      threshold-mb: 100
+      path: /
