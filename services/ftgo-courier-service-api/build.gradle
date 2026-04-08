@@ -7,4 +7,5 @@ plugins {
 
 dependencies {
     implementation project(":shared:ftgo-common")
+    implementation libs.jakarta.validation.api
 }

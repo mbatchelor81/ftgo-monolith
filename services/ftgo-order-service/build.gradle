@@ -17,6 +17,7 @@ dependencies {
     implementation project(":shared:common-swagger")
     implementation project(":shared:ftgo-resilience-lib")
     implementation project(":shared:ftgo-tracing-lib")
+    implementation project(":shared:ftgo-error-handling-lib")
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
