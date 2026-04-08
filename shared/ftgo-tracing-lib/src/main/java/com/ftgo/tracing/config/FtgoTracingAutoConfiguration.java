@@ -1,5 +1,6 @@
 package com.ftgo.tracing.config;
 
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -18,8 +19,13 @@ import org.springframework.context.annotation.Import;
  *
  * <p>Configuration is driven by {@code application.yml} properties under
  * {@code management.tracing.*} and {@code management.zipkin.tracing.*}.
+ *
+ * <p>Ordered after {@code BraveAutoConfiguration} so that the {@code Tracer}
+ * bean is available when {@code @ConditionalOnBean(Tracer.class)} is evaluated
+ * on the {@code TracedAspect} bean definition.
  */
 @Configuration
+@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration")
 @ComponentScan(basePackages = "com.ftgo.tracing")
 @Import({
     TracingConfiguration.class,

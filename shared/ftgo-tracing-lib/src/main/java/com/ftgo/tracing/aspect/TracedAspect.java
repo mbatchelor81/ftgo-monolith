@@ -8,8 +8,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
@@ -23,10 +21,12 @@ import java.lang.reflect.Method;
  *   <li>Tags — {@code class} and {@code method}, plus any custom tags</li>
  *   <li>Error status — automatically recorded on exception</li>
  * </ul>
+ *
+ * <p>This class is registered as a bean via {@code TracingConfiguration},
+ * not via {@code @Component} scanning, to ensure proper ordering with
+ * {@code @ConditionalOnBean(Tracer.class)}.
  */
 @Aspect
-@Component
-@ConditionalOnBean(Tracer.class)
 public class TracedAspect {
 
     private static final Logger log = LoggerFactory.getLogger(TracedAspect.class);

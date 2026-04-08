@@ -1,8 +1,10 @@
 package com.ftgo.tracing.config;
 
+import com.ftgo.tracing.aspect.TracedAspect;
 import io.micrometer.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,5 +48,17 @@ public class TracingConfiguration {
     public RestTemplate tracedRestTemplate(RestTemplateBuilder builder) {
         log.info("Creating traced RestTemplate for distributed trace propagation");
         return builder.build();
+    }
+
+    /**
+     * Registers the {@link TracedAspect} as a bean, guarded by the presence
+     * of a {@link Tracer} bean. Defined here (rather than via {@code @Component})
+     * so that {@code @ConditionalOnBean} evaluation happens reliably after
+     * Spring Boot's {@code BraveAutoConfiguration} has registered the tracer.
+     */
+    @Bean
+    @ConditionalOnBean(Tracer.class)
+    public TracedAspect tracedAspect(Tracer tracer) {
+        return new TracedAspect(tracer);
     }
 }
