@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-courier-service
+  labels:
+    app: ftgo-courier-service
+    bounded-context: courier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftgo-courier-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-courier-service
+        bounded-context: courier
+    spec:
+      containers:
+        - name: ftgo-courier-service
+          image: ftgo/ftgo-courier-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-courier-service-config
+                  key: datasource-url
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-courier-service
+  labels:
+    app: ftgo-courier-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: ftgo-courier-service

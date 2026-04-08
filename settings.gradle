@@ -1,4 +1,7 @@
 
+// =============================================================================
+// Legacy monolith modules (unchanged — will be removed after migration)
+// =============================================================================
 
 include "common-swagger"
 
@@ -27,4 +30,32 @@ include "ftgo-application"
 
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
+
+// =============================================================================
+// New microservice modules (under services/ and shared/ directories)
+// See docs/adr/0001-repository-structure-and-naming-conventions.md
+// =============================================================================
+
+// Shared libraries
+include "shared:ftgo-common"
+include "shared:ftgo-common-jpa"
+include "shared:ftgo-domain"
+include "shared:ftgo-test-util"
+include "shared:common-swagger"
+
+// Order bounded context
+include "services:ftgo-order-service"
+include "services:ftgo-order-service-api"
+
+// Consumer bounded context
+include "services:ftgo-consumer-service"
+include "services:ftgo-consumer-service-api"
+
+// Restaurant bounded context
+include "services:ftgo-restaurant-service"
+include "services:ftgo-restaurant-service-api"
+
+// Courier bounded context
+include "services:ftgo-courier-service"
+include "services:ftgo-courier-service-api"
 

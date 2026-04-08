@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-order-service
+  labels:
+    app: ftgo-order-service
+    bounded-context: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftgo-order-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-order-service
+        bounded-context: order
+    spec:
+      containers:
+        - name: ftgo-order-service
+          image: ftgo/ftgo-order-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-order-service-config
+                  key: datasource-url
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-order-service
+  labels:
+    app: ftgo-order-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: ftgo-order-service

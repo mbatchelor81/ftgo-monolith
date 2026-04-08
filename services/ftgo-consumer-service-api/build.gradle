@@ -1,0 +1,5 @@
+// ftgo-consumer-service-api — API contracts and DTOs for Consumer Service
+
+dependencies {
+    compile project(":shared:ftgo-common")
+}

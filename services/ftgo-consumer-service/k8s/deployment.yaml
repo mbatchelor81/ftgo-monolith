@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-consumer-service
+  labels:
+    app: ftgo-consumer-service
+    bounded-context: consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftgo-consumer-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-consumer-service
+        bounded-context: consumer
+    spec:
+      containers:
+        - name: ftgo-consumer-service
+          image: ftgo/ftgo-consumer-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-consumer-service-config
+                  key: datasource-url
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-consumer-service
+  labels:
+    app: ftgo-consumer-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: ftgo-consumer-service

@@ -1,0 +1,7 @@
+// ftgo-test-util — Shared test utilities and helpers
+// Migrated from monolith module: ftgo-test-util
+
+dependencies {
+    compile project(":shared:ftgo-common")
+    compile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+}

@@ -1,0 +1,10 @@
+// ftgo-<service-name>-api — API contracts, DTOs, and events
+//
+// To use this template:
+//   1. Copy _service-template-api/ to services/ftgo-<service-name>-api/
+//   2. Replace all occurrences of "template_" with your service package name
+//   3. Register this module in settings.gradle
+
+dependencies {
+    compile project(":shared:ftgo-common")
+}

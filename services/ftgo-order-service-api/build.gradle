@@ -1,0 +1,5 @@
+// ftgo-order-service-api — API contracts and DTOs for Order Service
+
+dependencies {
+    compile project(":shared:ftgo-common")
+}
