@@ -1,5 +1,34 @@
-// ftgo-common — Cross-cutting value objects: Money, PersonName, Address
-// Migrated from monolith module: ftgo-common
+// =============================================================================
+// ftgo-common-lib — Standalone shared library (extracted from monolith ftgo-common)
+// Version: 1.0.0
+// Package: net.chrisrichardson.ftgo.common
+//
+// Contains cross-cutting value objects (Money, Address, PersonName),
+// Jackson serialization support (MoneyModule), Spring configuration,
+// and common exception types.
+// =============================================================================
+
+apply plugin: 'maven-publish'
+
+version = ftgoCommonLibVersion
+group = 'net.chrisrichardson.ftgo'
+
+// This is a library — disable Spring Boot's fat-jar packaging
+// so consumers get a plain JAR they can depend on.
+if (plugins.hasPlugin('org.springframework.boot')) {
+    bootJar { enabled = false }
+    jar { enabled = true }
+}
+
+jar {
+    enabled = true
+    manifest {
+        attributes(
+            'Implementation-Title': 'ftgo-common-lib',
+            'Implementation-Version': version
+        )
+    }
+}
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
@@ -9,12 +38,38 @@ dependencies {
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
 
-    compile 'mysql:mysql-connector-java:5.1.39'
-
     testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
 
     runtime "javax.xml.bind:jaxb-api:2.2.11"
     runtime "com.sun.xml.bind:jaxb-core:2.2.11"
     runtime "com.sun.xml.bind:jaxb-impl:2.2.11"
     runtime "javax.activation:activation:1.1.1"
+}
+
+// ---------------------------------------------------------------------------
+// Publishing configuration
+// Publishes to a local Maven repository under build/repo by default.
+// To publish to a remote repository, add credentials and update the URL.
+// ---------------------------------------------------------------------------
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-lib'
+            version = project.version
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, Jackson serialization, and utilities for FTGO microservices'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'local'
+            url = "${rootProject.buildDir}/repo"
+        }
+    }
 }
