@@ -106,16 +106,19 @@ class MaskingConverterTest {
     void maskSensitiveData_bearerToken_redacts() {
         String input = "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.abc.def";
         String result = MaskingConverter.maskSensitiveData(input);
-        assertThat(result).contains("Bearer [REDACTED]");
+        assertThat(result).contains("[REDACTED]");
         assertThat(result).doesNotContain("eyJhbG");
+        // Should not double-mask (no "[REDACTED] [REDACTED]")
+        assertThat(result).doesNotContain("[REDACTED] [REDACTED]");
     }
 
     @Test
-    void maskSensitiveData_authorizationHeader_redacts() {
+    void maskSensitiveData_authorizationBasicHeader_redacts() {
         String input = "Authorization: Basic dXNlcjpwYXNz";
         String result = MaskingConverter.maskSensitiveData(input);
         assertThat(result).contains("[REDACTED]");
         assertThat(result).doesNotContain("dXNlcjpwYXNz");
+        assertThat(result).doesNotContain("Basic");
     }
 
     @Test

@@ -50,9 +50,9 @@ public class MaskingConverter extends ClassicConverter {
             Pattern.CASE_INSENSITIVE
     );
 
-    // Authorization header values
+    // Authorization header values (captures scheme + credential, e.g. "Basic dXNlcjpwYXNz")
     private static final Pattern AUTH_HEADER_PATTERN = Pattern.compile(
-            "(Authorization\\s*[:=]\\s*)(\\S+)",
+            "(Authorization\\s*[:=]\\s*)(\\S+(?:\\s+\\S+)?)",
             Pattern.CASE_INSENSITIVE
     );
 
