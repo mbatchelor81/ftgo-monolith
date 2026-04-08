@@ -24,8 +24,6 @@ dependencyManagement {
     }
 }
 
-apply plugin: 'maven-publish'
-
 version = ftgoCommonLibVersion
 group = 'net.chrisrichardson.ftgo'
 
@@ -59,9 +57,9 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------------
-// Publishing metadata
-// The ftgo.publishing-conventions plugin already sets up Maven publishing
-// with sources/javadoc JARs and a local repo. Override POM metadata here.
+// Publishing customisation
+// The ftgo.publishing-conventions plugin provides the base mavenJava
+// publication and local repository.  We only override POM metadata here.
 // ---------------------------------------------------------------------------
 publishing {
     publications {
