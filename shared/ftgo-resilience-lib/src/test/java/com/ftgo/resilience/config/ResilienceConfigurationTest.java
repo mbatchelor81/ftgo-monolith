@@ -1,53 +1,102 @@
 package com.ftgo.resilience.config;
 
-import io.github.resilience4j.bulkhead.BulkheadRegistry;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import io.github.resilience4j.retry.RetryRegistry;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringApplication;
+import org.springframework.mock.env.MockEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Verifies that the {@link FtgoResilienceEnvironmentPostProcessor} loads
+ * {@code ftgo-resilience-defaults.yml} as a low-priority property source.
+ */
 class ResilienceConfigurationTest {
 
-    private final ResilienceConfiguration config = new ResilienceConfiguration();
-
     @Test
-    void circuitBreakerRegistry_createsRegistryWithDefaults() {
-        CircuitBreakerRegistry registry = config.circuitBreakerRegistry();
+    void environmentPostProcessor_loadsResilienceDefaults() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
 
-        assertThat(registry).isNotNull();
-        var cb = registry.circuitBreaker("test");
-        assertThat(cb.getCircuitBreakerConfig().getFailureRateThreshold()).isEqualTo(50f);
-        assertThat(cb.getCircuitBreakerConfig().getSlidingWindowSize()).isEqualTo(10);
-        assertThat(cb.getCircuitBreakerConfig().getMinimumNumberOfCalls()).isEqualTo(5);
-        assertThat(cb.getCircuitBreakerConfig().getPermittedNumberOfCallsInHalfOpenState()).isEqualTo(3);
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        // Verify properties from ftgo-resilience-defaults.yml are loaded
+        assertThat(environment.getProperty("server.shutdown")).isEqualTo("graceful");
+        assertThat(environment.getProperty("spring.lifecycle.timeout-per-shutdown-phase")).isEqualTo("30s");
     }
 
     @Test
-    void retryRegistry_createsRegistryWithExponentialBackoff() {
-        RetryRegistry registry = config.retryRegistry();
+    void environmentPostProcessor_loadsResilienceDefaults_circuitBreaker() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
 
-        assertThat(registry).isNotNull();
-        var retry = registry.retry("test");
-        assertThat(retry.getRetryConfig().getMaxAttempts()).isEqualTo(3);
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("resilience4j.circuitbreaker.configs.default.failureRateThreshold"))
+                .isEqualTo("50");
+        assertThat(environment.getProperty("resilience4j.circuitbreaker.configs.default.slidingWindowSize"))
+                .isEqualTo("10");
+        assertThat(environment.getProperty("resilience4j.circuitbreaker.configs.default.minimumNumberOfCalls"))
+                .isEqualTo("5");
     }
 
     @Test
-    void bulkheadRegistry_createsRegistryWithDefaults() {
-        BulkheadRegistry registry = config.bulkheadRegistry();
+    void environmentPostProcessor_loadsResilienceDefaults_retry() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
 
-        assertThat(registry).isNotNull();
-        var bulkhead = registry.bulkhead("test");
-        assertThat(bulkhead.getBulkheadConfig().getMaxConcurrentCalls()).isEqualTo(25);
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("resilience4j.retry.configs.default.maxAttempts"))
+                .isEqualTo("3");
+        assertThat(environment.getProperty("resilience4j.retry.configs.default.waitDuration"))
+                .isEqualTo("500ms");
     }
 
     @Test
-    void rateLimiterRegistry_createsRegistryWithDefaults() {
-        RateLimiterRegistry registry = config.rateLimiterRegistry();
+    void environmentPostProcessor_loadsResilienceDefaults_bulkhead() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
 
-        assertThat(registry).isNotNull();
-        var rateLimiter = registry.rateLimiter("test");
-        assertThat(rateLimiter.getRateLimiterConfig().getLimitForPeriod()).isEqualTo(50);
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("resilience4j.bulkhead.configs.default.maxConcurrentCalls"))
+                .isEqualTo("25");
+    }
+
+    @Test
+    void environmentPostProcessor_loadsResilienceDefaults_rateLimiter() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
+
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("resilience4j.ratelimiter.configs.default.limitForPeriod"))
+                .isEqualTo("50");
+    }
+
+    @Test
+    void environmentPostProcessor_loadsServiceDiscoveryDefaults() {
+        var environment = new MockEnvironment();
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
+
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        assertThat(environment.getProperty("ftgo.service-discovery.namespace")).isEqualTo("ftgo");
+        assertThat(environment.getProperty("ftgo.service-discovery.cluster-domain")).isEqualTo("cluster.local");
+        assertThat(environment.getProperty("ftgo.service-discovery.default-port")).isEqualTo("8080");
+        assertThat(environment.getProperty("ftgo.service-discovery.default-scheme")).isEqualTo("http");
+    }
+
+    @Test
+    void environmentPostProcessor_applicationPropertiesTakePrecedence() {
+        var environment = new MockEnvironment();
+        // Simulate a service overriding a default
+        environment.setProperty("server.shutdown", "immediate");
+
+        var postProcessor = new FtgoResilienceEnvironmentPostProcessor();
+        postProcessor.postProcessEnvironment(environment, new SpringApplication());
+
+        // Application-level property should win (added first = higher priority)
+        assertThat(environment.getProperty("server.shutdown")).isEqualTo("immediate");
     }
 }
