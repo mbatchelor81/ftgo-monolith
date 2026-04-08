@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,6 +50,7 @@ class OrderControllerAuthorizationTest {
         @WithMockUser(roles = "CUSTOMER")
         void createOrder_customerRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/orders")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -59,6 +61,7 @@ class OrderControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         void createOrder_adminRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/orders")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -69,6 +72,7 @@ class OrderControllerAuthorizationTest {
         @WithMockUser(roles = "RESTAURANT_OWNER")
         void createOrder_restaurantOwnerRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/orders")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -78,6 +82,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("Unauthenticated request returns 401")
         void createOrder_unauthenticated_returns401() throws Exception {
             mockMvc.perform(post("/api/v1/orders")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -140,7 +145,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("CUSTOMER can cancel order")
         @WithMockUser(roles = "CUSTOMER")
         void cancelOrder_customerRole_returns200() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/cancel"))
+            mockMvc.perform(post("/api/v1/orders/1/cancel").with(csrf()))
                 .andExpect(status().isOk());
         }
 
@@ -148,14 +153,14 @@ class OrderControllerAuthorizationTest {
         @DisplayName("ADMIN can cancel order (via role hierarchy)")
         @WithMockUser(roles = "ADMIN")
         void cancelOrder_adminRole_returns200() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/cancel"))
+            mockMvc.perform(post("/api/v1/orders/1/cancel").with(csrf()))
                 .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("Unauthenticated request returns 401")
         void cancelOrder_unauthenticated_returns401() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/cancel"))
+            mockMvc.perform(post("/api/v1/orders/1/cancel").with(csrf()))
                 .andExpect(status().isUnauthorized());
         }
     }
@@ -170,7 +175,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("RESTAURANT_OWNER can accept order")
         @WithMockUser(roles = "RESTAURANT_OWNER")
         void acceptOrder_restaurantOwnerRole_returns200() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/accept"))
+            mockMvc.perform(post("/api/v1/orders/1/accept").with(csrf()))
                 .andExpect(status().isOk());
         }
 
@@ -178,7 +183,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("ADMIN can accept order (via role hierarchy)")
         @WithMockUser(roles = "ADMIN")
         void acceptOrder_adminRole_returns200() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/accept"))
+            mockMvc.perform(post("/api/v1/orders/1/accept").with(csrf()))
                 .andExpect(status().isOk());
         }
 
@@ -186,7 +191,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("CUSTOMER cannot accept order")
         @WithMockUser(roles = "CUSTOMER")
         void acceptOrder_customerRole_returns403() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/accept"))
+            mockMvc.perform(post("/api/v1/orders/1/accept").with(csrf()))
                 .andExpect(status().isForbidden());
         }
 
@@ -194,14 +199,14 @@ class OrderControllerAuthorizationTest {
         @DisplayName("COURIER cannot accept order")
         @WithMockUser(roles = "COURIER")
         void acceptOrder_courierRole_returns403() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/accept"))
+            mockMvc.perform(post("/api/v1/orders/1/accept").with(csrf()))
                 .andExpect(status().isForbidden());
         }
 
         @Test
         @DisplayName("Unauthenticated request returns 401")
         void acceptOrder_unauthenticated_returns401() throws Exception {
-            mockMvc.perform(post("/api/v1/orders/1/accept"))
+            mockMvc.perform(post("/api/v1/orders/1/accept").with(csrf()))
                 .andExpect(status().isUnauthorized());
         }
     }
@@ -217,6 +222,7 @@ class OrderControllerAuthorizationTest {
         @WithMockUser(roles = "CUSTOMER")
         void reviseOrder_customerRole_returns200() throws Exception {
             mockMvc.perform(post("/api/v1/orders/1/revise")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk());
@@ -227,6 +233,7 @@ class OrderControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         void reviseOrder_adminRole_returns200() throws Exception {
             mockMvc.perform(post("/api/v1/orders/1/revise")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk());
@@ -236,6 +243,7 @@ class OrderControllerAuthorizationTest {
         @DisplayName("Unauthenticated request returns 401")
         void reviseOrder_unauthenticated_returns401() throws Exception {
             mockMvc.perform(post("/api/v1/orders/1/revise")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());

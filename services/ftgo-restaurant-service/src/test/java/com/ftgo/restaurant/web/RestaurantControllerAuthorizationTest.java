@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,6 +47,7 @@ class RestaurantControllerAuthorizationTest {
         @WithMockUser(roles = "RESTAURANT_OWNER")
         void createRestaurant_restaurantOwnerRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/restaurants")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -56,6 +58,7 @@ class RestaurantControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         void createRestaurant_adminRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/restaurants")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -66,6 +69,7 @@ class RestaurantControllerAuthorizationTest {
         @WithMockUser(roles = "CUSTOMER")
         void createRestaurant_customerRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/restaurants")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -76,6 +80,7 @@ class RestaurantControllerAuthorizationTest {
         @WithMockUser(roles = "COURIER")
         void createRestaurant_courierRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/restaurants")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -85,6 +90,7 @@ class RestaurantControllerAuthorizationTest {
         @DisplayName("Unauthenticated request returns 401")
         void createRestaurant_unauthenticated_returns401() throws Exception {
             mockMvc.perform(post("/api/v1/restaurants")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());

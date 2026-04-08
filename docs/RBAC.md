@@ -77,8 +77,9 @@ Permissions follow the pattern `<context>:<action>` and are stored as JWT claims
 | `consumer:delete` | Delete a consumer |
 | `order:create` | Place a new order |
 | `order:read` | View order details |
-| `order:update` | Modify an order |
+| `order:revise` | Revise order line items |
 | `order:cancel` | Cancel an order |
+| `order:accept` | Accept an order (restaurant acknowledges) |
 | `restaurant:create` | Register a restaurant |
 | `restaurant:read` | View restaurant details |
 | `restaurant:update` | Update restaurant info |
