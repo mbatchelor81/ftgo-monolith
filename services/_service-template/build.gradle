@@ -8,9 +8,10 @@
 //   5. Register both modules in settings.gradle
 //
 // Convention plugins applied via FtgoMicroservicePlugin:
-//   - ftgo.spring-boot-conventions  (Java 17, Spring Boot 3.x)
-//   - ftgo.testing-conventions      (JUnit 5, Rest-Assured, integration tests)
-//   - ftgo.docker-conventions       (Jib container image builds)
+//   - ftgo.spring-boot-conventions      (Java 17, Spring Boot 3.x)
+//   - ftgo.testing-conventions          (JUnit 5, Rest-Assured, integration tests)
+//   - ftgo.docker-conventions           (Jib container image builds)
+//   - ftgo.observability-conventions    (Actuator + Micrometer Prometheus)
 
 apply plugin: FtgoMicroservicePlugin
 
@@ -26,9 +27,6 @@ dependencies {
     // Spring Boot starters (versions managed by Spring Boot BOM)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation libs.micrometer.prometheus
-
     // Test utilities
     testImplementation project(":shared:ftgo-test-util")
 }

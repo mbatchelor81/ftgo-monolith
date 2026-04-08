@@ -1,0 +1,85 @@
+# =============================================================================
+# Prometheus Configuration — FTGO Microservices
+# =============================================================================
+# Scrapes metrics from all FTGO microservices via Spring Boot Actuator
+# Prometheus endpoints (/actuator/prometheus).
+#
+# Services expose metrics on port 8080 inside Docker network.
+# Scrape interval: 15s (default), evaluation interval: 15s.
+# =============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+  external_labels:
+    cluster: ftgo-local
+    environment: development
+
+# Load alerting rules
+rule_files:
+  - "alert-rules.yml"
+
+# Alertmanager configuration (optional — for local dev, alerts go to Prometheus UI)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Scrape configurations
+scrape_configs:
+  # -------------------------------------------------------------------------
+  # Prometheus self-monitoring
+  # -------------------------------------------------------------------------
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # -------------------------------------------------------------------------
+  # FTGO Order Service
+  # -------------------------------------------------------------------------
+  - job_name: "ftgo-order-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["ftgo-order-service:8080"]
+        labels:
+          service: ftgo-order-service
+          domain: order
+
+  # -------------------------------------------------------------------------
+  # FTGO Consumer Service
+  # -------------------------------------------------------------------------
+  - job_name: "ftgo-consumer-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["ftgo-consumer-service:8080"]
+        labels:
+          service: ftgo-consumer-service
+          domain: consumer
+
+  # -------------------------------------------------------------------------
+  # FTGO Restaurant Service
+  # -------------------------------------------------------------------------
+  - job_name: "ftgo-restaurant-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["ftgo-restaurant-service:8080"]
+        labels:
+          service: ftgo-restaurant-service
+          domain: restaurant
+
+  # -------------------------------------------------------------------------
+  # FTGO Courier Service
+  # -------------------------------------------------------------------------
+  - job_name: "ftgo-courier-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["ftgo-courier-service:8080"]
+        labels:
+          service: ftgo-courier-service
+          domain: courier
