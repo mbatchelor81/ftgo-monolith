@@ -2,61 +2,47 @@ package com.ftgo.security.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * CORS configuration for FTGO microservices.
  *
  * <p>Configures allowed origins, methods, and headers via externalized
- * properties. Defaults are suitable for development; production deployments
- * should restrict {@code ftgo.security.cors.allowed-origins} to specific
- * domains.
+ * properties bound through {@link SecurityProperties}. Defaults are suitable
+ * for development; production deployments should restrict
+ * {@code ftgo.security.cors.allowed-origins} to specific domains.
  */
 @Configuration
 public class CorsConfig {
 
     private static final Logger log = LoggerFactory.getLogger(CorsConfig.class);
 
-    @Value("${ftgo.security.cors.allowed-origins:*}")
-    private String[] allowedOrigins;
+    private final SecurityProperties securityProperties;
 
-    @Value("${ftgo.security.cors.allowed-methods:GET,POST,PUT,DELETE,PATCH,OPTIONS}")
-    private String[] allowedMethods;
-
-    @Value("${ftgo.security.cors.allowed-headers:Authorization,Content-Type,X-Requested-With,Accept,Origin}")
-    private String[] allowedHeaders;
-
-    @Value("${ftgo.security.cors.exposed-headers:}")
-    private String[] exposedHeaders;
-
-    @Value("${ftgo.security.cors.allow-credentials:false}")
-    private boolean allowCredentials;
-
-    @Value("${ftgo.security.cors.max-age:3600}")
-    private long maxAge;
+    public CorsConfig(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        SecurityProperties.Cors cors = securityProperties.getCors();
+
         log.info("Configuring CORS: origins={}, methods={}",
-            Arrays.toString(allowedOrigins), Arrays.toString(allowedMethods));
+            cors.getAllowedOrigins(), cors.getAllowedMethods());
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
-        configuration.setAllowedMethods(Arrays.asList(allowedMethods));
-        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
-        configuration.setAllowCredentials(allowCredentials);
-        configuration.setMaxAge(maxAge);
+        configuration.setAllowedOrigins(cors.getAllowedOrigins());
+        configuration.setAllowedMethods(cors.getAllowedMethods());
+        configuration.setAllowedHeaders(cors.getAllowedHeaders());
+        configuration.setAllowCredentials(cors.isAllowCredentials());
+        configuration.setMaxAge(cors.getMaxAge());
 
-        if (exposedHeaders.length > 0 && !exposedHeaders[0].isEmpty()) {
-            configuration.setExposedHeaders(Arrays.asList(exposedHeaders));
+        if (!cors.getExposedHeaders().isEmpty()) {
+            configuration.setExposedHeaders(cors.getExposedHeaders());
         }
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

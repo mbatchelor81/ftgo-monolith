@@ -7,7 +7,6 @@ import com.ftgo.security.jwt.JwtAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -49,15 +48,15 @@ public class SecurityFilterChainConfig {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityFilterChainConfig.class);
 
-    @Value("${ftgo.security.public-paths:/actuator/health,/actuator/info,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html}")
-    private String[] publicPaths;
-
+    private final SecurityProperties securityProperties;
     private final List<ServiceSecurityConfigurer> serviceConfigurers;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityFilterChainConfig(
+            SecurityProperties securityProperties,
             @Autowired(required = false) List<ServiceSecurityConfigurer> serviceConfigurers,
             @Autowired(required = false) JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.securityProperties = securityProperties;
         this.serviceConfigurers = serviceConfigurers != null ? serviceConfigurers : Collections.emptyList();
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -98,6 +97,7 @@ public class SecurityFilterChainConfig {
             // Authorization rules
             .authorizeHttpRequests(auth -> {
                 // Public endpoints
+                String[] publicPaths = securityProperties.getPublicPaths().toArray(new String[0]);
                 auth.requestMatchers(publicPaths).permitAll();
                 // Allow CORS preflight requests
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
