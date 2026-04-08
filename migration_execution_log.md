@@ -11,7 +11,7 @@
 
 | Batch | Jira Key | Summary | Phase | Session Status | PR Link | Squash Status | Conflicts Resolved |
 |-------|----------|---------|-------|----------------|---------|---------------|-------------------|
-| 1 | EM-30 | Define Microservices Repository Structure and Naming Conventions | Phase 1 | Pending | — | — | — |
+| 1 | EM-30 | Define Microservices Repository Structure and Naming Conventions | Phase 1 | ✅ Completed | [PR #32](https://github.com/mbatchelor81/ftgo-monolith/pull/32) | ✅ Squashed | None |
 | 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | Pending | — | — | — |
 | 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | Pending | — | — | — |
 | 2 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | Pending | — | — | — |
