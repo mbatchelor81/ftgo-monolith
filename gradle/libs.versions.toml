@@ -27,6 +27,9 @@ h2                  = "2.2.224"
 # --- Observability ---
 micrometer          = "1.12.4"
 
+# --- Resilience ---
+resilience4j        = "2.2.0"
+
 # --- Serialization ---
 jackson             = "2.17.0"
 
@@ -65,6 +68,15 @@ h2                   = { module = "com.h2database:h2", version.ref = "h2" }
 
 # Observability
 micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+
+# Resilience
+resilience4j-spring-boot3     = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-circuitbreaker   = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
+resilience4j-retry            = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
+resilience4j-bulkhead         = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
+resilience4j-ratelimiter      = { module = "io.github.resilience4j:resilience4j-ratelimiter", version.ref = "resilience4j" }
+resilience4j-micrometer       = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
+resilience4j-all              = { module = "io.github.resilience4j:resilience4j-all", version.ref = "resilience4j" }
 
 # Serialization
 jackson-core         = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
@@ -121,6 +133,16 @@ database = [
     "flyway-core",
     "flyway-mysql",
     "mysql-connector",
+]
+
+# Resilience4j bundle
+resilience4j = [
+    "resilience4j-spring-boot3",
+    "resilience4j-circuitbreaker",
+    "resilience4j-retry",
+    "resilience4j-bulkhead",
+    "resilience4j-ratelimiter",
+    "resilience4j-micrometer",
 ]
 
 [plugins]
