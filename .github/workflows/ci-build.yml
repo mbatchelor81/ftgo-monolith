@@ -280,8 +280,15 @@ jobs:
 
       - name: Generate JaCoCo coverage report
         if: always()
-        continue-on-error: true
-        run: ./gradlew :${{ matrix.service }}:jacocoTestReport --no-daemon
+        run: |
+          OUTPUT=$(./gradlew :${{ matrix.service }}:jacocoTestReport --no-daemon 2>&1) && echo "$OUTPUT" || {
+            if echo "$OUTPUT" | grep -q "not found in project"; then
+              echo "::notice::jacocoTestReport task not found for ${{ matrix.service }} — skipping"
+            else
+              echo "$OUTPUT"
+              exit 1
+            fi
+          }
 
       - name: Upload unit test results (JUnit XML)
         if: always()
@@ -377,8 +384,15 @@ jobs:
           FLYWAY_PASSWORD: ${{ vars.CI_MYSQL_ROOT_PASS || 'rootpassword' }}
 
       - name: Run integration tests
-        continue-on-error: true
-        run: ./gradlew :${{ matrix.service }}:integrationTest --no-daemon
+        run: |
+          OUTPUT=$(./gradlew :${{ matrix.service }}:integrationTest --no-daemon 2>&1) && echo "$OUTPUT" || {
+            if echo "$OUTPUT" | grep -q "not found in project"; then
+              echo "::notice::integrationTest task not found for ${{ matrix.service }} — skipping"
+            else
+              echo "$OUTPUT"
+              exit 1
+            fi
+          }
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
           SPRING_DATASOURCE_USERNAME: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
