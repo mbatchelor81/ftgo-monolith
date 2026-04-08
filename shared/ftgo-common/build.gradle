@@ -50,12 +50,12 @@ dependencies {
 // The ftgo.publishing-conventions plugin provides the base mavenJava
 // publication and local repository.  We only override POM metadata here.
 // ---------------------------------------------------------------------------
+// Customize the mavenJava publication created by ftgo.publishing-conventions
 publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId = 'net.chrisrichardson.ftgo'
             artifactId = 'ftgo-common-lib'
-            version = project.version
 
             pom {
                 name = 'FTGO Common Library'

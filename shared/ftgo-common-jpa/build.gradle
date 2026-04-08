@@ -1,12 +1,46 @@
-// ftgo-common-jpa — Shared JPA configuration and base classes
-// Migrated from monolith module: ftgo-common-jpa
+// =============================================================================
+// ftgo-common-jpa — Shared JPA configuration and ORM mappings
+// Version: 1.0.0
+// Package: net.chrisrichardson.ftgo.common.jpa
+//
+// Provides JPA ORM mappings for shared value objects (Money, Address) and
+// a JpaConfiguration class that wires up auto-configuration with the
+// common library. Migrated from monolith module: ftgo-common-jpa
+// =============================================================================
 
 plugins {
     id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
     id 'ftgo.publishing-conventions'
 }
 
+version = ftgoCommonJpaLibVersion
+group = 'net.chrisrichardson.ftgo'
+
+apply plugin: 'java-library'
+
 dependencies {
-    implementation project(":shared:ftgo-common")
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api project(":shared:ftgo-common")
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+}
+
+// Customize the mavenJava publication created by ftgo.publishing-conventions
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-jpa'
+
+            pom {
+                name = 'FTGO Common JPA Library'
+                description = 'Shared JPA ORM mappings and configuration for FTGO microservices'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = "${rootProject.buildDir}/repo"
+        }
+    }
 }
