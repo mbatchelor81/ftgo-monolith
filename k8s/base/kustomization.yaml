@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - mysql
+  - ftgo-api-gateway
   - ftgo-order-service
   - ftgo-consumer-service
   - ftgo-courier-service
