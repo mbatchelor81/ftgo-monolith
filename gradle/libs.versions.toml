@@ -45,6 +45,9 @@ junit-jupiter       = "5.10.2"
 rest-assured        = "5.4.0"
 mockito             = "5.11.0"
 assertj             = "3.25.3"
+testcontainers      = "1.19.7"
+spring-cloud-contract = "4.1.1"
+awaitility          = "4.2.1"
 
 # --- Utilities ---
 commons-lang3       = "3.14.0"
@@ -118,6 +121,13 @@ rest-assured-json-path = { module = "io.rest-assured:json-path", version.ref = "
 mockito-core         = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 assertj-core         = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+testcontainers-bom   = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers        = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql  = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+spring-cloud-contract-verifier = { module = "org.springframework.cloud:spring-cloud-contract-verifier", version.ref = "spring-cloud-contract" }
+spring-cloud-contract-stub-runner = { module = "org.springframework.cloud:spring-cloud-contract-stub-runner", version.ref = "spring-cloud-contract" }
+awaitility            = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 
 # Utilities
 commons-lang3        = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
@@ -147,6 +157,19 @@ rest-assured = [
     "rest-assured",
     "rest-assured-spring-mock-mvc",
     "rest-assured-json-path",
+]
+
+# Testcontainers bundle
+testcontainers = [
+    "testcontainers",
+    "testcontainers-junit-jupiter",
+    "testcontainers-mysql",
+]
+
+# Contract testing bundle
+contract-testing = [
+    "spring-cloud-contract-verifier",
+    "spring-cloud-contract-stub-runner",
 ]
 
 # Jackson serialization bundle
