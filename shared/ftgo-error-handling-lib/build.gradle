@@ -1,0 +1,50 @@
+// =============================================================================
+// ftgo-error-handling-lib — Shared error handling and exception patterns
+// =============================================================================
+// Provides a centralized @ControllerAdvice-based exception handling framework
+// for all FTGO microservices. Includes:
+//   - Standard ErrorResponse DTO with error codes, traceId, and timestamps
+//   - GlobalExceptionHandler with handlers for validation, not found, conflict, etc.
+//   - Domain-specific error code constants
+//   - Inter-service communication failure handling
+//
+// Usage in a service build.gradle:
+//   implementation project(":shared:ftgo-error-handling-lib")
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+// This is a library — disable Spring Boot's fat-jar packaging
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // Spring Boot starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Micrometer Tracing for traceId integration
+    implementation libs.micrometer.tracing
+
+    // Shared FTGO libraries for existing exception types
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:ftgo-domain")
+
+    // Jackson for JSON serialization
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+
+    // SLF4J for logging
+    implementation libs.slf4j.api
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.assertj.core
+}

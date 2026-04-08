@@ -1,9 +1,12 @@
 package com.ftgo.order.web;
 
+import com.ftgo.order.api.CreateOrderRequest;
+import com.ftgo.order.api.ReviseOrderRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +31,7 @@ public class OrderController {
     @ApiResponse(responseCode = "201", description = "Order created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request body")
     @PostMapping
-    public ResponseEntity<Void> createOrder(@RequestBody Object request) {
+    public ResponseEntity<Void> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         // TODO: delegate to OrderService once domain logic is migrated
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -76,7 +79,7 @@ public class OrderController {
     public ResponseEntity<Void> reviseOrder(
             @Parameter(description = "Unique order identifier")
             @PathVariable long orderId,
-            @RequestBody Object request) {
+            @Valid @RequestBody ReviseOrderRequest request) {
         // TODO: delegate to OrderService once domain logic is migrated
         return ResponseEntity.ok().build();
     }

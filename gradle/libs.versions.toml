@@ -46,6 +46,9 @@ rest-assured        = "5.4.0"
 mockito             = "5.11.0"
 assertj             = "3.25.3"
 
+# --- Validation ---
+jakarta-validation  = "3.0.2"
+
 # --- Utilities ---
 commons-lang3       = "3.14.0"
 lombok              = "1.18.32"
@@ -118,6 +121,9 @@ rest-assured-json-path = { module = "io.rest-assured:json-path", version.ref = "
 mockito-core         = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 assertj-core         = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+# Validation
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
 
 # Utilities
 commons-lang3        = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }

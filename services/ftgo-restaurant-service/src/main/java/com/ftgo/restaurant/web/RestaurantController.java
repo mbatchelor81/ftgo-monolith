@@ -1,9 +1,11 @@
 package com.ftgo.restaurant.web;
 
+import com.ftgo.restaurant.api.CreateRestaurantRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +29,7 @@ public class RestaurantController {
     @ApiResponse(responseCode = "201", description = "Restaurant created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request body")
     @PostMapping
-    public ResponseEntity<Void> createRestaurant(@RequestBody Object request) {
+    public ResponseEntity<Void> createRestaurant(@Valid @RequestBody CreateRestaurantRequest request) {
         // TODO: delegate to RestaurantService once domain logic is migrated
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
