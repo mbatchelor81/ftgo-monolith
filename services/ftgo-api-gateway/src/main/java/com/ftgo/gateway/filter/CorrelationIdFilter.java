@@ -42,10 +42,13 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
                 .build();
 
         String finalCorrelationId = correlationId;
-        return chain.filter(exchange.mutate().request(mutatedRequest).build())
-                .then(Mono.fromRunnable(() ->
-                        exchange.getResponse().getHeaders()
-                                .addIfAbsent(CORRELATION_ID_HEADER, finalCorrelationId)));
+        ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
+        mutatedExchange.getResponse().beforeCommit(() -> {
+            mutatedExchange.getResponse().getHeaders()
+                    .addIfAbsent(CORRELATION_ID_HEADER, finalCorrelationId);
+            return Mono.empty();
+        });
+        return chain.filter(mutatedExchange);
     }
 
     @Override
