@@ -29,6 +29,8 @@ spring-security     = "6.2.4"
 
 # --- Observability ---
 micrometer          = "1.12.4"
+tracing             = "1.2.4"
+zipkin-reporter     = "2.17.2"
 
 # --- Resilience ---
 resilience4j        = "2.2.0"
@@ -76,7 +78,12 @@ mysql-connector      = { module = "com.mysql:mysql-connector-j", version.ref = "
 h2                   = { module = "com.h2database:h2", version.ref = "h2" }
 
 # Observability
-micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-prometheus          = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-tracing-bom         = { module = "io.micrometer:micrometer-tracing-bom", version.ref = "tracing" }
+micrometer-tracing             = { module = "io.micrometer:micrometer-tracing", version.ref = "tracing" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "tracing" }
+zipkin-reporter-brave          = { module = "io.zipkin.reporter2:zipkin-reporter-brave", version.ref = "zipkin-reporter" }
+zipkin-sender-urlconnection    = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkin-reporter" }
 
 # Resilience
 resilience4j-spring-boot3     = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
@@ -142,6 +149,14 @@ database = [
     "flyway-core",
     "flyway-mysql",
     "mysql-connector",
+]
+
+# Distributed tracing bundle
+tracing = [
+    "micrometer-tracing",
+    "micrometer-tracing-bridge-brave",
+    "zipkin-reporter-brave",
+    "zipkin-sender-urlconnection",
 ]
 
 # Resilience4j bundle

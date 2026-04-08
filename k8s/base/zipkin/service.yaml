@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-zipkin
+  labels:
+    app.kubernetes.io/name: ftgo-zipkin
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: ftgo
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9411
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ftgo-zipkin
