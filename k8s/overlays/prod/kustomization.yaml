@@ -168,13 +168,6 @@ patches:
       - op: replace
         path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
         value: "0.1"
-  - target:
-      kind: ConfigMap
-      name: ftgo-api-gateway-config
-    patch: |
-      - op: replace
-        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
-        value: "0.1"
 
 # Production secrets - MUST use external-secrets operator.
 # These are placeholders and must NEVER contain real credentials.

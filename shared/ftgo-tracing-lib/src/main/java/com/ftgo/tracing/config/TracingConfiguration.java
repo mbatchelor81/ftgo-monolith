@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -32,17 +33,18 @@ public class TracingConfiguration {
     private static final Logger log = LoggerFactory.getLogger(TracingConfiguration.class);
 
     /**
-     * Provides a {@link RestTemplate} that is automatically instrumented
-     * by Micrometer Tracing to propagate trace context to downstream services.
+     * Provides a {@link RestTemplate} instrumented with Micrometer Tracing
+     * to propagate trace context (traceId/spanId headers) to downstream services.
      *
-     * <p>Spring Boot 3.x auto-configures an {@code ObservationRestTemplateCustomizer}
-     * that instruments any {@code RestTemplate} bean with trace propagation headers.
+     * <p>Uses {@link RestTemplateBuilder} so that Spring Boot's
+     * {@code ObservationRestTemplateCustomizer} applies tracing interceptors.
+     * A plain {@code new RestTemplate()} would bypass this instrumentation.
      */
     @Bean
     @ConditionalOnMissingBean(RestTemplate.class)
     @ConditionalOnProperty(name = "management.tracing.enabled", havingValue = "true", matchIfMissing = true)
-    public RestTemplate tracedRestTemplate() {
+    public RestTemplate tracedRestTemplate(RestTemplateBuilder builder) {
         log.info("Creating traced RestTemplate for distributed trace propagation");
-        return new RestTemplate();
+        return builder.build();
     }
 }
