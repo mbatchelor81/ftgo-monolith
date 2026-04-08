@@ -6,6 +6,7 @@ namespace: ftgo-dev
 resources:
   - namespace.yaml
   - ../../base/mysql
+  - ../../base/zipkin
   - ../../base/ftgo-order-service
   - ../../base/ftgo-consumer-service
   - ../../base/ftgo-courier-service

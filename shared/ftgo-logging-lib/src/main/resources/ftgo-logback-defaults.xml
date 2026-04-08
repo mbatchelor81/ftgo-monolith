@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FTGO Shared Logback Defaults
+  ============================================================================
+  Include this file in each service's logback-spring.xml:
+
+    <include resource="ftgo-logback-defaults.xml"/>
+
+  Provides:
+    - JSON console appender (CONSOLE_JSON) using logstash-logback-encoder
+    - Async wrapper (ASYNC_CONSOLE_JSON) for non-blocking log writes
+    - MDC fields: traceId, spanId, correlationId, service, requestMethod, requestUri
+    - Standard timestamp format (ISO-8601 UTC)
+  ============================================================================
+-->
+<included>
+
+    <!-- Service name from Spring property (set in application.yml) -->
+    <springProperty scope="context" name="SERVICE_NAME"
+                    source="spring.application.name" defaultValue="unknown-service"/>
+
+    <!-- JSON console appender via logstash-logback-encoder -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- ISO-8601 UTC timestamps -->
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+            <timeZone>UTC</timeZone>
+
+            <!-- Always include service name -->
+            <customFields>{"service":"${SERVICE_NAME}"}</customFields>
+
+            <!-- Include MDC fields: traceId, spanId, correlationId, etc. -->
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeMdcKeyName>requestMethod</includeMdcKeyName>
+            <includeMdcKeyName>requestUri</includeMdcKeyName>
+
+            <!-- Shorten logger names for readability -->
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+
+            <!-- Include stack traces as a single field -->
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- Async wrapper — non-blocking log writes to avoid impacting service performance -->
+    <appender name="ASYNC_CONSOLE_JSON" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- Queue capacity: 512 entries (default 256) -->
+        <queueSize>512</queueSize>
+        <!-- Never block the application thread on log writes -->
+        <neverBlock>true</neverBlock>
+        <!-- Discard TRACE/DEBUG/INFO when queue is ~96% full (20 of 512 slots remaining) -->
+        <discardingThreshold>20</discardingThreshold>
+        <!-- Preserve MDC context in async threads -->
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="CONSOLE_JSON"/>
+    </appender>
+
+</included>

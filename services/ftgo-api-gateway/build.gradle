@@ -3,6 +3,7 @@
 
 plugins {
     id 'ftgo.spring-boot-conventions'
+    id 'ftgo.logging-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.docker-conventions'
 }
@@ -34,6 +35,9 @@ dependencies {
     // Actuator for health checks and metrics
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation libs.micrometer.prometheus
+
+    // Distributed tracing — Micrometer Tracing with Brave + Zipkin
+    implementation libs.bundles.tracing
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

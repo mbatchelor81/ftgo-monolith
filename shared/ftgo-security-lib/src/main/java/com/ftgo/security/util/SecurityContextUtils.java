@@ -1,5 +1,7 @@
 package com.ftgo.security.util;
 
+import com.ftgo.security.jwt.FtgoUserDetails;
+import com.ftgo.security.jwt.JwtAuthenticationToken;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Utility class for accessing the current Spring Security context.
@@ -66,5 +69,43 @@ public final class SecurityContextUtils {
     public static boolean hasAuthority(String authority) {
         return getCurrentAuthorities().stream()
             .anyMatch(a -> a.getAuthority().equals(authority));
+    }
+
+    /**
+     * Returns the {@link FtgoUserDetails} from the current JWT authentication,
+     * if the request was authenticated via JWT.
+     */
+    public static Optional<FtgoUserDetails> getCurrentUserDetails() {
+        return getCurrentAuthentication()
+            .filter(auth -> auth instanceof JwtAuthenticationToken)
+            .map(auth -> ((JwtAuthenticationToken) auth).getUserDetails());
+    }
+
+    /**
+     * Returns the current user's ID from the JWT token.
+     * Falls back to {@link #getCurrentUsername()} if not a JWT authentication.
+     */
+    public static Optional<String> getCurrentUserId() {
+        return getCurrentUserDetails()
+            .map(FtgoUserDetails::getUserId)
+            .or(SecurityContextUtils::getCurrentUsername);
+    }
+
+    /**
+     * Returns the current user's roles from the JWT token, or an empty set.
+     */
+    public static Set<String> getCurrentRoles() {
+        return getCurrentUserDetails()
+            .map(FtgoUserDetails::getRoles)
+            .orElse(Collections.emptySet());
+    }
+
+    /**
+     * Returns the current user's permissions from the JWT token, or an empty set.
+     */
+    public static Set<String> getCurrentPermissions() {
+        return getCurrentUserDetails()
+            .map(FtgoUserDetails::getPermissions)
+            .orElse(Collections.emptySet());
     }
 }

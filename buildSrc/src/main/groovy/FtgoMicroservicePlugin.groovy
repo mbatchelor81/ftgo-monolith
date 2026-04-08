@@ -9,7 +9,7 @@ import org.gradle.api.Project
  * - ftgo.spring-boot-conventions (Java 17, Spring Boot 3.x, dependency management)
  * - ftgo.testing-conventions (JUnit 5, Rest-Assured, integration tests)
  * - ftgo.docker-conventions (Jib container image builds)
- * - ftgo.observability-conventions (Actuator, Micrometer, Prometheus)
+ * - ftgo.tracing-conventions (Actuator, Micrometer, Prometheus, distributed tracing)
  *
  * By default, bootJar is disabled and the standard jar task is enabled.
  * This allows empty scaffold modules to participate in ./gradlew build
@@ -35,6 +35,7 @@ class FtgoMicroservicePlugin implements Plugin<Project> {
         project.pluginManager.apply('ftgo.spring-boot-conventions')
         project.pluginManager.apply('ftgo.testing-conventions')
         project.pluginManager.apply('ftgo.docker-conventions')
-        project.pluginManager.apply('ftgo.observability-conventions')
+        project.pluginManager.apply('ftgo.tracing-conventions')
+        project.pluginManager.apply('ftgo.logging-conventions')
     }
 }
