@@ -46,9 +46,9 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------------
-// Publishing configuration
-// Publishes to a local Maven repository under build/repo by default.
-// To publish to a remote repository, add credentials and update the URL.
+// Publishing customisation
+// The ftgo.publishing-conventions plugin provides the base mavenJava
+// publication and local repository.  We only override POM metadata here.
 // ---------------------------------------------------------------------------
 // Customize the mavenJava publication created by ftgo.publishing-conventions
 publishing {
@@ -61,12 +61,6 @@ publishing {
                 name = 'FTGO Common Library'
                 description = 'Shared value objects, Jackson serialization, and utilities for FTGO microservices'
             }
-        }
-    }
-    repositories {
-        maven {
-            name = 'localRepo'
-            url = "${rootProject.buildDir}/repo"
         }
     }
 }
