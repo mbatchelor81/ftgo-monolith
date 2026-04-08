@@ -280,6 +280,7 @@ jobs:
 
       - name: Generate JaCoCo coverage report
         if: always()
+        continue-on-error: true
         run: ./gradlew :${{ matrix.service }}:jacocoTestReport --no-daemon
 
       - name: Upload unit test results (JUnit XML)
