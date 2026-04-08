@@ -1,0 +1,233 @@
+# =============================================================================
+# CI Workflow: Build, Scan, and Push Docker Images
+# =============================================================================
+# Triggers on merge to main for microservice changes.
+# Builds multi-stage Docker images, scans with Trivy, and pushes to GHCR.
+# =============================================================================
+
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/ftgo-order-service/**'
+      - 'services/ftgo-consumer-service/**'
+      - 'services/ftgo-restaurant-service/**'
+      - 'services/ftgo-courier-service/**'
+      - 'shared/**'
+      - 'buildSrc/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/ftgo-order-service/**'
+      - 'services/ftgo-consumer-service/**'
+      - 'services/ftgo-restaurant-service/**'
+      - 'services/ftgo-courier-service/**'
+      - 'shared/**'
+      - 'buildSrc/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+
+# ---------------------------------------------------------------------------
+# Permissions for GHCR
+# ---------------------------------------------------------------------------
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  # ===========================================================================
+  # Detect which services have changed
+  # ===========================================================================
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Determine changed services
+        id: changes
+        run: |
+          # On push, compare with previous commit; on PR, compare with base
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA=${{ github.event.pull_request.base.sha }}
+          else
+            BASE_SHA=${{ github.event.before }}
+          fi
+
+          CHANGED_FILES=$(git diff --name-only $BASE_SHA HEAD 2>/dev/null || echo "")
+
+          SERVICES='[]'
+          ALL_SERVICES='["ftgo-order-service","ftgo-consumer-service","ftgo-restaurant-service","ftgo-courier-service"]'
+
+          # If shared libs, buildSrc, or root build files changed, rebuild all
+          if echo "$CHANGED_FILES" | grep -qE "^(shared/|buildSrc/|build\.gradle|settings\.gradle|gradle\.properties)"; then
+            SERVICES=$ALL_SERVICES
+          else
+            # Detect individual service changes
+            RESULT="["
+            FIRST=true
+            for SVC in ftgo-order-service ftgo-consumer-service ftgo-restaurant-service ftgo-courier-service; do
+              if echo "$CHANGED_FILES" | grep -q "^services/$SVC/"; then
+                if [ "$FIRST" = true ]; then
+                  FIRST=false
+                else
+                  RESULT+=","
+                fi
+                RESULT+="\"$SVC\""
+              fi
+            done
+            RESULT+="]"
+            SERVICES=$RESULT
+          fi
+
+          # Fallback: if no changes detected (e.g., initial commit), build all
+          if [ "$SERVICES" = "[]" ]; then
+            SERVICES=$ALL_SERVICES
+          fi
+
+          echo "services=$SERVICES" >> "$GITHUB_OUTPUT"
+          echo "Services to build: $SERVICES"
+
+  # ===========================================================================
+  # Build, scan, and push each changed service
+  # ===========================================================================
+  build-and-push:
+    name: Build ${{ matrix.service }}
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.services != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Checkout & metadata
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from gradle.properties
+        id: version
+        run: |
+          VERSION=$(grep '^version=' gradle.properties 2>/dev/null | cut -d'=' -f2 || echo "0.1.0")
+          if [ -z "$VERSION" ]; then
+            VERSION="0.1.0"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate image tags
+        id: tags
+        run: |
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          VERSION="${{ steps.version.outputs.version }}"
+          SERVICE="${{ matrix.service }}"
+          IMAGE="${{ env.IMAGE_PREFIX }}/${SERVICE}"
+
+          # Tag strategy: version-sha, version, latest, branch
+          TAGS="${IMAGE}:${VERSION}-${SHA_SHORT}"
+          TAGS="${TAGS},${IMAGE}:${VERSION}"
+          TAGS="${TAGS},${IMAGE}:sha-${SHA_SHORT}"
+
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TAGS="${TAGS},${IMAGE}:latest"
+          fi
+
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "primary_tag=${IMAGE}:${VERSION}-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+          echo "Image tags: $TAGS"
+
+      # -----------------------------------------------------------------------
+      # Docker build
+      # -----------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/docker/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+      # -----------------------------------------------------------------------
+      # Vulnerability scanning with Trivy
+      # -----------------------------------------------------------------------
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.tags.outputs.primary_tag }}
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
+          category: 'trivy-${{ matrix.service }}'
+
+      - name: Trivy scan summary (table)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.tags.outputs.primary_tag }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+
+  # ===========================================================================
+  # Image cleanup — retain last 10 versions per service
+  # ===========================================================================
+  cleanup:
+    name: Cleanup Old Images
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        service:
+          - ftgo-order-service
+          - ftgo-consumer-service
+          - ftgo-restaurant-service
+          - ftgo-courier-service
+    steps:
+      - name: Delete old container images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: '${{ matrix.service }}'
+          package-type: 'container'
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: true

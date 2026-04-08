@@ -1,0 +1,231 @@
+name: CD - Promote Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: 'Source environment to promote from'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      target_environment:
+        description: 'Target environment to promote to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+      image_tag:
+        description: 'Image tag to promote (e.g., SHA or semantic version)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run only (validate without applying)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/ftgo
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate promotion path
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate Promotion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate promotion path
+        run: |
+          SOURCE="${{ inputs.source_environment }}"
+          TARGET="${{ inputs.target_environment }}"
+          if [[ "$SOURCE" == "dev" && "$TARGET" == "staging" ]]; then
+            echo "Valid promotion: dev -> staging"
+          elif [[ "$SOURCE" == "staging" && "$TARGET" == "prod" ]]; then
+            echo "Valid promotion: staging -> prod"
+          else
+            echo "::error::Invalid promotion path: ${SOURCE} -> ${TARGET}. Allowed: dev->staging, staging->prod"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Validate target manifests
+        run: |
+          kustomize build k8s/overlays/${{ inputs.target_environment }} > /dev/null
+          echo "Target environment manifests are valid"
+
+  # ---------------------------------------------------------------------------
+  # Promote to staging (requires review approval)
+  # ---------------------------------------------------------------------------
+  promote-staging:
+    name: Promote to Staging
+    needs: validate
+    if: inputs.target_environment == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.ftgo.example.com
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+
+      - name: Set image tags for staging
+        run: |
+          cd k8s/overlays/staging
+          kustomize edit set image \
+            ftgo/ftgo-order-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-order-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-consumer-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-courier-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-restaurant-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${{ inputs.image_tag }}
+
+      - name: Generate staging manifests
+        run: |
+          kustomize build k8s/overlays/staging > /tmp/staging-manifests.yaml
+          echo "Generated staging manifests:"
+          grep '^kind:' /tmp/staging-manifests.yaml | sort | uniq -c
+
+      - name: Deploy to staging
+        if: inputs.dry_run == false
+        run: |
+          kustomize build k8s/overlays/staging | kubectl apply -f -
+          echo "Waiting for rollout to complete..."
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            kubectl rollout status deployment/${svc} -n ftgo-staging --timeout=300s
+          done
+
+      - name: Run staging smoke tests
+        if: inputs.dry_run == false
+        run: |
+          echo "Running smoke tests against staging..."
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            echo "Health check: ${svc}"
+            kubectl exec -n ftgo-staging deploy/${svc} -- wget -qO- http://localhost:8080/actuator/health || echo "Warning: ${svc} not healthy yet"
+          done
+
+      - name: Post staging promotion summary
+        if: always()
+        run: |
+          echo "## Staging Promotion Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source**: ${{ inputs.source_environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: staging" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Promote to production (requires production approval gate)
+  # ---------------------------------------------------------------------------
+  promote-prod:
+    name: Promote to Production
+    needs: validate
+    if: inputs.target_environment == 'prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: https://ftgo.example.com
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+
+      - name: Pre-deployment snapshot
+        run: |
+          echo "Recording pre-deployment state..."
+          kubectl get deployments -n ftgo-prod -o wide > /tmp/pre-deploy-state.txt || true
+          cat /tmp/pre-deploy-state.txt
+
+      - name: Set image tags for production
+        run: |
+          cd k8s/overlays/prod
+          kustomize edit set image \
+            ftgo/ftgo-order-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-order-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-consumer-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-courier-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${{ inputs.image_tag }} \
+            ftgo/ftgo-restaurant-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${{ inputs.image_tag }}
+
+      - name: Generate production manifests
+        run: |
+          kustomize build k8s/overlays/prod > /tmp/prod-manifests.yaml
+          echo "Generated production manifests:"
+          grep '^kind:' /tmp/prod-manifests.yaml | sort | uniq -c
+
+      - name: Deploy to production
+        if: inputs.dry_run == false
+        run: |
+          kustomize build k8s/overlays/prod | kubectl apply -f -
+          echo "Waiting for rollout to complete..."
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            echo "Rolling out ${svc}..."
+            kubectl rollout status deployment/${svc} -n ftgo-prod --timeout=600s
+          done
+
+      - name: Run production health verification
+        if: inputs.dry_run == false
+        run: |
+          echo "Verifying production deployment health..."
+          FAILURES=0
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            READY=$(kubectl get deployment ${svc} -n ftgo-prod -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+            DESIRED=$(kubectl get deployment ${svc} -n ftgo-prod -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+            if [ "$READY" != "$DESIRED" ]; then
+              echo "::error::${svc}: only ${READY}/${DESIRED} replicas ready"
+              FAILURES=$((FAILURES + 1))
+            else
+              echo "${svc}: ${READY}/${DESIRED} replicas ready"
+            fi
+          done
+          if [ $FAILURES -gt 0 ]; then
+            echo "::error::${FAILURES} service(s) not fully healthy. Consider rollback."
+            exit 1
+          fi
+
+      - name: Post production promotion summary
+        if: always()
+        run: |
+          echo "## Production Promotion Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source**: ${{ inputs.source_environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Approval**: Required (GitHub Environment protection rules)" >> $GITHUB_STEP_SUMMARY

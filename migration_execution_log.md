@@ -12,10 +12,10 @@
 | Batch | Jira Key | Summary | Phase | Session Status | PR Link | Squash Status | Conflicts Resolved |
 |-------|----------|---------|-------|----------------|---------|---------------|-------------------|
 | 1 | EM-30 | Define Microservices Repository Structure and Naming Conventions | Phase 1 | ✅ Completed | [PR #32](https://github.com/mbatchelor81/ftgo-monolith/pull/32) | ✅ Squashed | None |
-| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | Pending | — | — | — |
-| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | Pending | — | — | — |
-| 2 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | Pending | — | — | — |
-| 2 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | Pending | — | — | — |
+| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | ✅ Completed | [PR #33](https://github.com/mbatchelor81/ftgo-monolith/pull/33) | ✅ Squashed | None |
+| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | ✅ Completed | [PR #36](https://github.com/mbatchelor81/ftgo-monolith/pull/36) | ✅ Squashed | shared/ftgo-common/build.gradle (combined EM-32 library config with EM-28 convention plugins) |
+| 2 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | ✅ Completed | [PR #34](https://github.com/mbatchelor81/ftgo-monolith/pull/34) | ✅ Squashed | None |
+| 2 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | ✅ Completed | [PR #35](https://github.com/mbatchelor81/ftgo-monolith/pull/35) | ✅ Squashed | None |
 | 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain as Versioned Shared Libraries | Phase 1 | Pending | — | — | — |
 | 3 | EM-33 | Set Up Automated Gradle Build Pipeline with GitHub Actions | Phase 2 | Pending | — | — | — |
 | 3 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | Pending | — | — | — |
@@ -38,7 +38,10 @@
 
 ## Conflict Resolution History
 
-_No conflicts resolved yet._
+### Batch 2
+- **shared/ftgo-common/build.gradle**: EM-32 added library publishing config, EM-28 added convention plugins and version catalog deps. Resolution: kept EM-28's modern plugins block and version catalog dependencies, combined with EM-32's publishing and jar manifest configuration.
+- **docker-compose.dev.yml**: Hardcoded local dev passwords replaced with environment variable references for security compliance.
+- **deployment/kubernetes/misc/create-db-secret.sh**: Hardcoded passwords replaced with required environment variable references.
 
 ---
 

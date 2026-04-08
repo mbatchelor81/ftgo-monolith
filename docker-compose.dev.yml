@@ -1,0 +1,121 @@
+# =============================================================================
+# Docker Compose — Local Development
+# =============================================================================
+# Runs all FTGO microservices with MySQL for local development and testing.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d          # start all
+#   docker compose -f docker-compose.dev.yml up mysql -d    # start MySQL only
+#   docker compose -f docker-compose.dev.yml logs -f        # follow logs
+#   docker compose -f docker-compose.dev.yml down -v        # stop & cleanup
+#
+# Registry images (after CI push):
+#   FTGO_IMAGE_TAG=0.1.0-abc1234 docker compose -f docker-compose.dev.yml up -d
+# =============================================================================
+
+version: '3.8'
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks:
+    - ftgo-network
+  depends_on:
+    mysql:
+      condition: service_healthy
+  environment: &common-env
+    SPRING_DATASOURCE_USERNAME: mysqluser
+    SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+    SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+    SPRING_FLYWAY_ENABLED: "true"
+    SPRING_PROFILES_ACTIVE: local
+    JAVA_TOOL_OPTIONS: "-Xmx256m"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Infrastructure: MySQL
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ftgo-network
+
+  # ---------------------------------------------------------------------------
+  # Microservices
+  # ---------------------------------------------------------------------------
+  ftgo-order-service:
+    <<: *service-defaults
+    image: ${FTGO_REGISTRY:-ghcr.io/mbatchelor81}/ftgo-order-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/ftgo-order-service/docker/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo_order_service
+      SPRING_APPLICATION_NAME: ftgo-order-service
+
+  ftgo-consumer-service:
+    <<: *service-defaults
+    image: ${FTGO_REGISTRY:-ghcr.io/mbatchelor81}/ftgo-consumer-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/ftgo-consumer-service/docker/Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo_consumer_service
+      SPRING_APPLICATION_NAME: ftgo-consumer-service
+
+  ftgo-restaurant-service:
+    <<: *service-defaults
+    image: ${FTGO_REGISTRY:-ghcr.io/mbatchelor81}/ftgo-restaurant-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/ftgo-restaurant-service/docker/Dockerfile
+    ports:
+      - "8083:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo_restaurant_service
+      SPRING_APPLICATION_NAME: ftgo-restaurant-service
+
+  ftgo-courier-service:
+    <<: *service-defaults
+    image: ${FTGO_REGISTRY:-ghcr.io/mbatchelor81}/ftgo-courier-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/ftgo-courier-service/docker/Dockerfile
+    ports:
+      - "8084:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo_courier_service
+      SPRING_APPLICATION_NAME: ftgo-courier-service
+
+# ---------------------------------------------------------------------------
+# Volumes & Networks
+# ---------------------------------------------------------------------------
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  ftgo-network:
+    driver: bridge

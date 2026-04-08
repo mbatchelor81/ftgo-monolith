@@ -1,19 +1,79 @@
-// ftgo-common — Cross-cutting value objects: Money, PersonName, Address
-// Migrated from monolith module: ftgo-common
+// =============================================================================
+// ftgo-common-lib — Standalone shared library (extracted from monolith ftgo-common)
+// Version: 1.0.0
+// Package: net.chrisrichardson.ftgo.common
+//
+// Contains cross-cutting value objects (Money, Address, PersonName),
+// Jackson serialization support (MoneyModule), Spring configuration,
+// and common exception types.
+// =============================================================================
 
 plugins {
-    id 'ftgo.spring-boot-conventions'
-    id 'ftgo.testing-conventions'
+    id 'ftgo.java-conventions'
     id 'ftgo.publishing-conventions'
 }
 
+// This module contains legacy source code that uses javax.persistence and
+// Jackson 2.9.x APIs (e.g. mappingException). Apply Spring dependency
+// management with the Spring Boot 2.x BOM so transitive versions match
+// what the source code was written against.
+apply plugin: 'io.spring.dependency-management'
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:2.7.18'
+    }
+}
+
+apply plugin: 'maven-publish'
+
+version = ftgoCommonLibVersion
+group = 'net.chrisrichardson.ftgo'
+
+jar {
+    enabled = true
+    manifest {
+        attributes(
+            'Implementation-Title': 'ftgo-common-lib',
+            'Implementation-Version': version
+        )
+    }
+}
+
 dependencies {
+    // Spring Boot 2.7.x BOM manages spring-boot-starter and Jackson versions
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.jackson.datatype.jsr310
-    implementation libs.commons.lang3
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    runtimeOnly libs.mysql.connector
+    // Legacy source code uses org.apache.commons.lang (v2), not lang3
+    implementation 'commons-lang:commons-lang:2.6'
+
+    runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
+
+    // Test dependencies managed by Spring Boot 2.7.x BOM
+    // Legacy tests use JUnit 4 (org.junit.Test)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'junit:junit'
+}
+
+// ---------------------------------------------------------------------------
+// Publishing metadata
+// The ftgo.publishing-conventions plugin already sets up Maven publishing
+// with sources/javadoc JARs and a local repo. Override POM metadata here.
+// ---------------------------------------------------------------------------
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-lib'
+            version = project.version
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, Jackson serialization, and utilities for FTGO microservices'
+            }
+        }
+    }
 }

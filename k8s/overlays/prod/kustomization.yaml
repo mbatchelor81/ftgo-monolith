@@ -1,0 +1,169 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-prod
+
+resources:
+  - namespace.yaml
+  - ../../base/mysql
+  - ../../base/ftgo-order-service
+  - ../../base/ftgo-consumer-service
+  - ../../base/ftgo-courier-service
+  - ../../base/ftgo-restaurant-service
+
+commonLabels:
+  environment: prod
+
+commonAnnotations:
+  app.kubernetes.io/environment: prod
+
+images:
+  - name: ftgo/ftgo-order-service
+    newTag: prod-latest
+  - name: ftgo/ftgo-consumer-service
+    newTag: prod-latest
+  - name: ftgo/ftgo-courier-service
+    newTag: prod-latest
+  - name: ftgo/ftgo-restaurant-service
+    newTag: prod-latest
+  - name: mysql
+    newName: mysql
+    newTag: "8.0"
+
+patches:
+  # Production: 3 replicas for services
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  # Production: higher resource limits
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1000m"
+  # Production: pod disruption budget via higher HPA
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 10
+  # Production MySQL: larger storage and resources
+  - target:
+      kind: StatefulSet
+      name: ftgo-mysql
+    patch: |
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: "50Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+  # Production: spread same-service replicas across nodes using per-service patches
+  - target:
+      kind: Deployment
+      name: ftgo-order-service
+    patch: |
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ftgo-order-service
+  - target:
+      kind: Deployment
+      name: ftgo-consumer-service
+    patch: |
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ftgo-consumer-service
+  - target:
+      kind: Deployment
+      name: ftgo-courier-service
+    patch: |
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ftgo-courier-service
+  - target:
+      kind: Deployment
+      name: ftgo-restaurant-service
+    patch: |
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ftgo-restaurant-service
+
+# Production secrets - MUST use external-secrets operator.
+# These are placeholders and must NEVER contain real credentials.
+secretGenerator:
+  - name: ftgo-mysql-secret
+    behavior: replace
+    literals:
+      - MYSQL_ROOT_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+      - MYSQL_USER=ftgo_prod
+      - MYSQL_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-order-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_prod
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-consumer-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_prod
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-courier-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_prod
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-restaurant-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_prod
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS

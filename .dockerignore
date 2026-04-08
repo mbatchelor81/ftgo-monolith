@@ -1,0 +1,45 @@
+# =============================================================================
+# .dockerignore — Exclude unnecessary files from Docker build context
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Build outputs (host-side — we build inside the container)
+build/
+*/build/
+**/build/
+.gradle/
+
+# Documentation and non-build files
+docs/
+*.md
+!README.md
+LICENSE
+
+# Docker files (avoid recursive context)
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+
+# Kubernetes manifests
+**/k8s/
+
+# Test data and local config
+.env
+.env.*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

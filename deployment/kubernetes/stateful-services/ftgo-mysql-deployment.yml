@@ -3,52 +3,105 @@ kind: Service
 metadata:
   name: ftgo-mysql
   labels:
-    name: ftgo-mysql
+    app.kubernetes.io/name: ftgo-mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: ftgo
 spec:
   ports:
-  - port: 3306
-    targetPort: 3306
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+      protocol: TCP
   clusterIP: None
   selector:
-    role: ftgo-mysql
+    app.kubernetes.io/name: ftgo-mysql
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: ftgo-mysql
+  labels:
+    app.kubernetes.io/name: ftgo-mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: ftgo
 spec:
-  serviceName: "mysql"
+  serviceName: ftgo-mysql
   replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ftgo-mysql
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
-        role: ftgo-mysql
+        app.kubernetes.io/name: ftgo-mysql
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: ftgo
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 30
       containers:
         - name: ftgo-mysql
-          image: msapatterns/mysql:latest
-          imagePullPolicy: Always
-          args:
-              - "--ignore-db-dir=lost+found"
+          image: mysql:8.0
+          imagePullPolicy: IfNotPresent
           ports:
-              - containerPort: 3306
+            - containerPort: 3306
+              name: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: rootpassword
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: root-password
             - name: MYSQL_USER
-              value: mysqluser
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: username
             - name: MYSQL_PASSWORD
-              value: mysqlpw
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: password
+            - name: MYSQL_DATABASE
+              value: ftgo
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
           volumeMounts:
             - name: ftgo-mysql-persistent-storage
               mountPath: /var/lib/mysql
   volumeClaimTemplates:
-  - metadata:
-      name: ftgo-mysql-persistent-storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: ftgo-mysql-persistent-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
 ---
