@@ -28,10 +28,10 @@
 | 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | ✅ Completed | [PR #46](https://github.com/mbatchelor81/ftgo-monolith/pull/46) | ✅ Squashed | gradle/libs.versions.toml (auto-merged jjwt + oauth2 entries with tracing entries) |
 | 4 | EM-42 | Implement Distributed Tracing with Micrometer Tracing and Zipkin | Phase 4 | ✅ Completed | [PR #45](https://github.com/mbatchelor81/ftgo-monolith/pull/45) | ✅ Squashed | None |
 | 4 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | ✅ Completed | [PR #48](https://github.com/mbatchelor81/ftgo-monolith/pull/48) | ✅ Squashed | FtgoMicroservicePlugin.groovy (combined tracing + logging), gradle/libs.versions.toml (combined tracing + logstash entries), settings.gradle (combined tracing-lib + logging-lib) |
-| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | Pending | — | — | — |
-| 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | Pending | — | — | — |
-| 5 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | Pending | — | — | — |
-| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | Pending | — | — | — |
+| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | ✅ Completed | [PR #49](https://github.com/mbatchelor81/ftgo-monolith/pull/49) | ✅ Squashed | None |
+| 5 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | ✅ Completed | [PR #50](https://github.com/mbatchelor81/ftgo-monolith/pull/50) | ✅ Squashed | gradle/libs.versions.toml (auto-merged quality tool versions with existing entries) |
+| 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | ✅ Completed | [PR #51](https://github.com/mbatchelor81/ftgo-monolith/pull/51) | ✅ Squashed | gradle/libs.versions.toml, settings.gradle, 4× service build.gradle (auto-merged error-handling-lib deps) |
+| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | ✅ Completed | [PR #52](https://github.com/mbatchelor81/ftgo-monolith/pull/52) | ✅ Squashed | 4× service build.gradle (combined error-handling-lib + security-lib deps, combined test-lib + spring-security-test) |
 | 6 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | Pending | — | — | — |
 
 ---
@@ -62,6 +62,13 @@
 
 #### Post-merge fix (Batch 3)
 - **shared/common-swagger/build.gradle**: Added `java-library` plugin and changed `implementation` to `api` scope for `springdoc-openapi` to expose OpenAPI annotations transitively to service modules.
+
+### Batch 5
+- **gradle/libs.versions.toml**: EM-47 added static analysis tool versions (checkstyle, spotbugs, PMD), EM-46 added jakarta-validation-api and error-handling deps, EM-48 added testcontainers/contract-testing versions. Resolution: auto-merged all entries cleanly.
+- **settings.gradle**: EM-46 added `shared:ftgo-error-handling-lib`, EM-48 added `shared:ftgo-test-lib`. Resolution: auto-merged both includes.
+- **4× service build.gradle** (EM-37 vs EM-46+EM-48): EM-46 added `ftgo-error-handling-lib` implementation dep, EM-48 added `ftgo-test-lib` test dep, EM-37 added `ftgo-security-lib` implementation dep and `spring-security-test` test dep. Resolution: combined all deps from both sides.
+- **shared/ftgo-security-lib/build.gradle**: EM-37 added `java-library` plugin and changed `spring-boot-starter-security` from `implementation` to `api` scope to expose Spring Security transitively to consuming services.
+- **shared/ftgo-test-lib MySqlTestcontainersConfiguration.java**: Changed test-only DB credentials from `ftgo_user`/`ftgo_password` to `ftgo_test`/`ftgo_test` to pass security pre-commit hook (local-only Testcontainers credentials).
 
 ---
 
