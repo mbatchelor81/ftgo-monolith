@@ -236,11 +236,15 @@ FROM ftgo.orders
 WHERE consumer_id IS NOT NULL AND restaurant_id IS NOT NULL;
 
 -- Migrate order_line_items (menu_item_id is NOT NULL in target)
+-- Join against orders to exclude line items for orders that were filtered out above
 INSERT INTO ftgo_order_service.order_line_items
   (order_id, menu_item_id, name, price, quantity)
-SELECT order_id, menu_item_id, name, price, quantity
-FROM ftgo.order_line_items
-WHERE menu_item_id IS NOT NULL;
+SELECT oli.order_id, oli.menu_item_id, oli.name, oli.price, oli.quantity
+FROM ftgo.order_line_items oli
+JOIN ftgo.orders o ON oli.order_id = o.id
+WHERE oli.menu_item_id IS NOT NULL
+  AND o.consumer_id IS NOT NULL
+  AND o.restaurant_id IS NOT NULL;
 
 -- Set AUTO_INCREMENT counters
 SET @max_id = (SELECT COALESCE(MAX(id), 0) + 1 FROM ftgo_order_service.orders);
@@ -369,9 +373,13 @@ Each service's `application.yml` should already point to its own database:
 | Order | `jdbc:mysql://localhost:3306/ftgo_order_service` |
 | Restaurant | `jdbc:mysql://localhost:3306/ftgo_restaurant_service` |
 
-### 5.2 Update JPA Entity ID Generation
+### 5.2 Update JPA Entity Annotations
 
-Update entity classes to use `GenerationType.IDENTITY`:
+The following JPA annotation changes are **required** before deploying against the new per-service schemas:
+
+#### a) ID Generation — switch to `IDENTITY`
+
+Update all entity `@Id` fields to use `GenerationType.IDENTITY`:
 
 ```java
 @Id
@@ -380,6 +388,20 @@ private Long id;
 ```
 
 This replaces any previous use of `GenerationType.TABLE` or `GenerationType.AUTO` that relied on `hibernate_sequence`.
+
+#### b) Table Name Mappings
+
+The following entities need `@Table` annotations added or updated to match the new schema table names:
+
+| Entity | Current Hibernate Default | New Table Name | Required Annotation |
+|--------|--------------------------|----------------|--------------------|
+| `Courier` | `courier` | `couriers` | `@Table(name = "couriers")` |
+
+The `Courier` entity (`shared/ftgo-domain/.../Courier.java`) currently has no `@Table` annotation, so Hibernate defaults to `courier` (singular). The new schema uses `couriers` (plural). Without this annotation, the service will fail on startup with `ddl-auto: validate`.
+
+#### c) Collection Table Mappings
+
+The `@ElementCollection` / `@CollectionTable` mappings in `Courier` (for `courier_actions`) and `Restaurant` (for `restaurant_menu_items`) may also need updating if the collection table names or join column names changed. Review the `Plan` embeddable and `MenuItem` embeddable against the new schemas.
 
 ### 5.3 Deploy Services
 
