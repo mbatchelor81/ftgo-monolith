@@ -4,11 +4,11 @@ import io.micrometer.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 /**
  * Core tracing configuration for FTGO microservices.
@@ -39,6 +39,7 @@ public class TracingConfiguration {
      * that instruments any {@code RestTemplate} bean with trace propagation headers.
      */
     @Bean
+    @ConditionalOnMissingBean(RestTemplate.class)
     @ConditionalOnProperty(name = "management.tracing.enabled", havingValue = "true", matchIfMissing = true)
     public RestTemplate tracedRestTemplate() {
         log.info("Creating traced RestTemplate for distributed trace propagation");

@@ -177,8 +177,6 @@ volumes:
     driver: local
   grafana-data:
     driver: local
-  zipkin-data:
-    driver: local
 
 networks:
   ftgo-network:
