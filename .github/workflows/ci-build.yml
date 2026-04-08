@@ -1,0 +1,326 @@
+# =============================================================================
+# CI Workflow: Gradle Build & Test Pipeline
+# =============================================================================
+# Triggers on pushes and PRs to the main and migration branches.
+# Uses a matrix strategy to build/test each microservice independently,
+# with path-based filtering so only services with changed files are built.
+# Shared library changes trigger builds for all dependent services.
+# =============================================================================
+
+name: CI Build & Test
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'feat/microservices-migration*'
+    paths:
+      # Microservices
+      - 'ftgo-order-service/**'
+      - 'ftgo-order-service-api/**'
+      - 'ftgo-consumer-service/**'
+      - 'ftgo-consumer-service-api/**'
+      - 'ftgo-restaurant-service/**'
+      - 'ftgo-restaurant-service-api/**'
+      - 'ftgo-courier-service/**'
+      - 'ftgo-courier-service-api/**'
+      - 'ftgo-application/**'
+      # Shared libraries
+      - 'ftgo-common/**'
+      - 'ftgo-common-jpa/**'
+      - 'ftgo-domain/**'
+      - 'ftgo-test-util/**'
+      - 'ftgo-flyway/**'
+      - 'common-swagger/**'
+      # Build infrastructure
+      - 'buildSrc/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - 'feat/microservices-migration*'
+    paths:
+      # Microservices
+      - 'ftgo-order-service/**'
+      - 'ftgo-order-service-api/**'
+      - 'ftgo-consumer-service/**'
+      - 'ftgo-consumer-service-api/**'
+      - 'ftgo-restaurant-service/**'
+      - 'ftgo-restaurant-service-api/**'
+      - 'ftgo-courier-service/**'
+      - 'ftgo-courier-service-api/**'
+      - 'ftgo-application/**'
+      # Shared libraries
+      - 'ftgo-common/**'
+      - 'ftgo-common-jpa/**'
+      - 'ftgo-domain/**'
+      - 'ftgo-test-util/**'
+      - 'ftgo-flyway/**'
+      - 'common-swagger/**'
+      # Build infrastructure
+      - 'buildSrc/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+
+permissions:
+  contents: read
+
+# ---------------------------------------------------------------------------
+# Cancel in-progress runs for the same branch/PR to save resources
+# ---------------------------------------------------------------------------
+concurrency:
+  group: ci-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # Detect which modules have changed to drive the build matrix
+  # ===========================================================================
+  detect-changes:
+    name: Detect Changed Modules
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+      shared_changed: ${{ steps.changes.outputs.shared_changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed modules
+        id: changes
+        run: |
+          # Determine the diff base
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA=${{ github.event.pull_request.base.sha }}
+          else
+            BASE_SHA=${{ github.event.before }}
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" HEAD 2>/dev/null || echo "")
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # -------------------------------------------------------------------
+          # Check if shared libraries or build infrastructure changed
+          # -------------------------------------------------------------------
+          SHARED_CHANGED=false
+          if echo "$CHANGED_FILES" | grep -qE "^(ftgo-common/|ftgo-common-jpa/|ftgo-domain/|ftgo-test-util/|ftgo-flyway/|common-swagger/|buildSrc/|build\.gradle|settings\.gradle|gradle\.properties|gradle/)"; then
+            SHARED_CHANGED=true
+          fi
+          echo "shared_changed=$SHARED_CHANGED" >> "$GITHUB_OUTPUT"
+
+          # -------------------------------------------------------------------
+          # All buildable service modules
+          # -------------------------------------------------------------------
+          ALL_SERVICES='["ftgo-order-service","ftgo-consumer-service","ftgo-restaurant-service","ftgo-courier-service","ftgo-application"]'
+
+          # If shared code changed, rebuild all services
+          if [ "$SHARED_CHANGED" = "true" ]; then
+            echo "Shared libraries or build config changed — building all services"
+            echo "services=$ALL_SERVICES" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # -------------------------------------------------------------------
+          # Otherwise detect individual service changes
+          # -------------------------------------------------------------------
+          RESULT="["
+          FIRST=true
+          for SVC in ftgo-order-service ftgo-consumer-service ftgo-restaurant-service ftgo-courier-service ftgo-application; do
+            # Check both the service dir and its API module (e.g. ftgo-order-service-api)
+            if echo "$CHANGED_FILES" | grep -qE "^${SVC}(-api)?/"; then
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                RESULT+=","
+              fi
+              RESULT+="\"$SVC\""
+            fi
+          done
+          RESULT+="]"
+
+          # Fallback: if nothing matched (e.g. initial commit), build all
+          if [ "$RESULT" = "[]" ]; then
+            echo "No specific service changes detected — building all services"
+            RESULT=$ALL_SERVICES
+          fi
+
+          echo "services=$RESULT" >> "$GITHUB_OUTPUT"
+          echo "Services to build: $RESULT"
+
+  # ===========================================================================
+  # Build shared libraries (when their code changes)
+  # ===========================================================================
+  build-shared-libs:
+    name: Build Shared Libraries
+    needs: detect-changes
+    if: needs.detect-changes.outputs.shared_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-shared-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-shared-
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Build shared libraries
+        run: |
+          ./gradlew :ftgo-common:build \
+                    :ftgo-common-jpa:build \
+                    :ftgo-domain:build \
+                    :ftgo-test-util:build \
+                    :common-swagger:build \
+                    --no-daemon --parallel
+
+      - name: Run shared library tests
+        run: |
+          ./gradlew :ftgo-common:test \
+                    :ftgo-common-jpa:test \
+                    :ftgo-domain:test \
+                    :ftgo-test-util:test \
+                    :common-swagger:test \
+                    --no-daemon --parallel
+
+      - name: Upload shared library test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-libs-test-results
+          path: |
+            ftgo-common/build/reports/tests/
+            ftgo-common-jpa/build/reports/tests/
+            ftgo-domain/build/reports/tests/
+            ftgo-test-util/build/reports/tests/
+            common-swagger/build/reports/tests/
+          retention-days: 14
+
+  # ===========================================================================
+  # Build and test each changed microservice
+  # ===========================================================================
+  build-service:
+    name: Build & Test ${{ matrix.service }}
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Setup
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ matrix.service }}-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-${{ matrix.service }}-
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x ./gradlew
+
+      # -----------------------------------------------------------------------
+      # Compile
+      # -----------------------------------------------------------------------
+      - name: Compile ${{ matrix.service }}
+        run: ./gradlew :${{ matrix.service }}:classes :${{ matrix.service }}:testClasses --no-daemon
+
+      # -----------------------------------------------------------------------
+      # Unit tests
+      # -----------------------------------------------------------------------
+      - name: Run unit tests for ${{ matrix.service }}
+        run: ./gradlew :${{ matrix.service }}:test --no-daemon
+
+      # -----------------------------------------------------------------------
+      # Build (assemble JAR / check)
+      # -----------------------------------------------------------------------
+      - name: Build ${{ matrix.service }}
+        run: ./gradlew :${{ matrix.service }}:build --no-daemon
+
+      # -----------------------------------------------------------------------
+      # Upload test results
+      # -----------------------------------------------------------------------
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.service }}
+          path: ${{ matrix.service }}/build/reports/tests/
+          retention-days: 14
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.service }}
+          path: ${{ matrix.service }}/build/libs/
+          retention-days: 7
+
+  # ===========================================================================
+  # Summary gate — single status check for branch protection
+  # ===========================================================================
+  ci-status:
+    name: CI Status
+    needs: [detect-changes, build-service, build-shared-libs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build results
+        run: |
+          echo "=== CI Build Summary ==="
+          echo "Shared libs changed: ${{ needs.detect-changes.outputs.shared_changed }}"
+          echo "Services built: ${{ needs.detect-changes.outputs.services }}"
+
+          # Fail if any required job failed (skip check for jobs that were skipped)
+          if [ "${{ needs.build-service.result }}" = "failure" ]; then
+            echo "❌ Service builds failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.build-shared-libs.result }}" = "failure" ]; then
+            echo "❌ Shared library builds failed"
+            exit 1
+          fi
+
+          echo "✅ All CI checks passed"

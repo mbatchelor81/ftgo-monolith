@@ -1,5 +1,8 @@
 = FTGO Monolith
 
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-build.yml/badge.svg?branch=main[CI Build & Test,link=https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-build.yml]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/docker-build-push.yml/badge.svg?branch=main[Docker Build & Push,link=https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/docker-build-push.yml]
+
 This is the monolithic version of the https://github.com/microservices-patterns/ftgo-application[FTGO application] from my book https://microservices.io/book[Microservices patterns].
 It's used to illustrate how to refactor a monolithic application to services.
 
