@@ -1,9 +1,11 @@
 package com.ftgo.consumer.web;
 
+import com.ftgo.consumer.api.CreateConsumerRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +29,7 @@ public class ConsumerController {
     @ApiResponse(responseCode = "201", description = "Consumer created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request body")
     @PostMapping
-    public ResponseEntity<Void> createConsumer(@RequestBody Object request) {
+    public ResponseEntity<Void> createConsumer(@Valid @RequestBody CreateConsumerRequest request) {
         // TODO: delegate to ConsumerService once domain logic is migrated
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

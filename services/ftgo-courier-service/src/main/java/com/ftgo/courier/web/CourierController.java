@@ -1,9 +1,12 @@
 package com.ftgo.courier.web;
 
+import com.ftgo.courier.api.CreateCourierRequest;
+import com.ftgo.courier.api.UpdateAvailabilityRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +30,7 @@ public class CourierController {
     @ApiResponse(responseCode = "201", description = "Courier created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid request body")
     @PostMapping
-    public ResponseEntity<Void> createCourier(@RequestBody Object request) {
+    public ResponseEntity<Void> createCourier(@Valid @RequestBody CreateCourierRequest request) {
         // TODO: delegate to CourierService once domain logic is migrated
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -50,7 +53,7 @@ public class CourierController {
     public ResponseEntity<Void> updateAvailability(
             @Parameter(description = "Unique courier identifier")
             @PathVariable long courierId,
-            @RequestBody Object request) {
+            @Valid @RequestBody UpdateAvailabilityRequest request) {
         // TODO: delegate to CourierService once domain logic is migrated
         return ResponseEntity.ok().build();
     }
