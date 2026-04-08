@@ -29,6 +29,8 @@ x-service-defaults: &service-defaults
     SPRING_FLYWAY_ENABLED: "true"
     SPRING_PROFILES_ACTIVE: local
     JAVA_TOOL_OPTIONS: "-Xmx256m"
+    MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+    MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: "http://zipkin:9411/api/v2/spans"
 
 services:
   # ---------------------------------------------------------------------------
@@ -110,6 +112,19 @@ services:
       SPRING_APPLICATION_NAME: ftgo-courier-service
 
   # ---------------------------------------------------------------------------
+  # Observability: Zipkin (distributed tracing)
+  # ---------------------------------------------------------------------------
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    ports:
+      - "9411:9411"
+    environment:
+      STORAGE_TYPE: mem
+    restart: unless-stopped
+    networks:
+      - ftgo-network
+
+  # ---------------------------------------------------------------------------
   # Observability: Prometheus
   # ---------------------------------------------------------------------------
   prometheus:
@@ -161,6 +176,8 @@ volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  zipkin-data:
     driver: local
 
 networks:

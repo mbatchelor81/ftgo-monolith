@@ -6,6 +6,7 @@ namespace: ftgo-prod
 resources:
   - namespace.yaml
   - ../../base/mysql
+  - ../../base/zipkin
   - ../../base/ftgo-order-service
   - ../../base/ftgo-consumer-service
   - ../../base/ftgo-courier-service
@@ -137,6 +138,43 @@ patches:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/name: ftgo-restaurant-service
+
+  # Production: reduce tracing sampling to 10%
+  - target:
+      kind: ConfigMap
+      name: ftgo-order-service-config
+    patch: |
+      - op: replace
+        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+        value: "0.1"
+  - target:
+      kind: ConfigMap
+      name: ftgo-consumer-service-config
+    patch: |
+      - op: replace
+        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+        value: "0.1"
+  - target:
+      kind: ConfigMap
+      name: ftgo-courier-service-config
+    patch: |
+      - op: replace
+        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+        value: "0.1"
+  - target:
+      kind: ConfigMap
+      name: ftgo-restaurant-service-config
+    patch: |
+      - op: replace
+        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+        value: "0.1"
+  - target:
+      kind: ConfigMap
+      name: ftgo-api-gateway-config
+    patch: |
+      - op: replace
+        path: /data/MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+        value: "0.1"
 
 # Production secrets - MUST use external-secrets operator.
 # These are placeholders and must NEVER contain real credentials.

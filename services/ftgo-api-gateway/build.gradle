@@ -35,6 +35,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation libs.micrometer.prometheus
 
+    // Distributed tracing — Micrometer Tracing with Brave + Zipkin
+    implementation libs.bundles.tracing
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
