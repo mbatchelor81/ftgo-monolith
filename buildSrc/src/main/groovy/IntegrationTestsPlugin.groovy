@@ -2,6 +2,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 
+/**
+ * Legacy integration-test source-set plugin.
+ *
+ * Kept for backward compatibility with the monolith modules that still
+ * use {@code apply plugin: IntegrationTestsPlugin}. New microservice
+ * modules should prefer {@code id 'ftgo.testing-conventions'} which
+ * provides the same integration-test source set plus JUnit 5 configuration.
+ */
 class IntegrationTestsPlugin implements Plugin<Project> {
 
     @Override
@@ -18,17 +26,17 @@ class IntegrationTestsPlugin implements Plugin<Project> {
         }
 
         project.configurations {
-            integrationTestCompile.extendsFrom testCompile
-            integrationTestRuntime.extendsFrom testRuntime
+            integrationTestImplementation.extendsFrom project.configurations.testImplementation
+            integrationTestRuntimeOnly.extendsFrom project.configurations.testRuntimeOnly
         }
 
-        project.task("integrationTest", type: Test) {
-            testClassesDir = project.sourceSets.integrationTest.output.classesDir
+        project.tasks.register("integrationTest", Test) {
+            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
             classpath = project.sourceSets.integrationTest.runtimeClasspath
         }
 
-        project.tasks.withType(Test) {
-            reports.html.destination = project.file("${project.reporting.baseDir}/${name}")
+        project.tasks.withType(Test).configureEach {
+            reports.html.outputLocation.set(project.file("${project.reporting.baseDir}/${name}"))
         }
     }
 }

@@ -1,3 +1,7 @@
+// =============================================================================
+// Gradle version catalog is auto-loaded from gradle/libs.versions.toml
+// See docs/gradle-shared-config.md for usage documentation.
+// =============================================================================
 
 // =============================================================================
 // Legacy monolith modules (unchanged — will be removed after migration)

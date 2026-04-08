@@ -1,7 +1,12 @@
 // ftgo-domain — Shared JPA entities and repository interfaces
 // Migrated from monolith module: ftgo-domain
 
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
 dependencies {
-    compile project(":shared:ftgo-common")
-    compile project(":shared:ftgo-common-jpa")
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:ftgo-common-jpa")
 }

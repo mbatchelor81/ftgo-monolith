@@ -8,6 +8,12 @@
 // and common exception types.
 // =============================================================================
 
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
 apply plugin: 'maven-publish'
 
 version = ftgoCommonLibVersion
@@ -31,19 +37,14 @@ jar {
 }
 
 dependencies {
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.7'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
-    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+    implementation libs.commons.lang3
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-
-    runtime "javax.xml.bind:jaxb-api:2.2.11"
-    runtime "com.sun.xml.bind:jaxb-core:2.2.11"
-    runtime "com.sun.xml.bind:jaxb-impl:2.2.11"
-    runtime "javax.activation:activation:1.1.1"
+    runtimeOnly libs.mysql.connector
 }
 
 // ---------------------------------------------------------------------------

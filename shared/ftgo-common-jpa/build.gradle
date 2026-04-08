@@ -1,7 +1,12 @@
 // ftgo-common-jpa — Shared JPA configuration and base classes
 // Migrated from monolith module: ftgo-common-jpa
 
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
 dependencies {
-    compile project(":shared:ftgo-common")
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+    implementation project(":shared:ftgo-common")
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }

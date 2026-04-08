@@ -5,6 +5,11 @@
 //   2. Replace all occurrences of "template_" with your service package name
 //   3. Register this module in settings.gradle
 
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
 dependencies {
-    compile project(":shared:ftgo-common")
+    implementation project(":shared:ftgo-common")
 }
