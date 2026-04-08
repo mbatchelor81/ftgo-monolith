@@ -14,8 +14,6 @@ plugins {
     id 'ftgo.publishing-conventions'
 }
 
-apply plugin: 'maven-publish'
-
 version = ftgoCommonLibVersion
 group = 'net.chrisrichardson.ftgo'
 
@@ -52,14 +50,12 @@ dependencies {
 // Publishes to a local Maven repository under build/repo by default.
 // To publish to a remote repository, add credentials and update the URL.
 // ---------------------------------------------------------------------------
+// Customize the mavenJava publication created by ftgo.publishing-conventions
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
-
             groupId = 'net.chrisrichardson.ftgo'
             artifactId = 'ftgo-common-lib'
-            version = project.version
 
             pom {
                 name = 'FTGO Common Library'
@@ -69,7 +65,7 @@ publishing {
     }
     repositories {
         maven {
-            name = 'local'
+            name = 'localRepo'
             url = "${rootProject.buildDir}/repo"
         }
     }
