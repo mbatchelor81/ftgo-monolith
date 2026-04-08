@@ -689,7 +689,8 @@ jobs:
             if [ -d "$dir" ]; then
               SERVICE=$(basename "$dir" | sed 's/unit-test-results-//')
               TIME=$(find "$dir" -name "*.xml" -exec grep -h 'testsuite' {} \; 2>/dev/null | head -1 | grep -oP 'time="[^"]*"' | head -1 | tr -d 'time="' || echo "N/A")
-              echo "| Unit | $SERVICE | ${TIME}s |" >> "$GITHUB_STEP_SUMMARY"
+              if [ "$TIME" = "N/A" ]; then DISPLAY="N/A"; else DISPLAY="${TIME}s"; fi
+              echo "| Unit | $SERVICE | $DISPLAY |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
 
@@ -697,7 +698,8 @@ jobs:
             if [ -d "$dir" ]; then
               SERVICE=$(basename "$dir" | sed 's/integration-test-results-//')
               TIME=$(find "$dir" -name "*.xml" -exec grep -h 'testsuite' {} \; 2>/dev/null | head -1 | grep -oP 'time="[^"]*"' | head -1 | tr -d 'time="' || echo "N/A")
-              echo "| Integration | $SERVICE | ${TIME}s |" >> "$GITHUB_STEP_SUMMARY"
+              if [ "$TIME" = "N/A" ]; then DISPLAY="N/A"; else DISPLAY="${TIME}s"; fi
+              echo "| Integration | $SERVICE | $DISPLAY |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
 
