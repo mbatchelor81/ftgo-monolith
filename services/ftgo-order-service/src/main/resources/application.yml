@@ -15,12 +15,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-  lifecycle:
-    timeout-per-shutdown-phase: 30s
 
 server:
   port: 8080
-  shutdown: graceful
 
 management:
   endpoints:
@@ -30,13 +27,6 @@ management:
   endpoint:
     health:
       show-details: always
-      probes:
-        enabled: true
-      group:
-        liveness:
-          include: livenessState,ftgoDiskSpace
-        readiness:
-          include: readinessState,ftgoDatabase,orderProcessing
     prometheus:
       enabled: true
   metrics:
@@ -52,49 +42,7 @@ management:
       export:
         enabled: true
 
-# --- SpringDoc OpenAPI ---
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-
-ftgo:
-  api:
-    title: FTGO Order Service
-    description: Manages order lifecycle — creation, revision, acceptance, preparation, and delivery
-    version: 1.0.0
-
 logging:
   level:
     com.ftgo.order: INFO
     org.springframework: WARN
-    io.github.resilience4j: INFO
-
-# --- Resilience4j overrides (service-specific) ---
-resilience4j:
-  circuitbreaker:
-    instances:
-      restaurantService:
-        baseConfig: default
-      consumerService:
-        baseConfig: default
-  retry:
-    instances:
-      restaurantService:
-        baseConfig: default
-      consumerService:
-        baseConfig: default
-  bulkhead:
-    instances:
-      restaurantService:
-        baseConfig: default
-      consumerService:
-        baseConfig: default
-
-# --- Service Discovery ---
-ftgo:
-  service-discovery:
-    namespace: ${FTGO_NAMESPACE:ftgo}
