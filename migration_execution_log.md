@@ -32,7 +32,7 @@
 | 5 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | ✅ Completed | [PR #50](https://github.com/mbatchelor81/ftgo-monolith/pull/50) | ✅ Squashed | gradle/libs.versions.toml (auto-merged quality tool versions with existing entries) |
 | 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | ✅ Completed | [PR #51](https://github.com/mbatchelor81/ftgo-monolith/pull/51) | ✅ Squashed | gradle/libs.versions.toml, settings.gradle, 4× service build.gradle (auto-merged error-handling-lib deps) |
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | ✅ Completed | [PR #52](https://github.com/mbatchelor81/ftgo-monolith/pull/52) | ✅ Squashed | 4× service build.gradle (combined error-handling-lib + security-lib deps, combined test-lib + spring-security-test) |
-| 6 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | Pending | — | — | — |
+| 6 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | ✅ Completed | [PR #53](https://github.com/mbatchelor81/ftgo-monolith/pull/53) | ✅ Squashed | None |
 
 ---
 
