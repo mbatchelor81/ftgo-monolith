@@ -1,0 +1,32 @@
+// =============================================================================
+// ftgo-logging-lib — Shared structured logging library
+// =============================================================================
+// Provides MDC filter, correlation ID propagation, and Logback configuration
+// for all FTGO microservices.
+//
+// Usage in a service build.gradle:
+//   implementation project(":shared:ftgo-logging-lib")
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+// This is a library — disable Spring Boot's fat-jar packaging
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // Structured JSON logging
+    implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstash.logback.get()}"
+
+    // SLF4J API
+    implementation "org.slf4j:slf4j-api:${libs.versions.slf4j.get()}"
+
+    // Spring Web for servlet filter
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Boot auto-configuration support
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+}

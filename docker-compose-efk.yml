@@ -1,0 +1,98 @@
+# =============================================================================
+# FTGO EFK Stack — Local Development
+# =============================================================================
+# Elasticsearch + Fluentd + Kibana for local log aggregation.
+#
+# Usage:
+#   docker-compose -f docker-compose-efk.yml up -d
+#
+# Access:
+#   Kibana:         http://localhost:5601
+#   Elasticsearch:  http://localhost:9200
+#   Fluentd:        localhost:24224 (forward protocol)
+#
+# Services should set their Fluentd log driver or output JSON to stdout
+# which Fluentd collects via the forward input plugin.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Elasticsearch — log storage and search engine
+  # ---------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: ftgo-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.name=ftgo-logs
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - efk-network
+
+  # ---------------------------------------------------------------------------
+  # Fluentd — log collector and forwarder
+  # ---------------------------------------------------------------------------
+  fluentd:
+    build:
+      context: ./deployment/docker/fluentd
+      dockerfile: Dockerfile
+    container_name: ftgo-fluentd
+    volumes:
+      - ./deployment/docker/fluentd/conf:/fluentd/etc
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - efk-network
+
+  # ---------------------------------------------------------------------------
+  # Kibana — log visualization and dashboards
+  # ---------------------------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: ftgo-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+      - server.name=ftgo-kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - efk-network
+
+volumes:
+  elasticsearch-data:
+    driver: local
+
+networks:
+  efk-network:
+    driver: bridge

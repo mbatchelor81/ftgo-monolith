@@ -36,5 +36,6 @@ class FtgoMicroservicePlugin implements Plugin<Project> {
         project.pluginManager.apply('ftgo.testing-conventions')
         project.pluginManager.apply('ftgo.docker-conventions')
         project.pluginManager.apply('ftgo.tracing-conventions')
+        project.pluginManager.apply('ftgo.logging-conventions')
     }
 }
