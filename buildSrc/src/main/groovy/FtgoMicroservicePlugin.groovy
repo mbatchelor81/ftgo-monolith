@@ -10,6 +10,7 @@ import org.gradle.api.Project
  * - ftgo.testing-conventions (JUnit 5, Rest-Assured, integration tests)
  * - ftgo.docker-conventions (Jib container image builds)
  * - ftgo.tracing-conventions (Actuator, Micrometer, Prometheus, distributed tracing)
+ * - ftgo.quality-conventions (Checkstyle, SpotBugs, PMD static analysis)
  *
  * By default, bootJar is disabled and the standard jar task is enabled.
  * This allows empty scaffold modules to participate in ./gradlew build
@@ -37,5 +38,6 @@ class FtgoMicroservicePlugin implements Plugin<Project> {
         project.pluginManager.apply('ftgo.docker-conventions')
         project.pluginManager.apply('ftgo.tracing-conventions')
         project.pluginManager.apply('ftgo.logging-conventions')
+        project.pluginManager.apply('ftgo.quality-conventions')
     }
 }

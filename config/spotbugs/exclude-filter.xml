@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+    ==========================================================================
+    FTGO SpotBugs Exclusion Filter
+    ==========================================================================
+    Excludes patterns that produce false positives in Spring Boot applications
+    and generated code.
+    ==========================================================================
+    -->
+
+    <!-- Exclude generated code (Lombok, MapStruct, etc.) -->
+    <Match>
+        <Source name="~.*generated.*"/>
+    </Match>
+
+    <!-- Exclude test classes from main source analysis -->
+    <Match>
+        <Class name="~.*Test"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
+
+    <!-- Spring Boot configuration classes often have unread fields (injected) -->
+    <Match>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+        <Class name="~.*Configuration"/>
+    </Match>
+
+    <!-- Spring Data repositories use dynamic proxies -->
+    <Match>
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+        <Class name="~.*Repository"/>
+    </Match>
+
+    <!-- Allow serialization in DTOs / API objects -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+        <Or>
+            <Class name="~.*Request"/>
+            <Class name="~.*Response"/>
+            <Class name="~.*Dto"/>
+            <Class name="~.*DTO"/>
+            <Class name="~.*Event"/>
+        </Or>
+    </Match>
+
+    <!-- EI_EXPOSE_REP / EI_EXPOSE_REP2: very common in Spring Boot DTOs,
+         entities, and configuration classes that expose mutable objects via
+         getters or accept them in constructors. Lombok @Value / @Data and
+         Spring @ConfigurationProperties trigger this constantly. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

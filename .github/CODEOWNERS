@@ -1,0 +1,69 @@
+# =============================================================================
+# FTGO CODEOWNERS — Automatic reviewer assignment
+# =============================================================================
+# GitHub uses this file to automatically request reviews from the appropriate
+# teams/individuals when a PR modifies files matching these patterns.
+#
+# Order matters: later rules override earlier ones.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
+
+# --- Default owner (catch-all) ---
+*                                       @mbatchelor81
+
+# --- Build infrastructure & CI ---
+buildSrc/                               @mbatchelor81
+build.gradle                            @mbatchelor81
+settings.gradle                         @mbatchelor81
+gradle/                                 @mbatchelor81
+gradle.properties                       @mbatchelor81
+.github/workflows/                      @mbatchelor81
+
+# --- Shared libraries ---
+shared/ftgo-common/                     @mbatchelor81
+shared/ftgo-common-jpa/                 @mbatchelor81
+shared/ftgo-domain/                     @mbatchelor81
+shared/ftgo-test-util/                  @mbatchelor81
+shared/common-swagger/                  @mbatchelor81
+shared/ftgo-security-lib/               @mbatchelor81
+shared/ftgo-resilience-lib/             @mbatchelor81
+shared/ftgo-tracing-lib/                @mbatchelor81
+shared/ftgo-logging-lib/                @mbatchelor81
+
+# --- Order bounded context ---
+services/ftgo-order-service/            @mbatchelor81
+services/ftgo-order-service-api/        @mbatchelor81
+
+# --- Consumer bounded context ---
+services/ftgo-consumer-service/         @mbatchelor81
+services/ftgo-consumer-service-api/     @mbatchelor81
+
+# --- Restaurant bounded context ---
+services/ftgo-restaurant-service/       @mbatchelor81
+services/ftgo-restaurant-service-api/   @mbatchelor81
+
+# --- Courier bounded context ---
+services/ftgo-courier-service/          @mbatchelor81
+services/ftgo-courier-service-api/      @mbatchelor81
+
+# --- API Gateway ---
+services/ftgo-api-gateway/              @mbatchelor81
+
+# --- Database migrations ---
+ftgo-flyway/                            @mbatchelor81
+
+# --- Quality & code review configuration ---
+config/                                 @mbatchelor81
+.editorconfig                           @mbatchelor81
+CONTRIBUTING.md                         @mbatchelor81
+.github/CODEOWNERS                      @mbatchelor81
+.github/PULL_REQUEST_TEMPLATE.md        @mbatchelor81
+
+# --- Legacy monolith modules ---
+ftgo-application/                       @mbatchelor81
+ftgo-order-service/                     @mbatchelor81
+ftgo-consumer-service/                  @mbatchelor81
+ftgo-restaurant-service/                @mbatchelor81
+ftgo-courier-service/                   @mbatchelor81
+ftgo-domain/                            @mbatchelor81
+ftgo-common/                            @mbatchelor81

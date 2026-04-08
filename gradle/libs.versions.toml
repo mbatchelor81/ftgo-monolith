@@ -51,6 +51,12 @@ commons-lang3       = "3.14.0"
 lombok              = "1.18.32"
 slf4j               = "2.0.12"
 
+# --- Static Analysis ---
+checkstyleVersion   = "10.15.0"
+spotbugsVersion     = "4.8.4"
+spotbugsPluginVersion = "6.0.9"
+pmdVersion          = "7.1.0"
+
 # --- Build Plugins ---
 jib                 = "3.4.1"
 versions-plugin     = "0.51.0"
@@ -188,3 +194,4 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 jib                  = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 flyway               = { id = "org.flywaydb.flyway", version.ref = "flyway" }
 versions             = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+spotbugs             = { id = "com.github.spotbugs", version.ref = "spotbugsPluginVersion" }

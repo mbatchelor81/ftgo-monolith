@@ -15,6 +15,9 @@ dependencies {
     // Jib plugin for Docker image builds
     implementation 'com.google.cloud.tools:jib-gradle-plugin:3.4.1'
 
+    // SpotBugs plugin for static analysis
+    implementation 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.9'
+
     // Legacy plugins — MySQL connector for WaitForMySql task
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
