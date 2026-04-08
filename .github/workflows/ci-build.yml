@@ -237,6 +237,10 @@ jobs:
   # ===========================================================================
   # Static analysis quality gate — Checkstyle, SpotBugs, PMD
   # ===========================================================================
+  # Only runs on microservice modules under services/ that apply the
+  # ftgo.quality-conventions plugin. ftgo-application is excluded because
+  # it is a thin Spring Boot launcher without the quality plugin.
+  # ===========================================================================
   quality-gate:
     name: "Quality Gate: ${{ matrix.service }}"
     needs: detect-changes
@@ -246,7 +250,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+        service:
+          - ftgo-order-service
+          - ftgo-consumer-service
+          - ftgo-restaurant-service
+          - ftgo-courier-service
 
     steps:
       - name: Checkout repository
@@ -273,13 +281,13 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Checkstyle
-        run: ./gradlew :${{ matrix.service }}:checkstyleMain --no-daemon
+        run: ./gradlew :services:${{ matrix.service }}:checkstyleMain --no-daemon
 
       - name: Run SpotBugs
-        run: ./gradlew :${{ matrix.service }}:spotbugsMain --no-daemon
+        run: ./gradlew :services:${{ matrix.service }}:spotbugsMain --no-daemon
 
       - name: Run PMD
-        run: ./gradlew :${{ matrix.service }}:pmdMain --no-daemon
+        run: ./gradlew :services:${{ matrix.service }}:pmdMain --no-daemon
 
       - name: Upload quality reports
         if: always()
@@ -287,9 +295,9 @@ jobs:
         with:
           name: quality-reports-${{ matrix.service }}
           path: |
-            ${{ matrix.service }}/build/reports/checkstyle/
-            ${{ matrix.service }}/build/reports/spotbugs/
-            ${{ matrix.service }}/build/reports/pmd/
+            services/${{ matrix.service }}/build/reports/checkstyle/
+            services/${{ matrix.service }}/build/reports/spotbugs/
+            services/${{ matrix.service }}/build/reports/pmd/
           retention-days: 14
 
   # ===========================================================================
