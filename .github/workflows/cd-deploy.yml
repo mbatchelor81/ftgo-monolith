@@ -1,0 +1,187 @@
+name: CD - Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+      - 'k8s/**'
+      - '.github/workflows/cd-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/ftgo
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build and push Docker images for each microservice
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - ftgo-order-service
+          - ftgo-consumer-service
+          - ftgo-courier-service
+          - ftgo-restaurant-service
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=dev-latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ inputs.image_tag }},enable=${{ inputs.image_tag != '' }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/${{ matrix.service }}
+          file: ./services/${{ matrix.service }}/docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Validate Kubernetes manifests
+  # ---------------------------------------------------------------------------
+  validate-manifests:
+    name: Validate K8s Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Validate dev overlay
+        run: kustomize build k8s/overlays/dev > /dev/null
+
+      - name: Validate staging overlay
+        run: kustomize build k8s/overlays/staging > /dev/null
+
+      - name: Validate prod overlay
+        run: kustomize build k8s/overlays/prod > /dev/null
+
+      - name: Dry-run dev manifests
+        run: |
+          kustomize build k8s/overlays/dev > /tmp/dev-manifests.yaml
+          echo "--- Dev manifests generated successfully ---"
+          echo "Resource count: $(grep -c '^kind:' /tmp/dev-manifests.yaml)"
+
+  # ---------------------------------------------------------------------------
+  # Deploy to dev environment (automatic on merge to main)
+  # ---------------------------------------------------------------------------
+  deploy-dev:
+    name: Deploy to Dev
+    needs: [build, validate-manifests]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
+    environment:
+      name: dev
+      url: https://dev.ftgo.example.com
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+
+      - name: Set image tags
+        run: |
+          cd k8s/overlays/dev
+          IMAGE_TAG="${{ needs.build.outputs.image_tag }}"
+          if [ -z "$IMAGE_TAG" ]; then IMAGE_TAG="${GITHUB_SHA::7}"; fi
+          kustomize edit set image \
+            ftgo/ftgo-order-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-order-service:${IMAGE_TAG} \
+            ftgo/ftgo-consumer-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${IMAGE_TAG} \
+            ftgo/ftgo-courier-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${IMAGE_TAG} \
+            ftgo/ftgo-restaurant-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${IMAGE_TAG}
+
+      - name: Deploy to dev
+        run: |
+          kustomize build k8s/overlays/dev | kubectl apply -f -
+          echo "Waiting for rollout to complete..."
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            kubectl rollout status deployment/${svc} -n ftgo-dev --timeout=300s
+          done
+
+      - name: Verify deployment health
+        run: |
+          echo "Checking pod status in ftgo-dev namespace..."
+          kubectl get pods -n ftgo-dev
+          echo ""
+          echo "Checking service endpoints..."
+          kubectl get endpoints -n ftgo-dev
+          echo ""
+          echo "Running health checks..."
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            echo "Checking ${svc}..."
+            kubectl exec -n ftgo-dev deploy/${svc} -- wget -qO- http://localhost:8080/actuator/health || echo "Warning: ${svc} health check not reachable yet"
+          done
+
+      - name: Post deployment summary
+        if: always()
+        run: |
+          echo "## Dev Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Image | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          for svc in ftgo-order-service ftgo-consumer-service ftgo-courier-service ftgo-restaurant-service; do
+            IMAGE=$(kubectl get deployment ${svc} -n ftgo-dev -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "N/A")
+            STATUS=$(kubectl rollout status deployment/${svc} -n ftgo-dev --timeout=10s 2>&1 | tail -1)
+            echo "| ${svc} | ${IMAGE} | ${STATUS} |" >> $GITHUB_STEP_SUMMARY
+          done
