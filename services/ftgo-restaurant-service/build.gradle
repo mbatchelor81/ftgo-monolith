@@ -21,4 +21,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     testImplementation project(":shared:ftgo-test-util")
+    testImplementation project(":shared:ftgo-test-lib")
 }
