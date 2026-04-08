@@ -301,11 +301,15 @@ SELECT 'courier_actions',
        (SELECT COUNT(*) FROM ftgo_courier_service.courier_actions)
 UNION ALL
 SELECT 'orders',
-       (SELECT COUNT(*) FROM ftgo.orders),
+       (SELECT COUNT(*) FROM ftgo.orders WHERE consumer_id IS NOT NULL AND restaurant_id IS NOT NULL),
        (SELECT COUNT(*) FROM ftgo_order_service.orders)
 UNION ALL
 SELECT 'order_line_items',
-       (SELECT COUNT(*) FROM ftgo.order_line_items),
+       (SELECT COUNT(*) FROM ftgo.order_line_items oli
+        JOIN ftgo.orders o ON oli.order_id = o.id
+        WHERE oli.menu_item_id IS NOT NULL
+          AND o.consumer_id IS NOT NULL
+          AND o.restaurant_id IS NOT NULL),
        (SELECT COUNT(*) FROM ftgo_order_service.order_line_items)
 UNION ALL
 SELECT 'restaurants',
@@ -313,7 +317,7 @@ SELECT 'restaurants',
        (SELECT COUNT(*) FROM ftgo_restaurant_service.restaurants)
 UNION ALL
 SELECT 'restaurant_menu_items',
-       (SELECT COUNT(*) FROM ftgo.restaurant_menu_items),
+       (SELECT COUNT(*) FROM ftgo.restaurant_menu_items WHERE id IS NOT NULL),
        (SELECT COUNT(*) FROM ftgo_restaurant_service.restaurant_menu_items);
 ```
 
