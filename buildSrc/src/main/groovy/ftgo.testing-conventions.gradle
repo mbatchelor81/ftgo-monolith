@@ -1,0 +1,93 @@
+// =============================================================================
+// ftgo.testing-conventions — JUnit 5, Rest-Assured, and test configuration
+// =============================================================================
+// Configures JUnit 5 as the test platform, adds common test dependencies,
+// and sets up an integration test source set.
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.testing-conventions'
+//   }
+// =============================================================================
+
+plugins {
+    id 'ftgo.java-conventions'
+}
+
+// ---------------------------------------------------------------------------
+// Integration-test source set
+// ---------------------------------------------------------------------------
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += sourceSets.main.output + sourceSets.test.output
+            runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// ---------------------------------------------------------------------------
+// Dependencies
+// ---------------------------------------------------------------------------
+dependencies {
+    // JUnit 5
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    // Spring Boot test starter (includes Mockito, AssertJ, etc.)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Rest-Assured
+    testImplementation "io.rest-assured:rest-assured:${libs.versions.rest.assured.get()}"
+    testImplementation "io.rest-assured:spring-mock-mvc:${libs.versions.rest.assured.get()}"
+    testImplementation "io.rest-assured:json-path:${libs.versions.rest.assured.get()}"
+}
+
+// ---------------------------------------------------------------------------
+// Test tasks
+// ---------------------------------------------------------------------------
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+
+    // Fail fast in CI
+    failFast = System.getenv('CI') != null
+
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+
+    shouldRunAfter tasks.named('test')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('integrationTest')
+}

@@ -1,0 +1,51 @@
+// =============================================================================
+// ftgo.publishing-conventions — Maven publishing configuration
+// =============================================================================
+// Configures consistent Maven artifact publishing for shared libraries
+// and service API modules.
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.publishing-conventions'
+//   }
+//
+// Publish: ./gradlew publish
+// =============================================================================
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'maven-publish'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = "FTGO Microservices — ${project.name}"
+                url = 'https://github.com/mbatchelor81/ftgo-monolith'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'local'
+            url = layout.buildDirectory.dir('repo')
+        }
+    }
+}

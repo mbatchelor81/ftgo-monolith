@@ -1,5 +1,10 @@
 // ftgo-courier-service-api — API contracts and DTOs for Courier Service
 
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
 dependencies {
-    compile project(":shared:ftgo-common")
+    implementation project(":shared:ftgo-common")
 }

@@ -4,23 +4,17 @@
 apply plugin: FtgoMicroservicePlugin
 
 dependencies {
-    compile project(":services:ftgo-order-service-api")
-    compile project(":shared:ftgo-domain")
-    compile project(":shared:ftgo-common")
-    compile project(":shared:common-swagger")
+    implementation project(":services:ftgo-order-service-api")
+    implementation project(":services:ftgo-consumer-service-api")
+    implementation project(":services:ftgo-restaurant-service-api")
+    implementation project(":shared:ftgo-domain")
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:common-swagger")
 
-    compile project(":services:ftgo-consumer-service-api")
-    compile project(":services:ftgo-restaurant-service-api")
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation libs.micrometer.prometheus
 
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
-    compile 'javax.el:javax.el-api:2.2.5'
-
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testCompile 'io.rest-assured:rest-assured:3.0.6'
-    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
-    testCompile "io.rest-assured:json-path:3.0.6"
-    testCompile project(":shared:ftgo-test-util")
+    testImplementation project(":shared:ftgo-test-util")
 }

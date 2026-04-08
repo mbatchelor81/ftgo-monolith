@@ -6,29 +6,29 @@
 //   3. Replace all occurrences of "template_" with your service package name
 //   4. Update dependencies below to match your service's needs
 //   5. Register both modules in settings.gradle
+//
+// Convention plugins applied via FtgoMicroservicePlugin:
+//   - ftgo.spring-boot-conventions  (Java 17, Spring Boot 3.x)
+//   - ftgo.testing-conventions      (JUnit 5, Rest-Assured, integration tests)
+//   - ftgo.docker-conventions       (Jib container image builds)
 
 apply plugin: FtgoMicroservicePlugin
 
 dependencies {
     // API module for this service
-    // compile project(":services:ftgo-<service-name>-api")
+    // implementation project(":services:ftgo-<service-name>-api")
 
     // Shared libraries
-    compile project(":shared:ftgo-domain")
-    compile project(":shared:ftgo-common")
-    compile project(":shared:common-swagger")
+    implementation project(":shared:ftgo-domain")
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:common-swagger")
 
-    // Spring Boot starters
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
-    compile 'javax.el:javax.el-api:2.2.5'
+    // Spring Boot starters (versions managed by Spring Boot BOM)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation libs.micrometer.prometheus
 
-    // Test dependencies
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testCompile 'io.rest-assured:rest-assured:3.0.6'
-    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
-    testCompile "io.rest-assured:json-path:3.0.6"
-    testCompile project(":shared:ftgo-test-util")
+    // Test utilities
+    testImplementation project(":shared:ftgo-test-util")
 }

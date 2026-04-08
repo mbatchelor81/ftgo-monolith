@@ -1,0 +1,34 @@
+// =============================================================================
+// ftgo.spring-boot-conventions — Spring Boot plugin & dependency management
+// =============================================================================
+// Applies Spring Boot and dependency management plugins with standard
+// configuration for FTGO microservices.
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.spring-boot-conventions'
+//   }
+// =============================================================================
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+// By default, disable bootJar so library/API modules don't fail
+// with "Main class name has not been configured". Services with a
+// @SpringBootApplication class should re-enable bootJar:
+//
+//   bootJar { enabled = true }
+//   jar { enabled = false }
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // Common Spring Boot dependencies for all microservices
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Annotation processor for configuration metadata
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+}
