@@ -49,7 +49,11 @@ public class CorsConfig {
             Arrays.toString(allowedOrigins), Arrays.toString(allowedMethods));
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        if (Arrays.asList(allowedOrigins).contains("*")) {
+            configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
+        } else {
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        }
         configuration.setAllowedMethods(Arrays.asList(allowedMethods));
         configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
         configuration.setAllowCredentials(allowCredentials);
