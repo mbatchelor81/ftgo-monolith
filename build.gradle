@@ -11,33 +11,46 @@ buildscript {
 }
 
 plugins {
-    id "com.github.ben-manes.versions" version "0.20.0"
+    id "com.github.ben-manes.versions" version "0.51.0"
 }
 
 
-subprojects {
+// =============================================================================
+// Legacy monolith modules — Java 1.8 / Spring Boot 2.x configuration
+// (unchanged during migration; will be removed once services are extracted)
+// =============================================================================
 
-    apply plugin: "java"
+// Define which projects are legacy (root-level) vs new (services/ and shared/)
+def legacyModules = subprojects.findAll { sp ->
+    !sp.path.startsWith(':services:') && !sp.path.startsWith(':shared:')
+}
+def newModules = subprojects.findAll { sp ->
+    sp.path.startsWith(':services:') || sp.path.startsWith(':shared:')
+}
+
+// Legacy modules keep the original Java 1.8 + Spring Boot 2.x settings
+configure(legacyModules) {
+    apply plugin: 'java-library'
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 
-    group = "net.chrisrichardson.ftgo"
+    group = 'net.chrisrichardson.ftgo'
 
     repositories {
         mavenCentral()
-        jcenter()
-
-        // Commenting out problematic repositories that require authentication or are no longer available
-        // eventuateMavenRepoUrl.split(',').each { repoUrl -> maven { url repoUrl } }
-
-        // maven {
-        //     url 'https://repo.spring.io/libs-milestone'
-        // }
 
         maven {
             url "${project.rootDir}/build/repo"
         }
-
     }
+}
 
+// New microservice modules get their group set; convention plugins
+// are applied per-module via their own build.gradle files.
+configure(newModules) {
+    group = 'com.ftgo'
+
+    repositories {
+        mavenCentral()
+    }
 }

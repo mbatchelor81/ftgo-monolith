@@ -1,0 +1,50 @@
+// =============================================================================
+// ftgo-domain — Shared JPA entities and repository interfaces
+// Version: 1.0.0
+// Package: net.chrisrichardson.ftgo.domain
+//
+// Contains all JPA entities (Order, Consumer, Courier, Restaurant),
+// repository interfaces, and the DomainConfiguration class.
+// During migration, this shared library provides backward compatibility
+// while services are being extracted.
+// Migrated from monolith module: ftgo-domain
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = ftgoDomainLibVersion
+group = 'net.chrisrichardson.ftgo'
+
+apply plugin: 'java-library'
+
+dependencies {
+    api project(":shared:ftgo-common")
+    api project(":shared:ftgo-common-jpa")
+
+    implementation libs.commons.lang3
+}
+
+// Customize the mavenJava publication created by ftgo.publishing-conventions
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-domain'
+
+            pom {
+                name = 'FTGO Domain Library'
+                description = 'Shared JPA entities and repository interfaces for FTGO microservices'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = "${rootProject.buildDir}/repo"
+        }
+    }
+}

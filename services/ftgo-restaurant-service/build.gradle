@@ -1,0 +1,28 @@
+// ftgo-restaurant-service — Microservice build configuration
+// Migrated from monolith module: ftgo-restaurant-service
+
+apply plugin: FtgoMicroservicePlugin
+
+// NOTE: bootJar is disabled by default in FtgoMicroservicePlugin.
+// Re-enable it once this service has a @SpringBootApplication main class:
+//   bootJar { enabled = true }
+//   jar { enabled = false }
+
+dependencies {
+    implementation project(":services:ftgo-restaurant-service-api")
+    implementation project(":shared:ftgo-domain")
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:common-swagger")
+    implementation project(":shared:ftgo-resilience-lib")
+    implementation project(":shared:ftgo-tracing-lib")
+    implementation project(":shared:ftgo-error-handling-lib")
+    implementation project(":shared:ftgo-security-lib")
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    testImplementation project(":shared:ftgo-test-util")
+    testImplementation project(":shared:ftgo-test-lib")
+    testImplementation libs.spring.security.test
+}

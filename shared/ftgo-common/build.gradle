@@ -1,0 +1,66 @@
+// =============================================================================
+// ftgo-common-lib — Standalone shared library (extracted from monolith ftgo-common)
+// Version: 1.0.0
+// Package: net.chrisrichardson.ftgo.common
+//
+// Contains cross-cutting value objects (Money, Address, PersonName),
+// Jackson serialization support (MoneyModule), Spring configuration,
+// and common exception types.
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = ftgoCommonLibVersion
+group = 'net.chrisrichardson.ftgo'
+
+// This is a library — disable Spring Boot's fat-jar packaging
+// so consumers get a plain JAR they can depend on.
+if (plugins.hasPlugin('org.springframework.boot')) {
+    bootJar { enabled = false }
+    jar { enabled = true }
+}
+
+jar {
+    enabled = true
+    manifest {
+        attributes(
+            'Implementation-Title': 'ftgo-common-lib',
+            'Implementation-Version': version
+        )
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+    implementation libs.commons.lang3
+
+    runtimeOnly libs.mysql.connector
+}
+
+// ---------------------------------------------------------------------------
+// Publishing customisation
+// The ftgo.publishing-conventions plugin provides the base mavenJava
+// publication and local repository.  We only override POM metadata here.
+// ---------------------------------------------------------------------------
+// Customize the mavenJava publication created by ftgo.publishing-conventions
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-lib'
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, Jackson serialization, and utilities for FTGO microservices'
+            }
+        }
+    }
+}

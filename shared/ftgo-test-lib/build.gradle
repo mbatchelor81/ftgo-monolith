@@ -1,0 +1,33 @@
+// ftgo-test-lib — Shared test utilities, builders, assertions, and configurations
+// Provides reusable test infrastructure for all FTGO microservices.
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+dependencies {
+    // Project dependencies
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:ftgo-domain")
+
+    // Spring Boot test starter (includes JUnit 5, Mockito, AssertJ)
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    // Testcontainers
+    implementation libs.testcontainers
+    implementation libs.testcontainers.junit.jupiter
+    implementation libs.testcontainers.mysql
+
+    // Rest-Assured
+    implementation libs.rest.assured
+    implementation libs.rest.assured.spring.mock.mvc
+
+    // AssertJ (for custom assertions)
+    implementation libs.assertj.core
+
+    // Awaitility (for async test support)
+    implementation libs.awaitility
+}

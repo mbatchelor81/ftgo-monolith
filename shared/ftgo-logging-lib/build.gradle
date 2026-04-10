@@ -1,0 +1,49 @@
+// =============================================================================
+// ftgo-logging-lib — Shared structured logging library
+// =============================================================================
+// Provides MDC filter, correlation ID propagation, and Logback configuration
+// for all FTGO microservices.
+//
+// Usage in a service build.gradle:
+//   implementation project(":shared:ftgo-logging-lib")
+// =============================================================================
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+// This is a library — disable Spring Boot's fat-jar packaging
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // Structured JSON logging
+    implementation "net.logstash.logback:logstash-logback-encoder:${libs.versions.logstash.logback.get()}"
+
+    // SLF4J API
+    implementation "org.slf4j:slf4j-api:${libs.versions.slf4j.get()}"
+
+    // Logback classic (for MaskingConverter base class)
+    implementation 'ch.qos.logback:logback-classic'
+
+    // Spring Web for servlet filter (compileOnly — provided by the consuming service)
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring AOP for LoggingAspect
+    compileOnly 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Spring Boot auto-configuration support
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+
+    // Annotation processor for configuration properties metadata
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.assertj.core
+}

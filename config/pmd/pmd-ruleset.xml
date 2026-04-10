@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<ruleset name="FTGO PMD Ruleset"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+                             https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        FTGO Microservices PMD ruleset.
+        Focuses on common bug patterns and code quality issues relevant to
+        Spring Boot microservices.
+    </description>
+
+    <!-- ===== Best Practices ===== -->
+    <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod"/>
+    <rule ref="category/java/bestpractices.xml/UnusedFormalParameter"/>
+    <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters"/>
+    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitchStmt"/>
+    <rule ref="category/java/bestpractices.xml/PreserveStackTrace"/>
+    <rule ref="category/java/bestpractices.xml/MissingOverride"/>
+
+    <!-- ===== Code Style ===== -->
+    <rule ref="category/java/codestyle.xml/UnnecessaryImport"/>
+    <rule ref="category/java/codestyle.xml/ExtendsObject"/>
+    <rule ref="category/java/codestyle.xml/ForLoopShouldBeWhileLoop"/>
+    <rule ref="category/java/codestyle.xml/UnnecessaryReturn"/>
+    <rule ref="category/java/codestyle.xml/UseDiamondOperator"/>
+
+    <!-- ===== Design ===== -->
+    <rule ref="category/java/design.xml/CollapsibleIfStatements"/>
+    <rule ref="category/java/design.xml/SimplifiedTernary"/>
+    <rule ref="category/java/design.xml/UselessOverridingMethod"/>
+    <rule ref="category/java/design.xml/CouplingBetweenObjects">
+        <properties>
+            <!-- Spring services may have many injected dependencies -->
+            <property name="threshold" value="25"/>
+        </properties>
+    </rule>
+
+    <!-- ===== Error Prone ===== -->
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <properties>
+            <property name="allowCommentedBlocks" value="true"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+        <properties>
+            <!-- Relaxed for Spring Boot annotation-heavy code; tighten over time -->
+            <property name="maxDuplicateLiterals" value="8"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloseResource"/>
+    <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock"/>
+    <rule ref="category/java/errorprone.xml/UnconditionalIfStatement"/>
+    <rule ref="category/java/errorprone.xml/BrokenNullCheck"/>
+
+    <!-- ===== Performance ===== -->
+    <rule ref="category/java/performance.xml/StringInstantiation"/>
+    <rule ref="category/java/performance.xml/StringToString"/>
+    <rule ref="category/java/performance.xml/UseStringBufferForStringAppends"/>
+
+</ruleset>

@@ -1,0 +1,14 @@
+// common-swagger — Shared OpenAPI/Swagger configuration
+// Migrated from monolith module: common-swagger
+// Upgraded from Springfox to Springdoc-OpenAPI for Spring Boot 3.x compatibility
+
+plugins {
+    id 'java-library'
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    api libs.springdoc.openapi.starter.webmvc.ui
+}

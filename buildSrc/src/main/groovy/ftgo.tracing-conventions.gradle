@@ -1,0 +1,34 @@
+// =============================================================================
+// ftgo.tracing-conventions — Micrometer Tracing with Brave and Zipkin
+// =============================================================================
+// Adds distributed tracing dependencies to microservices using Micrometer
+// Tracing with the Brave bridge and Zipkin reporter. Replaces the deprecated
+// Spring Cloud Sleuth stack.
+//
+// Usage:
+//   plugins {
+//       id 'ftgo.tracing-conventions'
+//   }
+//
+// Requires:
+//   - ftgo.observability-conventions (Actuator + Prometheus)
+//
+// Configured via application.yml:
+//   management.tracing.sampling.probability  — sampling rate (1.0 dev, 0.1 prod)
+//   management.zipkin.tracing.endpoint       — Zipkin collector URL
+//   management.tracing.propagation.type      — W3C (default) or B3
+// =============================================================================
+
+plugins {
+    id 'ftgo.observability-conventions'
+}
+
+dependencies {
+    // Micrometer Tracing with Brave bridge
+    implementation "io.micrometer:micrometer-tracing:${libs.versions.tracing.get()}"
+    implementation "io.micrometer:micrometer-tracing-bridge-brave:${libs.versions.tracing.get()}"
+
+    // Zipkin reporter for trace export
+    implementation "io.zipkin.reporter2:zipkin-reporter-brave:${libs.versions.zipkin.reporter.get()}"
+    implementation "io.zipkin.reporter2:zipkin-sender-urlconnection:${libs.versions.zipkin.reporter.get()}"
+}

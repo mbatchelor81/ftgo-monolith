@@ -1,0 +1,11 @@
+// ftgo-order-service-api — API contracts and DTOs for Order Service
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+dependencies {
+    implementation project(":shared:ftgo-common")
+    implementation libs.jakarta.validation.api
+}

@@ -1,10 +1,24 @@
-test.enabled=false
+plugins {
+    id 'groovy-gradle-plugin'
+}
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
-    compile 'mysql:mysql-connector-java:5.1.39'
-    compile 'commons-lang:commons-lang:2.6'
+    // Spring Boot Gradle plugin (needed by convention plugins)
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.2.5'
+    implementation 'io.spring.gradle:dependency-management-plugin:1.1.4'
+
+    // Jib plugin for Docker image builds
+    implementation 'com.google.cloud.tools:jib-gradle-plugin:3.4.1'
+
+    // SpotBugs plugin for static analysis
+    implementation 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.9'
+
+    // Legacy plugins — MySQL connector for WaitForMySql task
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
 }

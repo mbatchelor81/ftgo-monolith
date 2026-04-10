@@ -1,0 +1,12 @@
+// ftgo-test-util — Shared test utilities and helpers
+// Migrated from monolith module: ftgo-test-util
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+dependencies {
+    implementation project(":shared:ftgo-common")
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+}

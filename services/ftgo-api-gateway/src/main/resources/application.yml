@@ -1,0 +1,175 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ftgo-api-gateway
+
+  # -------------------------------------------------------------------------
+  # Spring Cloud Gateway — Route definitions
+  # -------------------------------------------------------------------------
+  cloud:
+    gateway:
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,GATEWAY_TIMEOUT
+            methods: GET
+            backoff:
+              firstBackoff: 100ms
+              maxBackoff: 500ms
+              factor: 2
+              basedOnPreviousValue: false
+
+      routes:
+        # --- Order Service ---
+        - id: order-service
+          uri: ${FTGO_ORDER_SERVICE_URL:http://ftgo-order-service:8080}
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: orderServiceCircuitBreaker
+                fallbackUri: forward:/fallback/orders
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # --- Consumer Service ---
+        - id: consumer-service
+          uri: ${FTGO_CONSUMER_SERVICE_URL:http://ftgo-consumer-service:8080}
+          predicates:
+            - Path=/api/consumers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: consumerServiceCircuitBreaker
+                fallbackUri: forward:/fallback/consumers
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # --- Restaurant Service ---
+        - id: restaurant-service
+          uri: ${FTGO_RESTAURANT_SERVICE_URL:http://ftgo-restaurant-service:8080}
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: restaurantServiceCircuitBreaker
+                fallbackUri: forward:/fallback/restaurants
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # --- Courier Service ---
+        - id: courier-service
+          uri: ${FTGO_COURIER_SERVICE_URL:http://ftgo-courier-service:8080}
+          predicates:
+            - Path=/api/couriers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: courierServiceCircuitBreaker
+                fallbackUri: forward:/fallback/couriers
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+  # -------------------------------------------------------------------------
+  # Redis (used by RequestRateLimiter)
+  # -------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 2000
+
+# ---------------------------------------------------------------------------
+# Resilience4j circuit breaker instance overrides (per-route names above)
+# ---------------------------------------------------------------------------
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      orderServiceCircuitBreaker:
+        base-config: default
+      consumerServiceCircuitBreaker:
+        base-config: default
+      restaurantServiceCircuitBreaker:
+        base-config: default
+      courierServiceCircuitBreaker:
+        base-config: default
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 4s
+    instances:
+      orderServiceCircuitBreaker:
+        base-config: default
+      consumerServiceCircuitBreaker:
+        base-config: default
+      restaurantServiceCircuitBreaker:
+        base-config: default
+      courierServiceCircuitBreaker:
+        base-config: default
+
+# ---------------------------------------------------------------------------
+# Actuator — health checks and metrics
+# ---------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    gateway:
+      enabled: true
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+    propagation:
+      type: w3c,b3
+    enabled: true
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    root: INFO
+    com.ftgo.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
+    io.github.resilience4j: INFO

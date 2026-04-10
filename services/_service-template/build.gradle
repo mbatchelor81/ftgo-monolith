@@ -1,0 +1,32 @@
+// ftgo-<service-name> — Microservice build configuration
+//
+// To use this template:
+//   1. Copy _service-template/ to services/ftgo-<service-name>/
+//   2. Copy _service-template-api/ to services/ftgo-<service-name>-api/
+//   3. Replace all occurrences of "template_" with your service package name
+//   4. Update dependencies below to match your service's needs
+//   5. Register both modules in settings.gradle
+//
+// Convention plugins applied via FtgoMicroservicePlugin:
+//   - ftgo.spring-boot-conventions      (Java 17, Spring Boot 3.x)
+//   - ftgo.testing-conventions          (JUnit 5, Rest-Assured, integration tests)
+//   - ftgo.docker-conventions           (Jib container image builds)
+//   - ftgo.observability-conventions    (Actuator + Micrometer Prometheus)
+
+apply plugin: FtgoMicroservicePlugin
+
+dependencies {
+    // API module for this service
+    // implementation project(":services:ftgo-<service-name>-api")
+
+    // Shared libraries
+    implementation project(":shared:ftgo-domain")
+    implementation project(":shared:ftgo-common")
+    implementation project(":shared:common-swagger")
+
+    // Spring Boot starters (versions managed by Spring Boot BOM)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Test utilities
+    testImplementation project(":shared:ftgo-test-util")
+}

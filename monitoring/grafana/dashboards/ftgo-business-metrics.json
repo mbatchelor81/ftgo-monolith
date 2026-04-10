@@ -1,0 +1,450 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Order Service Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Order Lifecycle Rates",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_orders_created_total[5m])",
+          "legendFormat": "Created"
+        },
+        {
+          "expr": "rate(ftgo_orders_accepted_total[5m])",
+          "legendFormat": "Accepted"
+        },
+        {
+          "expr": "rate(ftgo_orders_delivered_total[5m])",
+          "legendFormat": "Delivered"
+        },
+        {
+          "expr": "rate(ftgo_orders_cancelled_total[5m])",
+          "legendFormat": "Cancelled"
+        },
+        {
+          "expr": "rate(ftgo_orders_revised_total[5m])",
+          "legendFormat": "Revised"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10 },
+              { "color": "yellow", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto" },
+      "title": "Active Orders",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "ftgo_orders_active",
+          "legendFormat": "Active Orders"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 1 },
+      "id": 3,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Order Processing Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_orders_processing_duration_seconds_sum[5m]) / rate(ftgo_orders_processing_duration_seconds_count[5m])",
+          "legendFormat": "Average"
+        },
+        {
+          "expr": "ftgo_orders_processing_duration_seconds{quantile=\"0.95\"}",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "ftgo_orders_processing_duration_seconds{quantile=\"0.99\"}",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 9 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto" },
+      "title": "Order Cancellation Rate (15m)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "rate(ftgo_orders_cancelled_total[15m]) / (rate(ftgo_orders_created_total[15m]) > 0)",
+          "legendFormat": "Cancellation Rate"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
+      "id": 101,
+      "title": "Consumer Service Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+      "id": 5,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Consumer Registration & Validation Rates",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_consumers_registered_total[5m])",
+          "legendFormat": "Registered"
+        },
+        {
+          "expr": "rate(ftgo_consumers_validated_total[5m])",
+          "legendFormat": "Validated"
+        },
+        {
+          "expr": "rate(ftgo_consumers_validation_failed_total[5m])",
+          "legendFormat": "Validation Failed"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto" },
+      "title": "Total Consumers",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "ftgo_consumers_total",
+          "legendFormat": "Total Consumers"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
+      "id": 7,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Consumer Validation Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_consumers_validation_duration_seconds_sum[5m]) / rate(ftgo_consumers_validation_duration_seconds_count[5m])",
+          "legendFormat": "Average"
+        },
+        {
+          "expr": "ftgo_consumers_validation_duration_seconds{quantile=\"0.95\"}",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 102,
+      "title": "Restaurant Service Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 23 },
+      "id": 8,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Restaurant Operations Rates",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_restaurants_created_total[5m])",
+          "legendFormat": "Created"
+        },
+        {
+          "expr": "rate(ftgo_restaurants_menu_revised_total[5m])",
+          "legendFormat": "Menu Revised"
+        },
+        {
+          "expr": "rate(ftgo_restaurants_tickets_accepted_total[5m])",
+          "legendFormat": "Tickets Accepted"
+        },
+        {
+          "expr": "rate(ftgo_restaurants_tickets_preparing_total[5m])",
+          "legendFormat": "Tickets Preparing"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 23 },
+      "id": 9,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto" },
+      "title": "Total Restaurants",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "ftgo_restaurants_total",
+          "legendFormat": "Total Restaurants"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 23 },
+      "id": 10,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Ticket Processing Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_restaurants_ticket_processing_duration_seconds_sum[5m]) / rate(ftgo_restaurants_ticket_processing_duration_seconds_count[5m])",
+          "legendFormat": "Average"
+        },
+        {
+          "expr": "ftgo_restaurants_ticket_processing_duration_seconds{quantile=\"0.95\"}",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 103,
+      "title": "Courier Service Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 32 },
+      "id": 11,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Courier Operations Rates",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_couriers_created_total[5m])",
+          "legendFormat": "Created"
+        },
+        {
+          "expr": "rate(ftgo_couriers_availability_changed_total[5m])",
+          "legendFormat": "Availability Changed"
+        },
+        {
+          "expr": "rate(ftgo_couriers_deliveries_assigned_total[5m])",
+          "legendFormat": "Deliveries Assigned"
+        },
+        {
+          "expr": "rate(ftgo_couriers_deliveries_completed_total[5m])",
+          "legendFormat": "Deliveries Completed"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 5 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 32 },
+      "id": 12,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "textMode": "auto" },
+      "title": "Available Couriers",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "ftgo_couriers_available",
+          "legendFormat": "Available Couriers"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "fillOpacity": 20, "lineWidth": 2, "showPoints": "never", "spanNulls": true },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 32 },
+      "id": 13,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "title": "Delivery Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(ftgo_couriers_delivery_duration_seconds_sum[5m]) / rate(ftgo_couriers_delivery_duration_seconds_count[5m])",
+          "legendFormat": "Average"
+        },
+        {
+          "expr": "ftgo_couriers_delivery_duration_seconds{quantile=\"0.95\"}",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "ftgo_couriers_delivery_duration_seconds{quantile=\"0.99\"}",
+          "legendFormat": "p99"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["ftgo", "business-metrics"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "FTGO — Business Metrics",
+  "uid": "ftgo-business-metrics",
+  "version": 1
+}

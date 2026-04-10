@@ -1,0 +1,22 @@
+# Test configuration for security unit tests
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  security:
+    user:
+      name: testuser
+      password: '{noop}testpass'
+      roles: SERVICE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+
+ftgo:
+  security:
+    cors:
+      allowed-origins: "*"
+    logging:
+      enabled: false

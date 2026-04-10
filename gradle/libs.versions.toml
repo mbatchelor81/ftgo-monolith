@@ -1,0 +1,226 @@
+# =============================================================================
+# FTGO Microservices — Gradle Version Catalog
+# =============================================================================
+# Centralized dependency management for all microservice modules.
+# Legacy monolith modules continue to use gradle.properties versions.
+#
+# Usage in build.gradle:
+#   implementation libs.spring.boot.starter.web
+#   testImplementation libs.junit.jupiter
+#
+# See docs/gradle-shared-config.md for full documentation.
+# =============================================================================
+
+[versions]
+# --- Platform ---
+java                = "17"
+
+# --- Spring Boot & Spring ---
+spring-boot         = "3.2.5"
+spring-dependency-management = "1.1.4"
+
+# --- Database ---
+flyway              = "10.10.0"
+mysql-connector     = "8.3.0"
+h2                  = "2.2.224"
+
+# --- Security ---
+spring-security     = "6.2.4"
+jjwt                = "0.12.5"
+
+# --- Observability ---
+micrometer          = "1.12.4"
+tracing             = "1.2.4"
+zipkin-reporter     = "2.17.2"
+logstash-logback    = "7.4"
+
+# --- Resilience ---
+resilience4j        = "2.2.0"
+
+# --- Serialization ---
+jackson             = "2.17.0"
+
+# --- Testing ---
+junit-jupiter       = "5.10.2"
+rest-assured        = "5.4.0"
+mockito             = "5.11.0"
+assertj             = "3.25.3"
+testcontainers      = "1.19.7"
+spring-cloud-contract = "4.1.1"
+awaitility          = "4.2.1"
+
+# --- Validation ---
+jakarta-validation  = "3.0.2"
+
+# --- Utilities ---
+commons-lang3       = "3.14.0"
+lombok              = "1.18.32"
+slf4j               = "2.0.12"
+
+# --- Static Analysis ---
+checkstyleVersion   = "10.15.0"
+spotbugsVersion     = "4.8.4"
+spotbugsPluginVersion = "6.0.9"
+pmdVersion          = "7.1.0"
+
+# --- Build Plugins ---
+jib                 = "3.4.1"
+versions-plugin     = "0.51.0"
+
+# --- API Documentation ---
+springdoc           = "2.4.0"
+
+[libraries]
+# Spring Boot starters
+spring-boot-starter-web        = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-data-jpa   = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-actuator   = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-test       = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-security   = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-devtools           = { module = "org.springframework.boot:spring-boot-devtools" }
+
+# Security
+spring-security-test           = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security" }
+spring-security-config         = { module = "org.springframework.security:spring-security-config", version.ref = "spring-security" }
+spring-security-web            = { module = "org.springframework.security:spring-security-web", version.ref = "spring-security" }
+spring-security-oauth2-resource-server = { module = "org.springframework.security:spring-security-oauth2-resource-server", version.ref = "spring-security" }
+spring-security-oauth2-jose    = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security" }
+jjwt-api                       = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl                      = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson                   = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+# Database
+flyway-core          = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-mysql         = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+mysql-connector      = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector" }
+h2                   = { module = "com.h2database:h2", version.ref = "h2" }
+
+# Observability
+micrometer-prometheus          = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-tracing-bom         = { module = "io.micrometer:micrometer-tracing-bom", version.ref = "tracing" }
+micrometer-tracing             = { module = "io.micrometer:micrometer-tracing", version.ref = "tracing" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "tracing" }
+zipkin-reporter-brave          = { module = "io.zipkin.reporter2:zipkin-reporter-brave", version.ref = "zipkin-reporter" }
+zipkin-sender-urlconnection    = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkin-reporter" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
+
+# Resilience
+resilience4j-spring-boot3     = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-circuitbreaker   = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
+resilience4j-retry            = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
+resilience4j-bulkhead         = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
+resilience4j-ratelimiter      = { module = "io.github.resilience4j:resilience4j-ratelimiter", version.ref = "resilience4j" }
+resilience4j-micrometer       = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
+resilience4j-all              = { module = "io.github.resilience4j:resilience4j-all", version.ref = "resilience4j" }
+
+# Serialization
+jackson-core         = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind     = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-annotations  = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+# Testing
+junit-jupiter        = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+junit-jupiter-api    = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+rest-assured         = { module = "io.rest-assured:rest-assured", version.ref = "rest-assured" }
+rest-assured-spring-mock-mvc = { module = "io.rest-assured:spring-mock-mvc", version.ref = "rest-assured" }
+rest-assured-json-path = { module = "io.rest-assured:json-path", version.ref = "rest-assured" }
+mockito-core         = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+assertj-core         = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+testcontainers-bom   = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers        = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql  = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+spring-cloud-contract-verifier = { module = "org.springframework.cloud:spring-cloud-contract-verifier", version.ref = "spring-cloud-contract" }
+spring-cloud-contract-stub-runner = { module = "org.springframework.cloud:spring-cloud-contract-stub-runner", version.ref = "spring-cloud-contract" }
+awaitility            = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
+
+# Validation
+jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
+
+# Utilities
+commons-lang3        = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+lombok               = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+slf4j-api            = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+
+# API Documentation
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+[bundles]
+# Logging bundle
+logging = [
+    "logstash-logback-encoder",
+]
+
+# Common test dependencies for microservices
+testing = [
+    "spring-boot-starter-test",
+    "junit-jupiter",
+    "mockito-core",
+    "mockito-junit-jupiter",
+    "assertj-core",
+]
+
+# Rest-Assured testing bundle
+rest-assured = [
+    "rest-assured",
+    "rest-assured-spring-mock-mvc",
+    "rest-assured-json-path",
+]
+
+# Testcontainers bundle
+testcontainers = [
+    "testcontainers",
+    "testcontainers-junit-jupiter",
+    "testcontainers-mysql",
+]
+
+# Contract testing bundle
+contract-testing = [
+    "spring-cloud-contract-verifier",
+    "spring-cloud-contract-stub-runner",
+]
+
+# Jackson serialization bundle
+jackson = [
+    "jackson-core",
+    "jackson-databind",
+    "jackson-annotations",
+    "jackson-datatype-jsr310",
+]
+
+# Database bundle (runtime dependencies)
+database = [
+    "flyway-core",
+    "flyway-mysql",
+    "mysql-connector",
+]
+
+# Distributed tracing bundle
+tracing = [
+    "micrometer-tracing",
+    "micrometer-tracing-bridge-brave",
+    "zipkin-reporter-brave",
+    "zipkin-sender-urlconnection",
+]
+
+# Resilience4j bundle
+resilience4j = [
+    "resilience4j-spring-boot3",
+    "resilience4j-circuitbreaker",
+    "resilience4j-retry",
+    "resilience4j-bulkhead",
+    "resilience4j-ratelimiter",
+    "resilience4j-micrometer",
+]
+
+[plugins]
+spring-boot          = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+jib                  = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+flyway               = { id = "org.flywaydb.flyway", version.ref = "flyway" }
+versions             = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+spotbugs             = { id = "com.github.spotbugs", version.ref = "spotbugsPluginVersion" }

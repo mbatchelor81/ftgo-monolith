@@ -1,0 +1,105 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-staging
+
+resources:
+  - namespace.yaml
+  - ../../base/mysql
+  - ../../base/zipkin
+  - ../../base/ftgo-order-service
+  - ../../base/ftgo-consumer-service
+  - ../../base/ftgo-courier-service
+  - ../../base/ftgo-restaurant-service
+
+commonLabels:
+  environment: staging
+
+commonAnnotations:
+  app.kubernetes.io/environment: staging
+
+images:
+  - name: ftgo/ftgo-order-service
+    newTag: staging-latest
+  - name: ftgo/ftgo-consumer-service
+    newTag: staging-latest
+  - name: ftgo/ftgo-courier-service
+    newTag: staging-latest
+  - name: ftgo/ftgo-restaurant-service
+    newTag: staging-latest
+  - name: mysql
+    newName: mysql
+    newTag: "8.0"
+
+patches:
+  # Staging environment: 2 replicas for services
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  # Staging environment: moderate resource limits
+  - target:
+      kind: Deployment
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "250m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+  # Staging HPA settings
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 4
+  # Staging MySQL storage
+  - target:
+      kind: StatefulSet
+      name: ftgo-mysql
+    patch: |
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: "10Gi"
+
+# Staging secrets - in production use external-secrets operator.
+# These are placeholders that must be replaced during deployment.
+secretGenerator:
+  - name: ftgo-mysql-secret
+    behavior: replace
+    literals:
+      - MYSQL_ROOT_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+      - MYSQL_USER=ftgo_staging
+      - MYSQL_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-order-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_staging
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-consumer-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_staging
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-courier-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_staging
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS
+  - name: ftgo-restaurant-service-secret
+    behavior: replace
+    literals:
+      - SPRING_DATASOURCE_USERNAME=ftgo_staging
+      - SPRING_DATASOURCE_PASSWORD=REPLACE_VIA_EXTERNAL_SECRETS

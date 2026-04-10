@@ -1,0 +1,14 @@
+# This file is superseded by the Kustomize-based manifests in k8s/base/ and k8s/overlays/.
+#
+# The canonical Kubernetes manifests for this service are located at:
+#   k8s/base/ftgo-CHANGEME-service/   (base manifests)
+#   k8s/overlays/dev/                 (dev environment overlay)
+#   k8s/overlays/staging/             (staging environment overlay)
+#   k8s/overlays/prod/                (production environment overlay)
+#
+# To deploy this service:
+#   kustomize build k8s/overlays/dev | kubectl apply -f -
+#
+# This stub is retained for backward compatibility with EM-30.
+# See docs/deployment.md for full deployment instructions.
+---

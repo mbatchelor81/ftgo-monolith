@@ -1,0 +1,31 @@
+# =============================================================================
+# Elastalert2 Configuration — FTGO Log-Based Alerting
+# =============================================================================
+# Monitors Elasticsearch for error rate spikes and triggers alerts.
+#
+# Install: pip install elastalert2
+# Run:     elastalert --config deployment/elastalert/config.yaml
+# =============================================================================
+
+# Elasticsearch connection
+es_host: elasticsearch
+es_port: 9200
+
+# Rules directory
+rules_folder: rules
+
+# How often to query Elasticsearch
+run_every:
+  minutes: 1
+
+# Query window size
+buffer_time:
+  minutes: 15
+
+# Elastalert index for metadata
+writeback_index: elastalert_status
+writeback_alias: elastalert_alerts
+
+# Alert text formatting
+alert_time_limit:
+  days: 2
