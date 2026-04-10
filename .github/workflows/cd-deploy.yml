@@ -45,8 +45,6 @@ jobs:
           - ftgo-consumer-service
           - ftgo-courier-service
           - ftgo-restaurant-service
-    outputs:
-      image_tag: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,7 +142,7 @@ jobs:
       - name: Set image tags
         run: |
           cd k8s/overlays/dev
-          IMAGE_TAG="${{ needs.build.outputs.image_tag }}"
+          IMAGE_TAG="${{ inputs.image_tag || '' }}"
           if [ -z "$IMAGE_TAG" ]; then IMAGE_TAG="${GITHUB_SHA::7}"; fi
           kustomize edit set image \
             ftgo/ftgo-order-service=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ftgo-order-service:${IMAGE_TAG} \

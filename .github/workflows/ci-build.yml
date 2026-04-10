@@ -23,7 +23,7 @@ on:
       - master
       - 'feat/microservices-migration*'
     paths:
-      # Microservices
+      # Microservices (legacy root-level)
       - 'ftgo-order-service/**'
       - 'ftgo-order-service-api/**'
       - 'ftgo-consumer-service/**'
@@ -33,7 +33,10 @@ on:
       - 'ftgo-courier-service/**'
       - 'ftgo-courier-service-api/**'
       - 'ftgo-application/**'
-      # Shared libraries
+      # New microservice directories
+      - 'services/**'
+      - 'shared/**'
+      # Shared libraries (legacy root-level)
       - 'ftgo-common/**'
       - 'ftgo-common-jpa/**'
       - 'ftgo-domain/**'
@@ -54,7 +57,7 @@ on:
       - master
       - 'feat/microservices-migration*'
     paths:
-      # Microservices
+      # Microservices (legacy root-level)
       - 'ftgo-order-service/**'
       - 'ftgo-order-service-api/**'
       - 'ftgo-consumer-service/**'
@@ -64,7 +67,10 @@ on:
       - 'ftgo-courier-service/**'
       - 'ftgo-courier-service-api/**'
       - 'ftgo-application/**'
-      # Shared libraries
+      # New microservice directories
+      - 'services/**'
+      - 'shared/**'
+      # Shared libraries (legacy root-level)
       - 'ftgo-common/**'
       - 'ftgo-common-jpa/**'
       - 'ftgo-domain/**'
@@ -127,7 +133,7 @@ jobs:
           # Check if shared libraries or build infrastructure changed
           # -------------------------------------------------------------------
           SHARED_CHANGED=false
-          if echo "$CHANGED_FILES" | grep -qE "^(ftgo-common/|ftgo-common-jpa/|ftgo-domain/|ftgo-test-util/|ftgo-flyway/|common-swagger/|buildSrc/|build\.gradle|settings\.gradle|gradle\.properties|gradle/|\.github/workflows/)"; then
+          if echo "$CHANGED_FILES" | grep -qE "^(ftgo-common/|ftgo-common-jpa/|ftgo-domain/|ftgo-test-util/|ftgo-flyway/|common-swagger/|shared/|buildSrc/|build\.gradle|settings\.gradle|gradle\.properties|gradle/|\.github/workflows/)"; then
             SHARED_CHANGED=true
           fi
           echo "shared_changed=$SHARED_CHANGED" >> "$GITHUB_OUTPUT"
@@ -151,7 +157,7 @@ jobs:
           FIRST=true
           for SVC in ftgo-order-service ftgo-consumer-service ftgo-restaurant-service ftgo-courier-service ftgo-application; do
             # Check both the service dir and its API module (e.g. ftgo-order-service-api)
-            if echo "$CHANGED_FILES" | grep -qE "^${SVC}(-api)?/"; then
+            if echo "$CHANGED_FILES" | grep -qE "(^${SVC}(-api)?/|^services/${SVC}(-api)?/)"; then
               if [ "$FIRST" = true ]; then
                 FIRST=false
               else

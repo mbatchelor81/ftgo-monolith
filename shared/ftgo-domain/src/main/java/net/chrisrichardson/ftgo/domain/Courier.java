@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Table(name = "couriers")
 @Access(AccessType.FIELD)
 @DynamicUpdate
 public class Courier {
