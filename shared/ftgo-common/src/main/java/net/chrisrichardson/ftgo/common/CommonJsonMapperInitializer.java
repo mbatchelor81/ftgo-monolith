@@ -3,14 +3,15 @@ package net.chrisrichardson.ftgo.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.annotation.PostConstruct;
 
 public class CommonJsonMapperInitializer {
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
+
+  public CommonJsonMapperInitializer(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   @PostConstruct
   public void initialize() {
