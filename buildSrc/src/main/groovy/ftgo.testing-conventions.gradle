@@ -105,9 +105,9 @@ tasks.named('test') {
     description = 'Runs unit tests (no external dependencies).'
     group = 'verification'
 
-    // Enforce a 2-minute timeout per unit test class in CI
+    // Enforce a timeout for the entire unit test task in CI
     if (System.getenv('CI') != null) {
-        timeout = java.time.Duration.ofMinutes(2)
+        timeout = java.time.Duration.ofMinutes(10)
     }
 }
 

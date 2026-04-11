@@ -352,8 +352,15 @@ jobs:
 
       - name: Generate JaCoCo coverage report
         if: always()
-        continue-on-error: true
-        run: ./gradlew :${{ matrix.service }}:jacocoTestReport --no-daemon
+        run: |
+          OUTPUT=$(./gradlew :${{ matrix.service }}:jacocoTestReport --no-daemon 2>&1) && echo "$OUTPUT" || {
+            if echo "$OUTPUT" | grep -q "not found in project"; then
+              echo "::notice::jacocoTestReport task not found for ${{ matrix.service }} — skipping"
+            else
+              echo "$OUTPUT"
+              exit 1
+            fi
+          }
 
       - name: Upload unit test results (JUnit XML)
         if: always()
@@ -397,7 +404,7 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ vars.CI_MYSQL_ROOT_PASS || 'root' }}
+          MYSQL_ROOT_PASSWORD: ${{ vars.CI_MYSQL_ROOT_PASS || 'rootpassword' }}
           MYSQL_DATABASE: ${{ vars.CI_MYSQL_DB || 'ftgo' }}
           MYSQL_USER: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
           MYSQL_PASSWORD: ${{ vars.CI_MYSQL_PASS || 'cipass' }}
@@ -441,15 +448,21 @@ jobs:
       - name: Run Flyway database migrations
         run: ./gradlew :ftgo-flyway:flywayMigrate --no-daemon
         env:
+          DOCKER_HOST_IP: 127.0.0.1
           SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
           SPRING_DATASOURCE_USERNAME: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
           SPRING_DATASOURCE_PASSWORD: ${{ vars.CI_MYSQL_PASS || 'cipass' }}
-          FLYWAY_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
-          FLYWAY_USER: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
-          FLYWAY_PASSWORD: ${{ vars.CI_MYSQL_PASS || 'cipass' }}
 
       - name: Run integration tests
-        run: ./gradlew :${{ matrix.service }}:integrationTest --no-daemon
+        run: |
+          OUTPUT=$(./gradlew :${{ matrix.service }}:integrationTest --no-daemon 2>&1) && echo "$OUTPUT" || {
+            if echo "$OUTPUT" | grep -q "not found in project"; then
+              echo "::notice::integrationTest task not found for ${{ matrix.service }} — skipping"
+            else
+              echo "$OUTPUT"
+              exit 1
+            fi
+          }
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/${{ vars.CI_MYSQL_DB || 'ftgo' }}
           SPRING_DATASOURCE_USERNAME: ${{ vars.CI_MYSQL_USER || 'ciuser' }}
@@ -538,6 +551,12 @@ jobs:
             echo "Waiting... ($i/30)"
             sleep 2
           done
+          # Fail fast if MySQL never became ready
+          if ! docker compose exec -T mysql mysqladmin ping -h 127.0.0.1 --silent 2>/dev/null; then
+            echo "ERROR: MySQL did not become ready in time"
+            docker compose logs mysql
+            exit 1
+          fi
 
       - name: Run Flyway migrations
         run: ./gradlew :ftgo-flyway:flywayMigrate --no-daemon
@@ -558,6 +577,12 @@ jobs:
             echo "Waiting for app... ($i/20)"
             sleep 3
           done
+          # Fail fast if the app never became healthy
+          if ! curl -sf http://127.0.0.1:8081/actuator/health 2>/dev/null; then
+            echo "ERROR: Application did not become healthy in time"
+            docker compose logs
+            exit 1
+          fi
 
       - name: Run E2E tests
         run: ./gradlew :ftgo-end-to-end-tests:cleanTest :ftgo-end-to-end-tests:test --no-daemon
@@ -734,7 +759,8 @@ jobs:
             if [ -d "$dir" ]; then
               SERVICE=$(basename "$dir" | sed 's/unit-test-results-//')
               TIME=$(find "$dir" -name "*.xml" -exec grep -h 'testsuite' {} \; 2>/dev/null | head -1 | grep -oP 'time="[^"]*"' | head -1 | tr -d 'time="' || echo "N/A")
-              echo "| Unit | $SERVICE | ${TIME}s |" >> "$GITHUB_STEP_SUMMARY"
+              if [ "$TIME" = "N/A" ]; then DISPLAY="N/A"; else DISPLAY="${TIME}s"; fi
+              echo "| Unit | $SERVICE | $DISPLAY |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
 
@@ -742,7 +768,8 @@ jobs:
             if [ -d "$dir" ]; then
               SERVICE=$(basename "$dir" | sed 's/integration-test-results-//')
               TIME=$(find "$dir" -name "*.xml" -exec grep -h 'testsuite' {} \; 2>/dev/null | head -1 | grep -oP 'time="[^"]*"' | head -1 | tr -d 'time="' || echo "N/A")
-              echo "| Integration | $SERVICE | ${TIME}s |" >> "$GITHUB_STEP_SUMMARY"
+              if [ "$TIME" = "N/A" ]; then DISPLAY="N/A"; else DISPLAY="${TIME}s"; fi
+              echo "| Integration | $SERVICE | $DISPLAY |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
 
