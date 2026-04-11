@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,6 +48,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         void createCourier_adminRole_returns201() throws Exception {
             mockMvc.perform(post("/api/v1/couriers")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isCreated());
@@ -57,6 +59,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "CUSTOMER")
         void createCourier_customerRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/couriers")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -67,6 +70,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "COURIER")
         void createCourier_courierRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/couriers")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -77,6 +81,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "RESTAURANT_OWNER")
         void createCourier_restaurantOwnerRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/couriers")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -86,6 +91,7 @@ class CourierControllerAuthorizationTest {
         @DisplayName("Unauthenticated request returns 401")
         void createCourier_unauthenticated_returns401() throws Exception {
             mockMvc.perform(post("/api/v1/couriers")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -149,6 +155,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "COURIER")
         void updateAvailability_courierRole_returns200() throws Exception {
             mockMvc.perform(post("/api/v1/couriers/1/availability")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk());
@@ -159,6 +166,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "ADMIN")
         void updateAvailability_adminRole_returns200() throws Exception {
             mockMvc.perform(post("/api/v1/couriers/1/availability")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isOk());
@@ -169,6 +177,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "CUSTOMER")
         void updateAvailability_customerRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/couriers/1/availability")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -179,6 +188,7 @@ class CourierControllerAuthorizationTest {
         @WithMockUser(roles = "RESTAURANT_OWNER")
         void updateAvailability_restaurantOwnerRole_returns403() throws Exception {
             mockMvc.perform(post("/api/v1/couriers/1/availability")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isForbidden());
@@ -188,6 +198,7 @@ class CourierControllerAuthorizationTest {
         @DisplayName("Unauthenticated request returns 401")
         void updateAvailability_unauthenticated_returns401() throws Exception {
             mockMvc.perform(post("/api/v1/couriers/1/availability")
+                    .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
                 .andExpect(status().isUnauthorized());
