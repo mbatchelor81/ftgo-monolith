@@ -9,20 +9,23 @@
 // =============================================================================
 
 plugins {
-    id 'ftgo.spring-boot-conventions'
-    id 'ftgo.testing-conventions'
+    id 'ftgo.java-conventions'
     id 'ftgo.publishing-conventions'
+}
+
+// This module contains legacy source code that uses javax.persistence and
+// Jackson 2.9.x APIs (e.g. mappingException). Apply Spring dependency
+// management with the Spring Boot 2.x BOM so transitive versions match
+// what the source code was written against.
+apply plugin: 'io.spring.dependency-management'
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:2.7.18'
+    }
 }
 
 version = ftgoCommonLibVersion
 group = 'net.chrisrichardson.ftgo'
-
-// This is a library — disable Spring Boot's fat-jar packaging
-// so consumers get a plain JAR they can depend on.
-if (plugins.hasPlugin('org.springframework.boot')) {
-    bootJar { enabled = false }
-    jar { enabled = true }
-}
 
 jar {
     enabled = true
@@ -35,14 +38,22 @@ jar {
 }
 
 dependencies {
+    // Spring Boot 2.7.x BOM manages spring-boot-starter and Jackson versions
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    implementation libs.jackson.core
-    implementation libs.jackson.databind
-    implementation libs.jackson.datatype.jsr310
-    implementation libs.commons.lang3
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    runtimeOnly libs.mysql.connector
+    // Legacy source code uses org.apache.commons.lang (v2), not lang3
+    implementation 'commons-lang:commons-lang:2.6'
+
+    runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
+
+    // Test dependencies managed by Spring Boot 2.7.x BOM
+    // Legacy tests use JUnit 4 (org.junit.Test)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'junit:junit'
 }
 
 // ---------------------------------------------------------------------------
