@@ -99,7 +99,11 @@ public class LoggingAspect {
     }
 
     private boolean isLogEnabled(Logger logger) {
-        return switch (properties.getLogLevel().toUpperCase()) {
+        String level = properties.getLogLevel();
+        if (level == null) {
+            return logger.isDebugEnabled();
+        }
+        return switch (level.toUpperCase()) {
             case "TRACE" -> logger.isTraceEnabled();
             case "INFO" -> logger.isInfoEnabled();
             case "WARN" -> logger.isWarnEnabled();
@@ -108,7 +112,12 @@ public class LoggingAspect {
     }
 
     private void log(Logger logger, String format, Object... args) {
-        switch (properties.getLogLevel().toUpperCase()) {
+        String level = properties.getLogLevel();
+        if (level == null) {
+            logger.debug(format, args);
+            return;
+        }
+        switch (level.toUpperCase()) {
             case "TRACE" -> logger.trace(format, args);
             case "INFO" -> logger.info(format, args);
             case "WARN" -> logger.warn(format, args);
