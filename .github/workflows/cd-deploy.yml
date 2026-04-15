@@ -70,7 +70,7 @@ jobs:
           # Use kubectl dry-run for basic schema validation
           echo "Validating rendered manifests..."
           if command -v kubectl &> /dev/null; then
-            kubectl apply --dry-run=client -f /tmp/rendered.yaml 2>&1 || true
+            kubectl apply --dry-run=client -f /tmp/rendered.yaml 2>&1
           else
             echo "kubectl not available; skipping dry-run validation"
           fi
@@ -107,8 +107,9 @@ jobs:
           INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_IMAGE_TAG" ]; then
-            echo "tag=$INPUT_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          TAG="$INPUT_IMAGE_TAG"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$TAG" ] && [ "$TAG" != "latest" ]; then
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           else
             SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
             echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
