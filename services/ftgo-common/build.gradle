@@ -1,51 +1,25 @@
-apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+plugins {
+    id 'ftgo.library-conventions'
+}
 
 group = 'com.ftgo'
 version = '1.0.0'
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // JPA API for @Embeddable annotations on value objects
-    compileOnly 'javax.persistence:javax.persistence-api:2.2'
+    compileOnly 'jakarta.persistence:jakarta.persistence-api'
+
+    // Jakarta Annotation API for @PostConstruct
+    implementation 'jakarta.annotation:jakarta.annotation-api'
 
     // Jackson for Money serialization/deserialization
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
+    api libs.jackson.databind
+    api libs.jackson.datatype.jsr310
 
     // Apache Commons Lang for equals/hashCode/toString builders
-    compile 'commons-lang:commons-lang:2.6'
+    implementation 'commons-lang:commons-lang:2.6'
 
     // Spring context for @Configuration, @Bean, @PostConstruct
-    compile "org.springframework:spring-context:5.0.7.RELEASE"
-    compile "org.springframework:spring-beans:5.0.7.RELEASE"
-
-    // Test dependencies
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testCompile 'javax.persistence:javax.persistence-api:2.2'
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = 'FTGO Common Library'
-                description = 'Cross-cutting value objects and utilities for FTGO microservices'
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = 'local'
-            url = "${buildDir}/repo"
-        }
-    }
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-beans'
 }
