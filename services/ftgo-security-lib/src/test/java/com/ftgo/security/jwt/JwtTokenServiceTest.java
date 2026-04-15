@@ -83,8 +83,8 @@ class JwtTokenServiceTest {
         assertThat(jwt.getClaimAsString("type")).isEqualTo("refresh");
         assertThat(jwt.getClaimAsString("iss")).isEqualTo("ftgo-platform");
         // Refresh tokens should not contain roles or permissions
-        assertThat(jwt.getClaim("roles")).isNull();
-        assertThat(jwt.getClaim("permissions")).isNull();
+        assertThat((Object) jwt.getClaim("roles")).isNull();
+        assertThat((Object) jwt.getClaim("permissions")).isNull();
     }
 
     @Test
