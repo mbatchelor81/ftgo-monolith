@@ -22,9 +22,12 @@ spring:
     user:
       name: ${SECURITY_USER_NAME:admin}
       password: ${SECURITY_USER_PASSWORD:}
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 server:
   port: 8080
+  shutdown: graceful
 
 management:
   endpoints:
@@ -36,6 +39,11 @@ management:
       probes:
         enabled: true
       show-details: always
+      group:
+        readiness:
+          include: readinessState,db,diskSpace,orderServiceHealth
+        liveness:
+          include: livenessState,serviceLivenessHealthIndicator
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
@@ -60,6 +68,30 @@ ftgo:
     title: FTGO Restaurant Service API
     description: Manages restaurant registration, menus, and order acceptance
     version: v1
+  discovery:
+    namespace: ${K8S_NAMESPACE:ftgo}
+    cluster-domain: ${K8S_CLUSTER_DOMAIN:svc.cluster.local}
+    default-port: 8080
+    services:
+      ftgo-order-service: ${ORDER_SERVICE_URL:http://localhost:8081}
+  resilience:
+    circuit-breaker:
+      failure-rate-threshold: 50
+      sliding-window-size: 10
+      minimum-number-of-calls: 5
+      wait-duration-in-open-state-seconds: 30
+      permitted-number-of-calls-in-half-open-state: 3
+    retry:
+      max-attempts: 3
+      initial-interval-millis: 1000
+      multiplier: 2.0
+    bulkhead:
+      max-concurrent-calls: 25
+      max-wait-duration-millis: 500
+    rate-limiter:
+      limit-for-period: 50
+      limit-refresh-period-seconds: 1
+      timeout-duration-millis: 500
 
 springdoc:
   api-docs:
