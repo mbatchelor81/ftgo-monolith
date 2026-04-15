@@ -27,12 +27,21 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------------
-// JaCoCo coverage override — extracted monolith code has limited test coverage
-// (40% line, 58% branch vs convention-plugin 70% minimum).
-// Disable verification until additional tests are added in follow-up tickets.
+// JaCoCo coverage override — extracted monolith code has pre-existing low
+// coverage (40% line, 58% branch). Lower thresholds to prevent regression
+// while avoiding false failures against the convention-plugin 70% minimum.
+// TODO(EM-XX): raise thresholds to 70% once additional tests are added.
 // ---------------------------------------------------------------------------
 afterEvaluate {
     tasks.named('jacocoTestCoverageVerification').configure {
-        enabled = false
+        violationRules.rules.each { rule ->
+            rule.limits.each { limit ->
+                if (limit.counter == 'LINE') {
+                    limit.minimum = 0.40
+                } else if (limit.counter == 'BRANCH') {
+                    limit.minimum = 0.58
+                }
+            }
+        }
     }
 }
