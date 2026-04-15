@@ -16,6 +16,7 @@ rootProject.name = 'ftgo-services'
 include 'ftgo-common'
 include 'ftgo-common-jpa'
 include 'ftgo-domain'
+include 'ftgo-security-lib'
 
 // Service API/DTO contracts
 include 'ftgo-order-service-api'
