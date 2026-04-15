@@ -20,6 +20,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * Auto-configuration for Resilience4j patterns across all FTGO services.
@@ -54,7 +56,11 @@ public class ResilienceAutoConfiguration {
                 .slowCallRateThreshold(cb.getSlowCallRateThreshold())
                 .slowCallDurationThreshold(
                         Duration.ofSeconds(cb.getSlowCallDurationThresholdSeconds()))
-                .recordExceptions(IOException.class, TimeoutException.class, RuntimeException.class)
+                .recordExceptions(
+                        IOException.class,
+                        TimeoutException.class,
+                        ResourceAccessException.class,
+                        HttpServerErrorException.class)
                 .build();
     }
 
@@ -72,7 +78,11 @@ public class ResilienceAutoConfiguration {
                 .intervalFunction(
                         io.github.resilience4j.core.IntervalFunction.ofExponentialBackoff(
                                 retry.getInitialIntervalMillis(), retry.getMultiplier()))
-                .retryExceptions(IOException.class, TimeoutException.class, RuntimeException.class)
+                .retryExceptions(
+                        IOException.class,
+                        TimeoutException.class,
+                        ResourceAccessException.class,
+                        HttpServerErrorException.class)
                 .build();
     }
 
