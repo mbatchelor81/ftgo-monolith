@@ -34,6 +34,18 @@ services:
   # -------------------------------------------------------------------------
   # Infrastructure
   # -------------------------------------------------------------------------
+  zipkin:
+    image: openzipkin/zipkin:3
+    ports:
+      - "9411:9411"
+    networks:
+      - ftgo-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9411/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:16-alpine
     ports:
@@ -67,8 +79,12 @@ services:
     environment:
       <<: *common-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_consumer_service
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      TRACING_SAMPLING_PROBABILITY: "1.0"
     depends_on:
       postgres:
+        condition: service_healthy
+      zipkin:
         condition: service_healthy
 
   order-service:
@@ -82,8 +98,12 @@ services:
     environment:
       <<: *common-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_order_service
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      TRACING_SAMPLING_PROBABILITY: "1.0"
     depends_on:
       postgres:
+        condition: service_healthy
+      zipkin:
         condition: service_healthy
 
   restaurant-service:
@@ -97,8 +117,12 @@ services:
     environment:
       <<: *common-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_restaurant_service
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      TRACING_SAMPLING_PROBABILITY: "1.0"
     depends_on:
       postgres:
+        condition: service_healthy
+      zipkin:
         condition: service_healthy
 
   courier-service:
@@ -112,8 +136,12 @@ services:
     environment:
       <<: *common-env
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_courier_service
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      TRACING_SAMPLING_PROBABILITY: "1.0"
     depends_on:
       postgres:
+        condition: service_healthy
+      zipkin:
         condition: service_healthy
 
 volumes:

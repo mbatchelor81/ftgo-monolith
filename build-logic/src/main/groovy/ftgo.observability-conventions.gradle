@@ -6,7 +6,9 @@
  *   - micrometer-core for metrics API
  *   - micrometer-registry-prometheus for Prometheus exposition
  *   - spring-boot-starter-actuator for /actuator endpoints
- *   - ftgo-observability-lib for shared metric helpers
+ *   - ftgo-observability-lib for shared metric + tracing helpers
+ *   - micrometer-tracing-bridge-brave for distributed tracing
+ *   - zipkin-reporter-brave for exporting traces to Zipkin
  */
 plugins {
     id 'java'
@@ -16,6 +18,11 @@ dependencies {
     implementation libs.micrometer.core
     implementation libs.micrometer.registry.prometheus
     implementation libs.spring.boot.starter.actuator
+
+    // Distributed tracing
+    implementation libs.micrometer.tracing.bridge.brave
+    implementation libs.zipkin.reporter.brave
+    implementation libs.zipkin.sender.urlconnection
 
     implementation project(':ftgo-observability-lib')
 }

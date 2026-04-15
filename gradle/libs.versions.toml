@@ -20,6 +20,7 @@ h2 = "2.2.224"
 micrometer = "1.12.5"
 micrometer-tracing = "1.2.5"
 prometheus-simpleclient = "0.16.0"
+zipkin-reporter = "2.17.2"
 
 # Serialization
 jackson-bom = "2.17.0"
@@ -68,7 +69,11 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-observation = { module = "io.micrometer:micrometer-observation", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometer-tracing" }
 micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel", version.ref = "micrometer-tracing" }
+micrometer-tracing-test = { module = "io.micrometer:micrometer-tracing-test", version.ref = "micrometer-tracing" }
+zipkin-reporter-brave = { module = "io.zipkin.reporter2:zipkin-reporter-brave", version.ref = "zipkin-reporter" }
+zipkin-sender-urlconnection = { module = "io.zipkin.reporter2:zipkin-sender-urlconnection", version.ref = "zipkin-reporter" }
 prometheus-simpleclient = { module = "io.prometheus:simpleclient", version.ref = "prometheus-simpleclient" }
 
 # Serialization
