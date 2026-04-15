@@ -3,6 +3,7 @@ package com.ftgo.errorhandling.config;
 import com.ftgo.errorhandling.handler.GlobalExceptionHandler;
 import io.micrometer.tracing.Tracer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 public class ErrorHandlingAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
     public GlobalExceptionHandler globalExceptionHandler(Tracer tracer) {
         return new GlobalExceptionHandler(tracer);
     }
