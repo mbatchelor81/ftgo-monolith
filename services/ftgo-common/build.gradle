@@ -16,8 +16,8 @@ dependencies {
     compileOnly 'javax.persistence:javax.persistence-api:2.2'
 
     // Jackson for Money serialization/deserialization
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
 
     // Apache Commons Lang for equals/hashCode/toString builders
     implementation 'commons-lang:commons-lang:2.6'
