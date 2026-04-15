@@ -23,10 +23,10 @@ import org.slf4j.MDC;
 public final class LogContext {
 
     /** MDC key for the authenticated user identifier. */
-    public static final String USER_ID_KEY = "userId";
+    public static final String USER_ID_KEY = CorrelationIdFilter.USER_ID_MDC_KEY;
 
     /** MDC key for the unique request identifier. */
-    public static final String REQUEST_ID_KEY = "requestId";
+    public static final String REQUEST_ID_KEY = CorrelationIdFilter.REQUEST_ID_MDC_KEY;
 
     /** MDC key for the correlation identifier (mirrors {@link CorrelationIdFilter}). */
     public static final String CORRELATION_ID_KEY = CorrelationIdFilter.CORRELATION_ID_MDC_KEY;

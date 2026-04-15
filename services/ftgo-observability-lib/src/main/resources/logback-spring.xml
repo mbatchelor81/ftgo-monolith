@@ -52,30 +52,40 @@
     <!-- ================================================================== -->
     <springProfile name="docker | kubernetes">
         <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeCallerData>false</includeCallerData>
-                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
-                <!-- Static fields -->
-                <customFields>{"service":"${APP_NAME}"}</customFields>
-                <!-- Include MDC fields -->
-                <includeMdcKeyName>traceId</includeMdcKeyName>
-                <includeMdcKeyName>spanId</includeMdcKeyName>
-                <includeMdcKeyName>correlationId</includeMdcKeyName>
-                <includeMdcKeyName>requestId</includeMdcKeyName>
-                <includeMdcKeyName>userId</includeMdcKeyName>
-                <includeMdcKeyName>requestMethod</includeMdcKeyName>
-                <includeMdcKeyName>requestUri</includeMdcKeyName>
-                <!-- Shorten logger name for readability -->
-                <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
-                <!-- Replace default message with masked version -->
-                <fieldNames>
-                    <message>[ignore]</message>
-                </fieldNames>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
+                    <!-- Timestamp -->
+                    <timestamp>
+                        <timeZone>UTC</timeZone>
+                        <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</pattern>
+                    </timestamp>
+                    <!-- Standard fields -->
+                    <logLevel/>
+                    <loggerName>
+                        <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+                    </loggerName>
+                    <threadName/>
+                    <!-- Masked message replaces default message provider -->
+                    <provider class="com.ftgo.observability.logging.SensitiveDataMaskingJsonProvider"/>
+                    <!-- Stack trace for exceptions -->
+                    <stackTrace/>
+                    <!-- MDC fields (traceId, spanId, correlationId, requestId, userId, etc.) -->
+                    <mdc>
+                        <includeMdcKeyName>traceId</includeMdcKeyName>
+                        <includeMdcKeyName>spanId</includeMdcKeyName>
+                        <includeMdcKeyName>correlationId</includeMdcKeyName>
+                        <includeMdcKeyName>requestId</includeMdcKeyName>
+                        <includeMdcKeyName>userId</includeMdcKeyName>
+                        <includeMdcKeyName>requestMethod</includeMdcKeyName>
+                        <includeMdcKeyName>requestUri</includeMdcKeyName>
+                    </mdc>
+                    <!-- Static fields -->
+                    <globalCustomFields>
+                        <customFields>{"service":"${APP_NAME}"}</customFields>
+                    </globalCustomFields>
                     <pattern>
                         <omitEmptyFields>true</omitEmptyFields>
                     </pattern>
-                    <provider class="com.ftgo.observability.logging.SensitiveDataMaskingJsonProvider"/>
                 </providers>
             </encoder>
         </appender>
