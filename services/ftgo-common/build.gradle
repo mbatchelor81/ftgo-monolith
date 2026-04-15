@@ -27,6 +27,6 @@ dependencies {
     implementation "org.springframework:spring-beans:5.0.7.RELEASE"
 
     // Test dependencies
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:2.0.3.RELEASE"
     testImplementation 'javax.persistence:javax.persistence-api:2.2'
 }
