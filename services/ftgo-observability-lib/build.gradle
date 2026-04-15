@@ -30,5 +30,6 @@ dependencies {
 
     // Testing
     testImplementation libs.spring.boot.starter.web
+    testImplementation libs.spring.boot.starter.aop
     testImplementation libs.micrometer.tracing.test
 }

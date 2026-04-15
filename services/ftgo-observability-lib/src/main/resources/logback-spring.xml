@@ -5,42 +5,88 @@
     - Human-readable console output for local development
     - Structured JSON output (via logstash-logback-encoder) for Docker/K8s environments
     - Async appender wrapping JSON output for performance
-    - MDC fields: traceId, spanId, correlationId, service, requestMethod, requestUri
+    - File rotation for local development
+    - Sensitive data masking via SensitiveDataMaskingConverter / SensitiveDataMaskingJsonProvider
+    - MDC fields: traceId, spanId, correlationId, requestId, userId, service, requestMethod, requestUri
+    - Per-environment log level configuration
 -->
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="ftgo-service"/>
 
+    <!-- Register the sensitive-data masking converter for pattern-based appenders -->
+    <conversionRule conversionWord="maskedMsg"
+                    converterClass="com.ftgo.observability.logging.SensitiveDataMaskingConverter"/>
+
     <!-- ================================================================== -->
     <!-- Console appender: human-readable format with trace context (local)  -->
+    <!-- Uses %maskedMsg to redact sensitive data in log messages.           -->
     <!-- ================================================================== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] [%X{correlationId:-}] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] [%X{correlationId:-}] [%X{requestId:-}] [%X{userId:-}] %-5level %logger{36} - %maskedMsg%n</pattern>
         </encoder>
     </appender>
 
     <!-- ================================================================== -->
+    <!-- File appender: rolling file for local development                   -->
+    <!-- ================================================================== -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/${APP_NAME}.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] [%X{correlationId:-}] [%X{requestId:-}] [%X{userId:-}] %-5level %logger{36} - %maskedMsg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ================================================================== -->
     <!-- JSON appender: structured logging for EFK stack (Docker/K8s)       -->
-    <!-- Uses logstash-logback-encoder for proper JSON escaping and         -->
-    <!-- nested field support.                                              -->
+    <!-- Uses logstash-logback-encoder with SensitiveDataMaskingJsonProvider -->
+    <!-- for proper JSON escaping, nested field support, and PII masking.    -->
     <!-- ================================================================== -->
     <springProfile name="docker | kubernetes">
         <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeCallerData>false</includeCallerData>
-                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
-                <!-- Static fields -->
-                <customFields>{"service":"${APP_NAME}"}</customFields>
-                <!-- Include MDC fields (traceId, spanId, correlationId, etc.) -->
-                <includeMdcKeyName>traceId</includeMdcKeyName>
-                <includeMdcKeyName>spanId</includeMdcKeyName>
-                <includeMdcKeyName>correlationId</includeMdcKeyName>
-                <includeMdcKeyName>requestMethod</includeMdcKeyName>
-                <includeMdcKeyName>requestUri</includeMdcKeyName>
-                <!-- Shorten logger name for readability -->
-                <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <!-- Timestamp -->
+                    <timestamp>
+                        <timeZone>UTC</timeZone>
+                        <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</pattern>
+                    </timestamp>
+                    <!-- Standard fields -->
+                    <logLevel/>
+                    <loggerName>
+                        <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+                    </loggerName>
+                    <threadName/>
+                    <!-- Masked message replaces default message provider -->
+                    <provider class="com.ftgo.observability.logging.SensitiveDataMaskingJsonProvider"/>
+                    <!-- Stack trace for exceptions -->
+                    <stackTrace/>
+                    <!-- MDC fields (traceId, spanId, correlationId, requestId, userId, etc.) -->
+                    <mdc>
+                        <includeMdcKeyName>traceId</includeMdcKeyName>
+                        <includeMdcKeyName>spanId</includeMdcKeyName>
+                        <includeMdcKeyName>correlationId</includeMdcKeyName>
+                        <includeMdcKeyName>requestId</includeMdcKeyName>
+                        <includeMdcKeyName>userId</includeMdcKeyName>
+                        <includeMdcKeyName>requestMethod</includeMdcKeyName>
+                        <includeMdcKeyName>requestUri</includeMdcKeyName>
+                    </mdc>
+                    <!-- Static fields -->
+                    <globalCustomFields>
+                        <customFields>{"service":"${APP_NAME}"}</customFields>
+                    </globalCustomFields>
+                    <pattern>
+                        <omitEmptyFields>true</omitEmptyFields>
+                    </pattern>
+                </providers>
             </encoder>
         </appender>
 
@@ -52,18 +98,40 @@
             <includeCallerData>false</includeCallerData>
             <appender-ref ref="JSON"/>
         </appender>
-
-        <root level="INFO">
-            <appender-ref ref="ASYNC_JSON"/>
-        </root>
     </springProfile>
 
     <!-- ================================================================== -->
-    <!-- Default console output for local development (no docker/k8s)       -->
+    <!-- Per-environment log level configuration                             -->
     <!-- ================================================================== -->
-    <springProfile name="!docker &amp; !kubernetes">
+
+    <!-- Local development: DEBUG for app code, INFO for frameworks -->
+    <springProfile name="!docker &amp; !kubernetes &amp; !dev &amp; !staging">
+        <logger name="com.ftgo" level="DEBUG"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- Dev / Staging: INFO for app code, WARN for frameworks -->
+    <springProfile name="dev | staging">
+        <logger name="com.ftgo" level="INFO"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Production (Docker / Kubernetes): INFO for app, ERROR for frameworks -->
+    <springProfile name="docker | kubernetes">
+        <logger name="com.ftgo" level="INFO"/>
+        <logger name="org.springframework" level="ERROR"/>
+        <logger name="org.hibernate.SQL" level="ERROR"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
         </root>
     </springProfile>
 </configuration>

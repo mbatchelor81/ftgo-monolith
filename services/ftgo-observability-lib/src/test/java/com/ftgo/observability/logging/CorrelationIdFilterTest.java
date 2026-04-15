@@ -2,6 +2,7 @@ package com.ftgo.observability.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.mock.web.MockFilterChain;
@@ -49,6 +50,8 @@ class CorrelationIdFilterTest {
         filter.doFilterInternal(request, response, chain);
 
         assertThat(MDC.get(CorrelationIdFilter.CORRELATION_ID_MDC_KEY)).isNull();
+        assertThat(MDC.get(CorrelationIdFilter.REQUEST_ID_MDC_KEY)).isNull();
+        assertThat(MDC.get(CorrelationIdFilter.USER_ID_MDC_KEY)).isNull();
     }
 
     @Test
@@ -63,5 +66,65 @@ class CorrelationIdFilterTest {
         String responseHeader = response.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
         assertThat(responseHeader).isNotBlank();
         assertThat(responseHeader.trim()).isNotEqualTo("");
+    }
+
+    @Test
+    void doFilterInternal_withMissingRequestIdHeader_generatesRequestId() throws Exception {
+        var request = new MockHttpServletRequest();
+        var response = new MockHttpServletResponse();
+        var chain = new MockFilterChain();
+
+        filter.doFilterInternal(request, response, chain);
+
+        String requestIdHeader = response.getHeader(CorrelationIdFilter.REQUEST_ID_HEADER);
+        assertThat(requestIdHeader).isNotNull().isNotBlank();
+        assertThat(requestIdHeader)
+                .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+    }
+
+    @Test
+    void doFilterInternal_withExistingRequestIdHeader_usesProvidedRequestId() throws Exception {
+        var request = new MockHttpServletRequest();
+        request.addHeader(CorrelationIdFilter.REQUEST_ID_HEADER, "req-abc-123");
+        var response = new MockHttpServletResponse();
+        var chain = new MockFilterChain();
+
+        filter.doFilterInternal(request, response, chain);
+
+        assertThat(response.getHeader(CorrelationIdFilter.REQUEST_ID_HEADER))
+                .isEqualTo("req-abc-123");
+    }
+
+    @Test
+    void doFilterInternal_withUserIdHeader_populatesMdcWithUserId() throws Exception {
+        var request = new MockHttpServletRequest();
+        request.addHeader(CorrelationIdFilter.USER_ID_HEADER, "user-42");
+        var response = new MockHttpServletResponse();
+
+        final String[] capturedUserId = new String[1];
+        FilterChain chain =
+                (req, res) -> {
+                    capturedUserId[0] = MDC.get(CorrelationIdFilter.USER_ID_MDC_KEY);
+                };
+
+        filter.doFilterInternal(request, response, chain);
+
+        assertThat(capturedUserId[0]).isEqualTo("user-42");
+    }
+
+    @Test
+    void doFilterInternal_withoutUserIdHeader_doesNotSetUserIdMdc() throws Exception {
+        var request = new MockHttpServletRequest();
+        var response = new MockHttpServletResponse();
+
+        final String[] capturedUserId = new String[1];
+        FilterChain chain =
+                (req, res) -> {
+                    capturedUserId[0] = MDC.get(CorrelationIdFilter.USER_ID_MDC_KEY);
+                };
+
+        filter.doFilterInternal(request, response, chain);
+
+        assertThat(capturedUserId[0]).isNull();
     }
 }
