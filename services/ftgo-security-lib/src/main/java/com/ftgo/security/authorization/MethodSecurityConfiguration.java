@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -35,8 +36,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @EnableMethodSecurity
 public class MethodSecurityConfiguration {
 
-    @Autowired(required = false)
-    private RoleHierarchy roleHierarchy;
+    private final RoleHierarchy roleHierarchy;
+
+    public MethodSecurityConfiguration(
+            @Autowired(required = false) @Nullable RoleHierarchy roleHierarchy) {
+        this.roleHierarchy = roleHierarchy;
+    }
 
     @Bean
     @ConditionalOnMissingBean(PermissionEvaluator.class)

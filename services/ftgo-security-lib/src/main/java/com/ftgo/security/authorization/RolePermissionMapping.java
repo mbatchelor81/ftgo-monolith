@@ -31,7 +31,7 @@ import java.util.Set;
  *     <td>-</td>
  *     <td>read:own (assigned)</td>
  *     <td>-</td>
- *     <td>read:own, update:own:availability, delivery:update</td></tr>
+ *     <td>read:own, update:availability:own, delivery:update</td></tr>
  * <tr><td>ADMIN</td>
  *     <td colspan="4">Full access to all resources</td></tr>
  * </table>

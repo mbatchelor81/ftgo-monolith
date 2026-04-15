@@ -85,7 +85,7 @@ public final class FtgoPermission {
     public static final String COURIER_UPDATE_AVAILABILITY = "courier:update:availability";
 
     /** Update only the authenticated courier's own availability. */
-    public static final String COURIER_UPDATE_OWN_AVAILABILITY = "courier:update:own:availability";
+    public static final String COURIER_UPDATE_OWN_AVAILABILITY = "courier:update:availability:own";
 
     /** Update delivery status (picked up, delivered). */
     public static final String COURIER_DELIVERY_UPDATE = "courier:delivery:update";

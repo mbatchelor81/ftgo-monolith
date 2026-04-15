@@ -69,7 +69,7 @@ The `:own` suffix indicates ownership-scoped permissions requiring the user to o
 | `courier:read` | | | | X |
 | `courier:read:own` | X | | X | X |
 | `courier:update:availability` | | | | X |
-| `courier:update:own:availability` | | | X | X |
+| `courier:update:availability:own` | | | X | X |
 | `courier:delivery:update` | | | X | X |
 
 ## Implementation
