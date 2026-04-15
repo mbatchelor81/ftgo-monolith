@@ -1,5 +1,11 @@
 # FTGO — Food To Go
 
+[![CI: Consumer Service](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-consumer-service.yml/badge.svg?branch=feat%2Fmicroservices-migration)](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-consumer-service.yml)
+[![CI: Order Service](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-order-service.yml/badge.svg?branch=feat%2Fmicroservices-migration)](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-order-service.yml)
+[![CI: Restaurant Service](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-restaurant-service.yml/badge.svg?branch=feat%2Fmicroservices-migration)](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-restaurant-service.yml)
+[![CI: Courier Service](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-courier-service.yml/badge.svg?branch=feat%2Fmicroservices-migration)](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-courier-service.yml)
+[![CI: Common Libraries](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-common-libs.yml/badge.svg?branch=feat%2Fmicroservices-migration)](https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/ci-common-libs.yml)
+
 FTGO is a food delivery platform originally implemented as a Spring Boot
 monolith. This repository contains both the legacy monolith and the target
 microservices structure for an incremental migration.
