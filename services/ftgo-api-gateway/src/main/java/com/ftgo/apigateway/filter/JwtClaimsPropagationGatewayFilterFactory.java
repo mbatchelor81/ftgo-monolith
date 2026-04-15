@@ -79,6 +79,15 @@ public class JwtClaimsPropagationGatewayFilterFactory
                                 ServerHttpRequest.Builder requestBuilder =
                                         sanitizedExchange.getRequest().mutate();
 
+                                // Strip all identity headers to prevent client spoofing
+                                requestBuilder.headers(
+                                        h -> {
+                                            h.remove(HEADER_USER_ID);
+                                            h.remove(HEADER_USER_NAME);
+                                            h.remove(HEADER_USER_ROLES);
+                                            h.remove(HEADER_USER_PERMISSIONS);
+                                        });
+
                                 String userId = jwt.getClaimAsString("userId");
                                 if (userId != null) {
                                     requestBuilder.header(HEADER_USER_ID, userId);
