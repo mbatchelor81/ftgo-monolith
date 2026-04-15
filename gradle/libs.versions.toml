@@ -19,6 +19,7 @@ h2 = "2.2.224"
 # Observability
 micrometer = "1.12.5"
 micrometer-tracing = "1.2.5"
+prometheus-simpleclient = "0.16.0"
 
 # Serialization
 jackson-bom = "2.17.0"
@@ -60,8 +61,10 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 # Observability
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-observation = { module = "io.micrometer:micrometer-observation", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel", version.ref = "micrometer-tracing" }
+prometheus-simpleclient = { module = "io.prometheus:simpleclient", version.ref = "prometheus-simpleclient" }
 
 # Serialization
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom" }
