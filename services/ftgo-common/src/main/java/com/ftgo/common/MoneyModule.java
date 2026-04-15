@@ -37,7 +37,8 @@ public class MoneyModule extends SimpleModule {
                     return new Money(str);
                 }
             } else {
-                return (Money) ctxt.handleUnexpectedToken(Money.class, jp);
+                throw ctxt.wrongTokenException(jp, handledType(),
+                        JsonToken.VALUE_STRING, "expected String value");
             }
         }
     }
