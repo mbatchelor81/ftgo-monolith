@@ -28,10 +28,10 @@
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | devin-a4ee3455056d45bdaceea2ab01297d04 | completed | [PR #74](https://github.com/mbatchelor81/ftgo-monolith/pull/74) | squashed (955efad) | None |
 | 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | devin-824ce3b6f08f4e4f921e09642e6b4511 | completed | [PR #73](https://github.com/mbatchelor81/ftgo-monolith/pull/73) | squashed (844ef79) | None |
 | 5 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | devin-30f12c4ee728441cafac8497b6567161 | completed | [PR #71](https://github.com/mbatchelor81/ftgo-monolith/pull/71) | squashed (74718a3) | None |
-| 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | — | — | — | — | — |
-| 6 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | — | — | — | — | — |
-| 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | — | — | — | — | — |
-| 6 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | — | — | — | — | — |
+| 6 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | devin-f6a67c7ed2b843df807561971649355a | completed | [PR #77](https://github.com/mbatchelor81/ftgo-monolith/pull/77) | squashed (2c2622f) | None |
+| 6 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | devin-834933e6cc4443dbb8e89519edcb7baa | completed | [PR #76](https://github.com/mbatchelor81/ftgo-monolith/pull/76) | squashed (4b64c0a) | None (+post-squash Spotless fix 50d1298) |
+| 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | devin-8a66f1b5d1fc47828ca30a7db0b7be29 | completed | [PR #78](https://github.com/mbatchelor81/ftgo-monolith/pull/78) | squashed (7e5e84f) | ftgo-observability-lib/build.gradle, AutoConfiguration.imports |
+| 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | devin-f79bc7f3465c4db19e88316eecd06f94 | completed | [PR #75](https://github.com/mbatchelor81/ftgo-monolith/pull/75) | squashed (6b738bc) | libs.versions.toml (duplicate resilience4j entries — fixes: 8afaa38, 6cdb9a2) |
 | 7 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | — | — | — | — | — |
 
 ---
@@ -53,6 +53,9 @@
 | 3 | EM-45 | services/ftgo-common/build.gradle | Prefer migration branch | Kept Gradle 4.x-compatible syntax |
 | 3 | EM-45 | 4x service build.gradle | Combined both sides | Added both ftgo-security-lib and ftgo-openapi-lib dependencies |
 | 3 | EM-45 | 4x service application.yml | Combined both sides | Merged security CORS config and OpenAPI/springdoc config sections |
+| 6 | EM-44 | services/ftgo-observability-lib/build.gradle | Combined both sides | Added both EM-43 logging deps and EM-44 resilience4j deps |
+| 6 | EM-44 | AutoConfiguration.imports | Combined both sides | Added both EM-43 LoggingAutoConfiguration and EM-44 discovery/health/resilience auto-configs |
+| 6 | EM-38 | gradle/libs.versions.toml | Combined both sides | Auto-merge created duplicate resilience4j entries from EM-44 and EM-38; fixed by deduplicating and merging unique entries |
 
 ## Pre-existing Blocker Fixes (Orchestrator)
 
