@@ -15,8 +15,18 @@ dependencies {
     // Structured JSON logging
     api libs.logstash.logback.encoder
 
+    // Resilience4j
+    api libs.resilience4j.spring.boot3
+    api libs.resilience4j.circuitbreaker
+    api libs.resilience4j.retry
+    api libs.resilience4j.bulkhead
+    api libs.resilience4j.ratelimiter
+    api libs.resilience4j.micrometer
+
     // Spring Boot auto-configuration support
     compileOnly libs.spring.boot.starter.web
+    compileOnly libs.spring.boot.starter.aop
+    compileOnly libs.spring.boot.starter.data.jpa
 
     // Testing
     testImplementation libs.spring.boot.starter.web
