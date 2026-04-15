@@ -1,0 +1,162 @@
+name: "Tests: E2E"
+
+on:
+  push:
+    branches: [main, master, feat/microservices-migration]
+    paths:
+      - "services/**"
+      - "build-logic/**"
+      - "gradle/libs.versions.toml"
+      - ".github/workflows/test-e2e.yml"
+  pull_request:
+    branches: [main, master, feat/microservices-migration]
+    paths:
+      - "services/**"
+      - "build-logic/**"
+      - "gradle/libs.versions.toml"
+      - ".github/workflows/test-e2e.yml"
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  e2e-tests:
+    name: "E2E Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ftgo
+          POSTGRES_PASSWORD: ftgo
+          POSTGRES_DB: ftgo_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ftgo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            services/.gradle
+          key: ${{ runner.os }}-gradle-e2e-${{ hashFiles('services/**/*.gradle', 'build-logic/**/*.gradle', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-e2e-
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x services/gradlew
+
+      - name: Build all services
+        working-directory: services
+        run: ./gradlew assemble --no-daemon
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 -U ftgo && break
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+
+      - name: Start services
+        working-directory: services
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ftgo_e2e
+          SPRING_DATASOURCE_USERNAME: ftgo
+          SPRING_DATASOURCE_PASSWORD: ftgo
+          SPRING_PROFILES_ACTIVE: e2e
+        run: |
+          # Start each service on different ports in the background
+          declare -A SERVICE_PORTS=(
+            ["ftgo-consumer-service"]=8081
+            ["ftgo-order-service"]=8082
+            ["ftgo-restaurant-service"]=8083
+            ["ftgo-courier-service"]=8084
+          )
+
+          for service in "${!SERVICE_PORTS[@]}"; do
+            port=${SERVICE_PORTS[$service]}
+            jar_file="${service}/build/libs/${service}-0.0.1-SNAPSHOT.jar"
+            if [ -f "$jar_file" ]; then
+              echo "Starting $service on port $port..."
+              java -jar "$jar_file" --server.port=$port &
+            else
+              echo "::warning::JAR not found for $service at $jar_file — skipping"
+            fi
+          done
+
+          # Wait for services to be healthy
+          echo "Waiting for services to start..."
+          sleep 15
+
+          for service in "${!SERVICE_PORTS[@]}"; do
+            port=${SERVICE_PORTS[$service]}
+            for i in $(seq 1 30); do
+              if curl -sf http://localhost:$port/actuator/health > /dev/null 2>&1; then
+                echo "$service is healthy on port $port"
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "::warning::$service did not become healthy on port $port"
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Run E2E tests
+        working-directory: services
+        env:
+          CONSUMER_SERVICE_URL: http://localhost:8081
+          ORDER_SERVICE_URL: http://localhost:8082
+          RESTAURANT_SERVICE_URL: http://localhost:8083
+          COURIER_SERVICE_URL: http://localhost:8084
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ftgo_e2e
+          SPRING_DATASOURCE_USERNAME: ftgo
+          SPRING_DATASOURCE_PASSWORD: ftgo
+        run: |
+          start_time=$(date +%s)
+          # Run E2E tests using the Gradle e2e task (if tests exist) or skip gracefully
+          ./gradlew e2eTest --no-daemon
+          end_time=$(date +%s)
+          elapsed=$((end_time - start_time))
+          echo "## E2E Test Execution Time" >> $GITHUB_STEP_SUMMARY
+          echo "**Total**: ${elapsed}s" >> $GITHUB_STEP_SUMMARY
+
+      - name: Collect service logs
+        if: always()
+        run: |
+          mkdir -p /tmp/service-logs
+          # Capture any output from background processes
+          jobs -l > /tmp/service-logs/background-jobs.txt 2>&1 || true
+
+      - name: Upload E2E test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-reports
+          path: |
+            services/*/build/reports/tests/e2eTest/
+            services/*/build/test-results/e2eTest/
+            /tmp/service-logs/
+          retention-days: 14

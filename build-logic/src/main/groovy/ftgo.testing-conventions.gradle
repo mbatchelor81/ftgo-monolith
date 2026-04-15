@@ -1,18 +1,37 @@
 plugins {
     id 'java'
+    id 'jacoco'
 }
 
 dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.junit.jupiter
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.engine
     testImplementation libs.assertj.core
     testImplementation libs.mockito.core
     testImplementation libs.mockito.junit.jupiter
     testRuntimeOnly libs.h2
+
+    // Testcontainers for integration tests
+    testImplementation libs.testcontainers.junit.jupiter
+    testImplementation libs.testcontainers.postgresql
 }
 
+// ---------------------------------------------------------------------------
+// JaCoCo configuration
+// ---------------------------------------------------------------------------
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+// ---------------------------------------------------------------------------
+// Unit tests (src/test/java) — fast, no external dependencies
+// ---------------------------------------------------------------------------
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'integration', 'e2e'
+    }
 
     testLogging {
         events 'passed', 'skipped', 'failed'
@@ -27,9 +46,20 @@ tasks.named('test') {
 
     // Fail the build on any test failure
     ignoreFailures = false
+
+    // Parallel test execution for faster feedback
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    forkEvery = 100
+
+    // JVM arguments for test forked processes
+    jvmArgs '-XX:+UseG1GC', '-Xms256m', '-Xmx512m'
+
+    finalizedBy tasks.named('jacocoTestReport')
 }
 
-// Integration test source set
+// ---------------------------------------------------------------------------
+// Integration test source set (src/integration-test/java)
+// ---------------------------------------------------------------------------
 sourceSets {
     integrationTest {
         java {
@@ -47,15 +77,143 @@ configurations {
 }
 
 tasks.register('integrationTest', Test) {
-    description = 'Runs integration tests.'
+    description = 'Runs integration tests with external dependencies (PostgreSQL, etc.).'
     group = 'verification'
 
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
+
+    ignoreFailures = false
 
     shouldRunAfter tasks.named('test')
+
+    finalizedBy tasks.named('jacocoIntegrationTestReport')
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo reports
+// ---------------------------------------------------------------------------
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+    description = 'Generates code coverage report for integration tests.'
+    group = 'verification'
+
+    executionData tasks.named('integrationTest')
+    sourceSets sourceSets.main
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// Combined coverage report merging unit + integration test execution data
+tasks.register('jacocoCombinedReport', JacocoReport) {
+    description = 'Generates combined code coverage report for unit and integration tests.'
+    group = 'verification'
+
+    executionData tasks.named('test'), tasks.named('integrationTest')
+    sourceSets sourceSets.main
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo coverage verification — enforce 70% minimum
+// ---------------------------------------------------------------------------
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+        rule {
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.60
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// E2E test source set (src/e2e-test/java)
+// ---------------------------------------------------------------------------
+sourceSets {
+    e2eTest {
+        java {
+            compileClasspath += sourceSets.main.output + sourceSets.test.output
+            runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+            srcDir file('src/e2e-test/java')
+        }
+        resources.srcDir file('src/e2e-test/resources')
+    }
+}
+
+configurations {
+    e2eTestImplementation.extendsFrom testImplementation
+    e2eTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+tasks.register('e2eTest', Test) {
+    description = 'Runs end-to-end tests against a running service stack.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.e2eTest.output.classesDirs
+    classpath = sourceSets.e2eTest.runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags 'e2e'
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
+
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
+
+    ignoreFailures = false
+
+    shouldRunAfter tasks.named('integrationTest')
 }
 
 tasks.named('check') {
