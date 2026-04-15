@@ -1,0 +1,7 @@
+[versions]
+ftgo-common = "1.0.0"
+spring-boot = "3.2.5"
+commons-lang3 = "3.14.0"
+
+[libraries]
+ftgo-common = { group = "com.ftgo", name = "ftgo-common", version.ref = "ftgo-common" }

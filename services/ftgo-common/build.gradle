@@ -1,24 +1,51 @@
-plugins {
-    id 'java-library'
-    id 'io.spring.dependency-management'
-}
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 group = 'com.ftgo'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+version = '1.0.0'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api 'com.fasterxml.jackson.core:jackson-databind'
+    // JPA API for @Embeddable annotations on value objects
+    compileOnly 'javax.persistence:javax.persistence-api:2.2'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Jackson for Money serialization/deserialization
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // Apache Commons Lang for equals/hashCode/toString builders
+    compile 'commons-lang:commons-lang:2.6'
+
+    // Spring context for @Configuration, @Bean, @PostConstruct
+    compile "org.springframework:spring-context:5.0.7.RELEASE"
+    compile "org.springframework:spring-beans:5.0.7.RELEASE"
+
+    // Test dependencies
+    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testCompile 'javax.persistence:javax.persistence-api:2.2'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Cross-cutting value objects and utilities for FTGO microservices'
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'local'
+            url = "${buildDir}/repo"
+        }
+    }
 }
