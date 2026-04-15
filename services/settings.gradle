@@ -18,6 +18,7 @@ include 'ftgo-common-jpa'
 include 'ftgo-domain'
 include 'ftgo-security-lib'
 include 'ftgo-observability-lib'
+include 'ftgo-openapi-lib'
 
 // Service API/DTO contracts
 include 'ftgo-order-service-api'

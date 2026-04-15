@@ -24,6 +24,9 @@ prometheus-simpleclient = "0.16.0"
 # Serialization
 jackson-bom = "2.17.0"
 
+# API Documentation
+springdoc-openapi = "2.5.0"
+
 # Commons
 commons-lang3 = "3.14.0"
 
@@ -70,6 +73,9 @@ prometheus-simpleclient = { module = "io.prometheus:simpleclient", version.ref =
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+
+# API Documentation
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc-openapi" }
 
 # Testing
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
