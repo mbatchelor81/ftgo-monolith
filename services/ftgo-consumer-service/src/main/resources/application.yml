@@ -44,9 +44,10 @@ ftgo:
       allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
       allow-credentials: false
       max-age: 3600
-
-
-ftgo:
+    jwt:
+      issuer: ${JWT_ISSUER:ftgo-platform}
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:7d}
   openapi:
     title: FTGO Consumer Service API
     description: Manages consumer registration and validation
