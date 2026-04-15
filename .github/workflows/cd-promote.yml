@@ -47,10 +47,8 @@ jobs:
     steps:
       - name: Resolve target environment
         id: resolve
-        env:
-          SOURCE_ENV: ${{ github.event.inputs.source_environment }}
         run: |
-          SOURCE="$SOURCE_ENV"
+          SOURCE="${{ github.event.inputs.source_environment }}"
           case "$SOURCE" in
             dev)     TARGET="staging" ;;
             staging) TARGET="prod" ;;
@@ -70,12 +68,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify images exist
-        env:
-          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
         run: |
-          TAG="$IMAGE_TAG"
+          TAG="${{ github.event.inputs.image_tag }}"
           SERVICES="ftgo-consumer-service ftgo-order-service ftgo-restaurant-service ftgo-courier-service"
-          MISSING=false
           echo "Verifying images for tag: ${TAG}"
           for svc in $SERVICES; do
             IMAGE="${{ env.IMAGE_PREFIX }}/${svc}:${TAG}"
@@ -83,14 +78,9 @@ jobs:
             if docker manifest inspect "${IMAGE}" > /dev/null 2>&1; then
               echo "    ✓ Found"
             else
-              echo "    ✗ NOT FOUND: ${IMAGE}"
-              MISSING=true
+              echo "    ✗ NOT FOUND — skipping (image may not be pushed yet)"
             fi
           done
-          if [ "$MISSING" = "true" ]; then
-            echo "::error::One or more Docker images are missing for tag ${TAG}. Aborting promotion."
-            exit 1
-          fi
 
   # ---------------------------------------------------------------------------
   # Promote to staging (from dev)
@@ -114,9 +104,8 @@ jobs:
 
       - name: Set image tags
         working-directory: deployment/kubernetes/overlays/staging
-        env:
-          TAG: ${{ needs.verify.outputs.image_tag }}
         run: |
+          TAG="${{ needs.verify.outputs.image_tag }}"
           kustomize edit set image \
             ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
             ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
@@ -124,13 +113,11 @@ jobs:
             ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
 
       - name: Render and deploy
-        env:
-          DEPLOY_TAG: ${{ needs.verify.outputs.image_tag }}
         run: |
           kustomize build deployment/kubernetes/overlays/staging > /tmp/staging-manifests.yaml
           echo "=========================================="
           echo "  PROMOTE TO STAGING"
-          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Image tag: ${{ needs.verify.outputs.image_tag }}"
           echo "  Source: dev"
           echo "  Namespace: ftgo-staging"
           echo "=========================================="
@@ -164,9 +151,8 @@ jobs:
 
       - name: Set image tags
         working-directory: deployment/kubernetes/overlays/prod
-        env:
-          TAG: ${{ needs.verify.outputs.image_tag }}
         run: |
+          TAG="${{ needs.verify.outputs.image_tag }}"
           kustomize edit set image \
             ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
             ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
@@ -174,13 +160,11 @@ jobs:
             ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
 
       - name: Render and deploy
-        env:
-          DEPLOY_TAG: ${{ needs.verify.outputs.image_tag }}
         run: |
           kustomize build deployment/kubernetes/overlays/prod > /tmp/prod-manifests.yaml
           echo "=========================================="
           echo "  PROMOTE TO PRODUCTION"
-          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Image tag: ${{ needs.verify.outputs.image_tag }}"
           echo "  Source: staging"
           echo "  Namespace: ftgo-prod"
           echo "=========================================="

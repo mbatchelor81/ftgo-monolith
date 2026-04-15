@@ -13,7 +13,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: ftgo
+  project: default
   source:
     repoURL: https://github.com/mbatchelor81/ftgo-monolith.git
     targetRevision: feat/microservices-migration

@@ -102,23 +102,18 @@ jobs:
 
       - name: Determine image tag
         id: tag
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_IMAGE_TAG" ]; then
-            echo "tag=$INPUT_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
           else
-            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set image tags in Kustomize
         working-directory: deployment/kubernetes/overlays/dev
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          TAG="${{ steps.tag.outputs.tag }}"
           kustomize edit set image \
             ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
             ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
@@ -132,21 +127,17 @@ jobs:
           head -50 /tmp/dev-manifests.yaml
 
       - name: Deploy to dev cluster
-        env:
-          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
-          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
           echo "=========================================="
           echo "  DEPLOY TO DEV"
-          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Image tag: ${{ steps.tag.outputs.tag }}"
           echo "  Namespace: ftgo-dev"
           echo "=========================================="
           echo ""
           echo "To deploy with ArgoCD, configure an Application CR pointing to:"
-          echo "  repo: $REPO_URL"
+          echo "  repo: ${{ github.server_url }}/${{ github.repository }}"
           echo "  path: deployment/kubernetes/overlays/dev"
-          echo "  targetRevision: $COMMIT_SHA"
+          echo "  targetRevision: ${{ github.sha }}"
           echo ""
           echo "For direct kubectl deployment:"
           echo "  kubectl apply -f /tmp/dev-manifests.yaml"
@@ -185,22 +176,18 @@ jobs:
 
       - name: Determine image tag
         id: tag
-        env:
-          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
-          TAG="$INPUT_IMAGE_TAG"
+          TAG="${{ github.event.inputs.image_tag }}"
           if [ -z "$TAG" ] || [ "$TAG" = "latest" ]; then
-            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             TAG="${SHORT_SHA}"
           fi
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set image tags in Kustomize
         working-directory: deployment/kubernetes/overlays/staging
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          TAG="${{ steps.tag.outputs.tag }}"
           kustomize edit set image \
             ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
             ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
@@ -214,21 +201,17 @@ jobs:
           head -50 /tmp/staging-manifests.yaml
 
       - name: Deploy to staging cluster
-        env:
-          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
-          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
           echo "=========================================="
           echo "  DEPLOY TO STAGING"
-          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Image tag: ${{ steps.tag.outputs.tag }}"
           echo "  Namespace: ftgo-staging"
           echo "=========================================="
           echo ""
           echo "To deploy with ArgoCD, configure an Application CR pointing to:"
-          echo "  repo: $REPO_URL"
+          echo "  repo: ${{ github.server_url }}/${{ github.repository }}"
           echo "  path: deployment/kubernetes/overlays/staging"
-          echo "  targetRevision: $COMMIT_SHA"
+          echo "  targetRevision: ${{ github.sha }}"
           echo ""
           echo "For direct kubectl deployment:"
           echo "  kubectl apply -f /tmp/staging-manifests.yaml"
@@ -265,22 +248,18 @@ jobs:
 
       - name: Determine image tag
         id: tag
-        env:
-          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
-          TAG="$INPUT_IMAGE_TAG"
+          TAG="${{ github.event.inputs.image_tag }}"
           if [ -z "$TAG" ] || [ "$TAG" = "latest" ]; then
-            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             TAG="${SHORT_SHA}"
           fi
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set image tags in Kustomize
         working-directory: deployment/kubernetes/overlays/prod
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          TAG="${{ steps.tag.outputs.tag }}"
           kustomize edit set image \
             ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
             ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
@@ -294,21 +273,17 @@ jobs:
           head -50 /tmp/prod-manifests.yaml
 
       - name: Deploy to prod cluster
-        env:
-          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
-          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
           echo "=========================================="
           echo "  DEPLOY TO PRODUCTION"
-          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Image tag: ${{ steps.tag.outputs.tag }}"
           echo "  Namespace: ftgo-prod"
           echo "=========================================="
           echo ""
           echo "To deploy with ArgoCD, configure an Application CR pointing to:"
-          echo "  repo: $REPO_URL"
+          echo "  repo: ${{ github.server_url }}/${{ github.repository }}"
           echo "  path: deployment/kubernetes/overlays/prod"
-          echo "  targetRevision: $COMMIT_SHA"
+          echo "  targetRevision: ${{ github.sha }}"
           echo ""
           echo "For direct kubectl deployment:"
           echo "  kubectl apply -f /tmp/prod-manifests.yaml"
