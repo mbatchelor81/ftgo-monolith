@@ -1,14 +1,12 @@
 package com.ftgo.common;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Unit tests for {@link Money} value object.
- */
+import org.junit.jupiter.api.Test;
+
+/** Unit tests for {@link Money} value object. */
 class MoneyTest {
 
     private final int m1Amount = 10;

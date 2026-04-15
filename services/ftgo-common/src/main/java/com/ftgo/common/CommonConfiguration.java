@@ -5,9 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Spring configuration that provides shared beans for the ftgo-common module.
- */
+/** Spring configuration that provides shared beans for the ftgo-common module. */
 @Configuration
 @ComponentScan
 public class CommonConfiguration {

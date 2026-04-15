@@ -1,8 +1,6 @@
 package com.ftgo.common;
 
-/**
- * Thrown when an entity receives a state transition that is not valid for its current state.
- */
+/** Thrown when an entity receives a state transition that is not valid for its current state. */
 public class UnsupportedStateTransitionException extends RuntimeException {
 
     /**

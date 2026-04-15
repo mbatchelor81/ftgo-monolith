@@ -4,9 +4,7 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Embeddable;
 
-/**
- * Embeddable value object representing a physical address.
- */
+/** Embeddable value object representing a physical address. */
 @Embeddable
 @Access(AccessType.FIELD)
 public class Address {
@@ -17,23 +15,19 @@ public class Address {
     private String state;
     private String zip;
 
-    /**
-     * Default constructor required by JPA.
-     */
-    public Address() {
-    }
+    /** Default constructor required by JPA. */
+    public Address() {}
 
     /**
      * Creates an Address with all fields.
      *
      * @param street1 primary street line
      * @param street2 secondary street line
-     * @param city    the city
-     * @param state   the state
-     * @param zip     the ZIP code
+     * @param city the city
+     * @param state the state
+     * @param zip the ZIP code
      */
-    public Address(String street1, String street2, String city,
-            String state, String zip) {
+    public Address(String street1, String street2, String city, String state, String zip) {
         this.street1 = street1;
         this.street2 = street2;
         this.city = city;

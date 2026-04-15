@@ -8,17 +8,12 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-
 import java.io.IOException;
 
-/**
- * Jackson module that registers custom serializer and deserializer for {@link Money}.
- */
+/** Jackson module that registers custom serializer and deserializer for {@link Money}. */
 public class MoneyModule extends SimpleModule {
 
-    /**
-     * Deserializes a JSON string value into a {@link Money} instance.
-     */
+    /** Deserializes a JSON string value into a {@link Money} instance. */
     static class MoneyDeserializer extends StdScalarDeserializer<Money> {
 
         protected MoneyDeserializer() {
@@ -26,8 +21,7 @@ public class MoneyModule extends SimpleModule {
         }
 
         @Override
-        public Money deserialize(JsonParser jp, DeserializationContext ctxt)
-                throws IOException {
+        public Money deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             JsonToken token = jp.getCurrentToken();
             if (token == JsonToken.VALUE_STRING) {
                 String str = jp.getText().trim();
@@ -42,9 +36,7 @@ public class MoneyModule extends SimpleModule {
         }
     }
 
-    /**
-     * Serializes a {@link Money} instance as a JSON string.
-     */
+    /** Serializes a {@link Money} instance as a JSON string. */
     static class MoneySerializer extends StdScalarSerializer<Money> {
 
         MoneySerializer() {
@@ -52,8 +44,8 @@ public class MoneyModule extends SimpleModule {
         }
 
         @Override
-        public void serialize(Money value, JsonGenerator jgen,
-                SerializerProvider provider) throws IOException {
+        public void serialize(Money value, JsonGenerator jgen, SerializerProvider provider)
+                throws IOException {
             jgen.writeString(value.asString());
         }
     }
@@ -63,9 +55,7 @@ public class MoneyModule extends SimpleModule {
         return "FtgoCommonModule";
     }
 
-    /**
-     * Creates a new MoneyModule and registers the Money serializer and deserializer.
-     */
+    /** Creates a new MoneyModule and registers the Money serializer and deserializer. */
     public MoneyModule() {
         addDeserializer(Money.class, new MoneyDeserializer());
         addSerializer(Money.class, new MoneySerializer());

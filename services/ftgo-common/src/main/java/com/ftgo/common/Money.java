@@ -1,17 +1,14 @@
 package com.ftgo.common;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-/**
- * Embeddable value object representing a monetary amount backed by {@link BigDecimal}.
- */
+/** Embeddable value object representing a monetary amount backed by {@link BigDecimal}. */
 @Embeddable
 @Access(AccessType.FIELD)
 public class Money {
@@ -21,8 +18,7 @@ public class Money {
 
     private BigDecimal amount;
 
-    private Money() {
-    }
+    private Money() {}
 
     /**
      * Creates a Money from a {@link BigDecimal}.
@@ -60,23 +56,17 @@ public class Money {
             return false;
         }
         Money money = (Money) o;
-        return new EqualsBuilder()
-                .append(amount, money.amount)
-                .isEquals();
+        return new EqualsBuilder().append(amount, money.amount).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(amount)
-                .toHashCode();
+        return new HashCodeBuilder(17, 37).append(amount).toHashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("amount", amount)
-                .toString();
+        return new ToStringBuilder(this).append("amount", amount).toString();
     }
 
     /**
