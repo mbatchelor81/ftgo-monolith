@@ -2,36 +2,41 @@ package com.ftgo.common;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MoneyTest {
+/**
+ * Unit tests for {@link Money} value object.
+ */
+class MoneyTest {
 
-  private final int M1_AMOUNT = 10;
-  private final int M2_AMOUNT = 15;
+    private final int m1Amount = 10;
+    private final int m2Amount = 15;
 
-  private Money m1 = new Money(M1_AMOUNT);
-  private Money m2 = new Money(M2_AMOUNT);
+    private Money m1 = new Money(m1Amount);
+    private Money m2 = new Money(m2Amount);
 
-  @Test
-  public void shouldReturnAsString() {
-    assertEquals(Integer.toString(M1_AMOUNT), new Money(M1_AMOUNT).asString());
-  }
+    @Test
+    void shouldReturnAsString() {
+        assertEquals(Integer.toString(m1Amount), new Money(m1Amount).asString());
+    }
 
-  @Test
-  public void shouldCompare() {
-    assertTrue(m2.isGreaterThanOrEqual(m2));
-    assertTrue(m2.isGreaterThanOrEqual(m1));
-    assertFalse(m1.isGreaterThanOrEqual(m2));
-  }
+    @Test
+    void shouldCompare() {
+        assertTrue(m2.isGreaterThanOrEqual(m2));
+        assertTrue(m2.isGreaterThanOrEqual(m1));
+        assertFalse(m1.isGreaterThanOrEqual(m2));
+    }
 
-  @Test
-  public void shouldAdd() {
-    assertEquals(new Money(M1_AMOUNT + M2_AMOUNT), m1.add(m2));
-  }
+    @Test
+    void shouldAdd() {
+        assertEquals(new Money(m1Amount + m2Amount), m1.add(m2));
+    }
 
-  @Test
-  public void shouldMultiply() {
-    int multiplier = 12;
-    assertEquals(new Money(M2_AMOUNT * multiplier), m2.multiply(multiplier));
-  }
+    @Test
+    void shouldMultiply() {
+        int multiplier = 12;
+        assertEquals(new Money(m2Amount * multiplier), m2.multiply(multiplier));
+    }
 }
