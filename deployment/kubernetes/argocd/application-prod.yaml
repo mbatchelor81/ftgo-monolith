@@ -1,0 +1,35 @@
+# ArgoCD Application CR for the production environment.
+# Production uses manual sync — changes require explicit approval.
+# Apply this to the ArgoCD namespace in your management cluster:
+#   kubectl apply -f application-prod.yaml -n argocd
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ftgo-prod
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ftgo
+    app.kubernetes.io/environment: prod
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: ftgo
+  source:
+    repoURL: https://github.com/mbatchelor81/ftgo-monolith.git
+    targetRevision: feat/microservices-migration
+    path: deployment/kubernetes/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ftgo-prod
+  syncPolicy:
+    # Manual sync — requires explicit approval for production
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

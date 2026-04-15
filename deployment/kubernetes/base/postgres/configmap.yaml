@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-postgres-config
+  labels:
+    app.kubernetes.io/name: ftgo-postgres
+    app.kubernetes.io/component: database
+data:
+  databases: "ftgo_consumer_service,ftgo_order_service,ftgo_restaurant_service,ftgo_courier_service"

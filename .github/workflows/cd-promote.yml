@@ -1,0 +1,193 @@
+name: "CD: Promote Environment"
+
+# Environment promotion workflow.
+# Promotes a verified image tag from one environment to the next:
+#   dev → staging → prod
+#
+# Usage:
+#   1. Go to Actions → "CD: Promote Environment"
+#   2. Select source environment and image tag
+#   3. Approve the deployment in the target environment's gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: "Source environment to promote from"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      image_tag:
+        description: "Docker image tag to promote"
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/ftgo
+
+permissions:
+  contents: read
+  packages: read
+  actions: write
+  id-token: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Verify the image exists in the source environment
+  # ---------------------------------------------------------------------------
+  verify:
+    name: "Verify image tag: ${{ github.event.inputs.image_tag }}"
+    runs-on: ubuntu-latest
+    outputs:
+      target_environment: ${{ steps.resolve.outputs.target }}
+      image_tag: ${{ github.event.inputs.image_tag }}
+    steps:
+      - name: Resolve target environment
+        id: resolve
+        env:
+          SOURCE_ENV: ${{ github.event.inputs.source_environment }}
+        run: |
+          SOURCE="$SOURCE_ENV"
+          case "$SOURCE" in
+            dev)     TARGET="staging" ;;
+            staging) TARGET="prod" ;;
+            *)
+              echo "::error::Invalid source environment: $SOURCE"
+              exit 1
+              ;;
+          esac
+          echo "target=${TARGET}" >> "$GITHUB_OUTPUT"
+          echo "Promoting from ${SOURCE} → ${TARGET}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify images exist
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          TAG="$IMAGE_TAG"
+          SERVICES="ftgo-consumer-service ftgo-order-service ftgo-restaurant-service ftgo-courier-service"
+          MISSING=false
+          echo "Verifying images for tag: ${TAG}"
+          for svc in $SERVICES; do
+            IMAGE="${{ env.IMAGE_PREFIX }}/${svc}:${TAG}"
+            echo "  Checking ${IMAGE}..."
+            if docker manifest inspect "${IMAGE}" > /dev/null 2>&1; then
+              echo "    ✓ Found"
+            else
+              echo "    ✗ NOT FOUND: ${IMAGE}"
+              MISSING=true
+            fi
+          done
+          if [ "$MISSING" = "true" ]; then
+            echo "::error::One or more Docker images are missing for tag ${TAG}. Aborting promotion."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Promote to staging (from dev)
+  # ---------------------------------------------------------------------------
+  promote-to-staging:
+    name: "Promote to staging"
+    needs: verify
+    if: needs.verify.outputs.target_environment == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: "https://staging.ftgo.example.com"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Set image tags
+        working-directory: deployment/kubernetes/overlays/staging
+        env:
+          TAG: ${{ needs.verify.outputs.image_tag }}
+        run: |
+          kustomize edit set image \
+            ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service=${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
+
+      - name: Render and deploy
+        env:
+          DEPLOY_TAG: ${{ needs.verify.outputs.image_tag }}
+        run: |
+          kustomize build deployment/kubernetes/overlays/staging > /tmp/staging-manifests.yaml
+          echo "=========================================="
+          echo "  PROMOTE TO STAGING"
+          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Source: dev"
+          echo "  Namespace: ftgo-staging"
+          echo "=========================================="
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: promote-staging-${{ needs.verify.outputs.image_tag }}
+          path: /tmp/staging-manifests.yaml
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Promote to production (from staging)
+  # ---------------------------------------------------------------------------
+  promote-to-prod:
+    name: "Promote to production"
+    needs: verify
+    if: needs.verify.outputs.target_environment == 'prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: "https://ftgo.example.com"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Set image tags
+        working-directory: deployment/kubernetes/overlays/prod
+        env:
+          TAG: ${{ needs.verify.outputs.image_tag }}
+        run: |
+          kustomize edit set image \
+            ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service=${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
+
+      - name: Render and deploy
+        env:
+          DEPLOY_TAG: ${{ needs.verify.outputs.image_tag }}
+        run: |
+          kustomize build deployment/kubernetes/overlays/prod > /tmp/prod-manifests.yaml
+          echo "=========================================="
+          echo "  PROMOTE TO PRODUCTION"
+          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Source: staging"
+          echo "  Namespace: ftgo-prod"
+          echo "=========================================="
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: promote-prod-${{ needs.verify.outputs.image_tag }}
+          path: /tmp/prod-manifests.yaml
+          retention-days: 90
