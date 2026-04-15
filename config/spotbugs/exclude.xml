@@ -50,6 +50,13 @@
         <Bug pattern="URF_UNREAD_FIELD"/>
     </Match>
 
+    <!-- Exclude test utility library from static exposure warnings.
+         PostgresContainerConfig intentionally exposes a shared singleton container. -->
+    <Match>
+        <Package name="com.ftgo.testlib.containers"/>
+        <Bug pattern="MS_EXPOSE_REP"/>
+    </Match>
+
     <!-- Exclude generated code -->
     <Match>
         <Source name="~.*Generated.*\.java"/>

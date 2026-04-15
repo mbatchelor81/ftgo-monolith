@@ -23,4 +23,5 @@ dependencies {
     runtimeOnly libs.flyway.database.postgresql
 
     testImplementation libs.spring.security.test
+    testImplementation project(':ftgo-test-lib')
 }
