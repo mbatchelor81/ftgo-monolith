@@ -1,2 +1,6 @@
 com.ftgo.observability.config.MetricsAutoConfiguration
 com.ftgo.observability.config.PrometheusMetricsConfiguration
+com.ftgo.observability.logging.LoggingAutoConfiguration
+com.ftgo.observability.discovery.ServiceDiscoveryAutoConfiguration
+com.ftgo.observability.health.HealthCheckAutoConfiguration
+com.ftgo.observability.resilience.ResilienceAutoConfiguration

@@ -18,11 +18,16 @@ dependencies {
     implementation libs.micrometer.core
     implementation libs.micrometer.registry.prometheus
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.aop
 
     // Distributed tracing
     implementation libs.micrometer.tracing.bridge.brave
     implementation libs.zipkin.reporter.brave
     implementation libs.zipkin.sender.urlconnection
+
+    // Resilience4j
+    implementation libs.resilience4j.spring.boot3
+    implementation libs.resilience4j.micrometer
 
     implementation project(':ftgo-observability-lib')
 }

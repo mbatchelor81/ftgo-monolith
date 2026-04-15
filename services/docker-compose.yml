@@ -23,6 +23,12 @@ x-service-defaults: &service-defaults
     SPRING_PROFILES_ACTIVE: docker
     DB_USERNAME: ftgo
     DB_PASSWORD: ftgo
+  logging:
+    driver: fluentd
+    options:
+      fluentd-address: localhost:24224
+      fluentd-async: "true"
+      tag: docker.{{.Name}}
   healthcheck:
     test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/liveness"]
     interval: 15s
@@ -66,6 +72,63 @@ services:
       retries: 5
 
   # -------------------------------------------------------------------------
+  # EFK Stack (Elasticsearch + Fluentd + Kibana) — Centralized Logging
+  # -------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - ftgo-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+
+  fluentd:
+    build:
+      context: ../deployment/efk/fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - fluentd-buffer:/var/log/fluentd-buffers
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: "9200"
+    networks:
+      - ftgo-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - ftgo-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # -------------------------------------------------------------------------
   # Microservices
   # -------------------------------------------------------------------------
   consumer-service:
@@ -86,6 +149,8 @@ services:
         condition: service_healthy
       zipkin:
         condition: service_healthy
+      fluentd:
+        condition: service_started
 
   order-service:
     <<: *service-defaults
@@ -105,6 +170,8 @@ services:
         condition: service_healthy
       zipkin:
         condition: service_healthy
+      fluentd:
+        condition: service_started
 
   restaurant-service:
     <<: *service-defaults
@@ -124,6 +191,8 @@ services:
         condition: service_healthy
       zipkin:
         condition: service_healthy
+      fluentd:
+        condition: service_started
 
   courier-service:
     <<: *service-defaults
@@ -143,9 +212,13 @@ services:
         condition: service_healthy
       zipkin:
         condition: service_healthy
+      fluentd:
+        condition: service_started
 
 volumes:
   postgres-data:
+  elasticsearch-data:
+  fluentd-buffer:
 
 networks:
   ftgo-network:

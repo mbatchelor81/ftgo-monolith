@@ -1,0 +1,45 @@
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
+
+// Enable Spring Boot executable fat jar
+tasks.named('bootJar') { enabled = true }
+tasks.named('jar') { enabled = false }
+
+dependencyManagement {
+    imports {
+        mavenBom libs.spring.cloud.dependencies.get().toString()
+    }
+}
+
+dependencies {
+    implementation project(':ftgo-common')
+
+    // Spring Cloud Gateway (reactive)
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.spring.boot.starter.actuator
+
+    // Security — JWT validation at gateway level
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.security.oauth2.jose
+    implementation libs.spring.security.oauth2.resource.server
+
+    // Rate limiting — Redis-backed
+    implementation libs.spring.boot.starter.data.redis.reactive
+
+    // Circuit breaker — Resilience4j
+    implementation libs.spring.cloud.starter.circuitbreaker.reactor.resilience4j
+
+    // Observability
+    implementation libs.micrometer.core
+    implementation libs.micrometer.registry.prometheus
+    implementation libs.micrometer.tracing.bridge.brave
+    implementation libs.zipkin.reporter.brave
+    implementation libs.zipkin.sender.urlconnection
+
+    // Testing
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.security.test
+}

@@ -34,5 +34,8 @@ include 'ftgo-order-service'
 include 'ftgo-restaurant-service'
 include 'ftgo-courier-service'
 
+// API Gateway
+include 'ftgo-api-gateway'
+
 // Template (excluded from default build)
 include 'ftgo-service-template'

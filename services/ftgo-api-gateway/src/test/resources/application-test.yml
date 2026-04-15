@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: ftgo-api-gateway-test
+  cloud:
+    gateway:
+      default-filters: []
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ""
+          jwk-set-uri: ""
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 0
+  ssl:
+    enabled: false
+
+ftgo:
+  gateway:
+    services:
+      order-service-url: http://localhost:9091
+      consumer-service-url: http://localhost:9092
+      restaurant-service-url: http://localhost:9093
+      courier-service-url: http://localhost:9094
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 5
+        minimum-number-of-calls: 2
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
