@@ -13,7 +13,8 @@ class ServiceMdcFilterTest {
     private final ServiceMdcFilter filter = new ServiceMdcFilter("ftgo-test-service");
 
     @Test
-    void doFilterInternal_withGetRequest_populatesMdcWithServiceAndRequestContext() throws Exception {
+    void doFilterInternal_withGetRequest_populatesMdcWithServiceAndRequestContext()
+            throws Exception {
         var request = new MockHttpServletRequest("GET", "/api/consumers/1");
         var response = new MockHttpServletResponse();
 
