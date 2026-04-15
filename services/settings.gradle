@@ -19,6 +19,7 @@ include 'ftgo-domain'
 include 'ftgo-security-lib'
 include 'ftgo-observability-lib'
 include 'ftgo-openapi-lib'
+include 'ftgo-error-handling-lib'
 include 'ftgo-test-lib'
 
 // Service API/DTO contracts
@@ -32,6 +33,9 @@ include 'ftgo-consumer-service'
 include 'ftgo-order-service'
 include 'ftgo-restaurant-service'
 include 'ftgo-courier-service'
+
+// API Gateway
+include 'ftgo-api-gateway'
 
 // Template (excluded from default build)
 include 'ftgo-service-template'

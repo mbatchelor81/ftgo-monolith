@@ -1,10 +1,14 @@
 package com.ftgo.restaurantservice.api.events;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 /** DTO representing a restaurant menu. */
 public class RestaurantMenuDTO {
 
+    @NotEmpty(message = "menuItems must not be empty")
+    @Valid
     private List<MenuItemDTO> menuItems;
 
     private RestaurantMenuDTO() {}

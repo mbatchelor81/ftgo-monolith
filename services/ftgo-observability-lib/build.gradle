@@ -12,6 +12,9 @@ dependencies {
     api libs.zipkin.reporter.brave
     api libs.zipkin.sender.urlconnection
 
+    // Structured JSON logging
+    api libs.logstash.logback.encoder
+
     // Resilience4j
     api libs.resilience4j.spring.boot3
     api libs.resilience4j.circuitbreaker
@@ -20,11 +23,13 @@ dependencies {
     api libs.resilience4j.ratelimiter
     api libs.resilience4j.micrometer
 
+
     // Spring Boot auto-configuration support
     compileOnly libs.spring.boot.starter.web
     compileOnly libs.spring.boot.starter.aop
     compileOnly libs.spring.boot.starter.data.jpa
 
     // Testing
+    testImplementation libs.spring.boot.starter.web
     testImplementation libs.micrometer.tracing.test
 }

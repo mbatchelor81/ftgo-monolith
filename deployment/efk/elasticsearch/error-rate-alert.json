@@ -1,0 +1,63 @@
+{
+  "trigger": {
+    "schedule": {
+      "interval": "1m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "indices": ["ftgo-logs-*"],
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                { "range": { "@timestamp": { "gte": "now-5m" } } },
+                { "term": { "level": "ERROR" } }
+              ]
+            }
+          },
+          "aggs": {
+            "error_count_per_service": {
+              "terms": { "field": "service", "size": 20 },
+              "aggs": {
+                "error_count": { "value_count": { "field": "level" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.hits.total.value": {
+        "gt": 50
+      }
+    }
+  },
+  "actions": {
+    "log_alert": {
+      "logging": {
+        "text": "FTGO Error Rate Spike: {{ctx.payload.hits.total.value}} errors in the last 5 minutes. Breakdown by service: {{#ctx.payload.aggregations.error_count_per_service.buckets}}{{key}}={{doc_count}} {{/ctx.payload.aggregations.error_count_per_service.buckets}}"
+      }
+    },
+    "webhook_alert": {
+      "condition": {
+        "compare": {
+          "ctx.payload.hits.total.value": { "gt": 100 }
+        }
+      },
+      "webhook": {
+        "scheme": "https",
+        "host": "hooks.slack.com",
+        "port": 443,
+        "method": "post",
+        "path": "/services/PLACEHOLDER/PLACEHOLDER/PLACEHOLDER",
+        "headers": { "Content-Type": "application/json" },
+        "body": "{\"text\": \":rotating_light: *FTGO Error Rate Spike*\\nErrors in last 5m: {{ctx.payload.hits.total.value}}\\nServices affected: {{#ctx.payload.aggregations.error_count_per_service.buckets}}{{key}} ({{doc_count}}) {{/ctx.payload.aggregations.error_count_per_service.buckets}}\"}"
+      }
+    }
+  }
+}

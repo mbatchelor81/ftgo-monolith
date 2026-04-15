@@ -1,0 +1,29 @@
+{
+  "_comment": "Per-environment log retention policies for FTGO EFK stack. Apply the appropriate ILM policy to the Elasticsearch cluster based on the target environment.",
+  "environments": {
+    "dev": {
+      "description": "Development — short retention for fast iteration",
+      "ilm_policy": "ftgo-log-retention-dev",
+      "hot_max_age": "1d",
+      "warm_min_age": "1d",
+      "delete_min_age": "7d",
+      "replicas": 0
+    },
+    "staging": {
+      "description": "Staging — moderate retention for debugging pre-prod issues",
+      "ilm_policy": "ftgo-log-retention-staging",
+      "hot_max_age": "1d",
+      "warm_min_age": "3d",
+      "delete_min_age": "14d",
+      "replicas": 0
+    },
+    "prod": {
+      "description": "Production — long retention for compliance and incident investigation",
+      "ilm_policy": "ftgo-log-retention-prod",
+      "hot_max_age": "1d",
+      "warm_min_age": "7d",
+      "delete_min_age": "90d",
+      "replicas": 1
+    }
+  }
+}

@@ -2,11 +2,15 @@ package com.ftgo.courierservice.api;
 
 import com.ftgo.common.Address;
 import com.ftgo.common.PersonName;
+import jakarta.validation.constraints.NotNull;
 
 /** Request DTO for creating a new courier. */
 public class CreateCourierRequest {
 
+    @NotNull(message = "name must not be null")
     private PersonName name;
+
+    @NotNull(message = "address must not be null")
     private Address address;
 
     public CreateCourierRequest() {}

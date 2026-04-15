@@ -19,6 +19,7 @@ COPY services/ftgo-domain/build.gradle ./services/ftgo-domain/
 COPY services/ftgo-security-lib/build.gradle ./services/ftgo-security-lib/
 COPY services/ftgo-observability-lib/build.gradle ./services/ftgo-observability-lib/
 COPY services/ftgo-openapi-lib/build.gradle ./services/ftgo-openapi-lib/
+COPY services/ftgo-error-handling-lib/build.gradle ./services/ftgo-error-handling-lib/
 COPY services/ftgo-consumer-service-api/build.gradle ./services/ftgo-consumer-service-api/
 COPY services/ftgo-consumer-service/build.gradle ./services/ftgo-consumer-service/
 
@@ -32,6 +33,7 @@ COPY services/ftgo-domain/src/ ./services/ftgo-domain/src/
 COPY services/ftgo-security-lib/src/ ./services/ftgo-security-lib/src/
 COPY services/ftgo-observability-lib/src/ ./services/ftgo-observability-lib/src/
 COPY services/ftgo-openapi-lib/src/ ./services/ftgo-openapi-lib/src/
+COPY services/ftgo-error-handling-lib/src/ ./services/ftgo-error-handling-lib/src/
 COPY services/ftgo-consumer-service-api/src/ ./services/ftgo-consumer-service-api/src/
 
 # Copy service source code

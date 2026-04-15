@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-api-gateway
+  labels:
+    app: ftgo-api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ftgo-api-gateway
+  template:
+    metadata:
+      labels:
+        app: ftgo-api-gateway
+    spec:
+      containers:
+        - name: ftgo-api-gateway
+          image: ftgo/ftgo-api-gateway:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "kubernetes"
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-api-gateway-config
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-api-gateway-config
+                  key: redis-port
+            - name: ORDER_SERVICE_URL
+              value: "http://ftgo-order-service"
+            - name: CONSUMER_SERVICE_URL
+              value: "http://ftgo-consumer-service"
+            - name: RESTAURANT_SERVICE_URL
+              value: "http://ftgo-restaurant-service"
+            - name: COURIER_SERVICE_URL
+              value: "http://ftgo-courier-service"
+            - name: JWT_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-api-gateway-config
+                  key: jwt-issuer
+            - name: SSL_ENABLED
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-api-gateway
+spec:
+  selector:
+    app: ftgo-api-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: https
+      port: 443
+      targetPort: 8443
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ftgo-api-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ftgo-api-gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-api-gateway-config
+data:
+  redis-host: "redis"
+  redis-port: "6379"
+  jwt-issuer: "ftgo-platform"
