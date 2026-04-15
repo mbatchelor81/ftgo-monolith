@@ -30,4 +30,5 @@ include "ftgo-end-to-end-tests"
 
 // Microservices modules (under services/)
 include "services:ftgo-common"
+include "services:ftgo-openapi-lib"
 

@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation project(':ftgo-common')
+    implementation project(':ftgo-openapi-lib')
 
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.data.jpa

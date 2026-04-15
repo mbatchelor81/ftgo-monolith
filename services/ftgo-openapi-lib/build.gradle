@@ -1,0 +1,14 @@
+plugins {
+    id 'ftgo.library-conventions'
+}
+
+dependencies {
+    api libs.springdoc.openapi.starter.webmvc.ui
+
+    // Spring Web for auto-configuration awareness
+    compileOnly libs.spring.boot.starter.web
+
+    // Testing
+    testImplementation libs.spring.boot.starter.web
+    testImplementation libs.spring.boot.starter.test
+}

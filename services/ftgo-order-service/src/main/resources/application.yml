@@ -28,3 +28,17 @@ management:
       probes:
         enabled: true
       show-details: always
+
+ftgo:
+  openapi:
+    title: FTGO Order Service API
+    description: Manages order lifecycle, creation, revision, and state transitions
+    version: v1
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

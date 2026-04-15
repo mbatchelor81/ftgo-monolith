@@ -2,8 +2,6 @@ plugins {
     id 'ftgo.library-conventions'
 }
 
-apply plugin: 'maven-publish'
-
 group = 'com.ftgo'
 version = '1.0.0'
 
@@ -16,33 +14,13 @@ dependencies {
     api libs.jackson.datatype.jsr310
 
     // Apache Commons Lang for equals/hashCode/toString builders
-    compile 'commons-lang:commons-lang:2.6'
+    implementation 'commons-lang:commons-lang:2.6'
 
     // Spring context for @Configuration, @Bean, @PostConstruct
-    compile "org.springframework:spring-context:5.0.7.RELEASE"
-    compile "org.springframework:spring-beans:5.0.7.RELEASE"
+    implementation "org.springframework:spring-context:5.0.7.RELEASE"
+    implementation "org.springframework:spring-beans:5.0.7.RELEASE"
 
     // Test dependencies
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testCompile 'javax.persistence:javax.persistence-api:2.2'
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = 'FTGO Common Library'
-                description = 'Cross-cutting value objects and utilities for FTGO microservices'
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = 'local'
-            url = "${buildDir}/repo"
-        }
-    }
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation 'javax.persistence:javax.persistence-api:2.2'
 }
