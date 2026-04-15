@@ -39,7 +39,7 @@ import org.springframework.web.client.ResourceAccessException;
  * <p>All resilience metrics are automatically published to Micrometer for Prometheus scraping.
  */
 @Configuration
-@ConditionalOnClass(CircuitBreakerRegistry.class)
+@ConditionalOnClass({CircuitBreakerRegistry.class, ResourceAccessException.class})
 @EnableConfigurationProperties(ResilienceProperties.class)
 public class ResilienceAutoConfiguration {
 
