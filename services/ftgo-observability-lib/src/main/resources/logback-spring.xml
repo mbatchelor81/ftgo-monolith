@@ -30,22 +30,6 @@
     </appender>
 
     <!-- ================================================================== -->
-    <!-- File appender: rolling file for local development                   -->
-    <!-- ================================================================== -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/${APP_NAME}.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] [%X{correlationId:-}] [%X{requestId:-}] [%X{userId:-}] %-5level %logger{36} - %maskedMsg%n</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>500MB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- ================================================================== -->
     <!-- JSON appender: structured logging for EFK stack (Docker/K8s)       -->
     <!-- Uses logstash-logback-encoder with SensitiveDataMaskingJsonProvider -->
     <!-- for proper JSON escaping, nested field support, and PII masking.    -->
@@ -106,6 +90,20 @@
 
     <!-- Local development: DEBUG for app code, INFO for frameworks -->
     <springProfile name="!docker &amp; !kubernetes &amp; !dev &amp; !staging">
+        <!-- File appender: rolling file for local development only -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/${APP_NAME}.log</file>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-},%X{spanId:-}] [%X{correlationId:-}] [%X{requestId:-}] [%X{userId:-}] %-5level %logger{36} - %maskedMsg%n</pattern>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>7</maxHistory>
+                <totalSizeCap>500MB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
         <logger name="com.ftgo" level="DEBUG"/>
         <logger name="org.springframework" level="INFO"/>
         <logger name="org.hibernate.SQL" level="DEBUG"/>

@@ -157,7 +157,7 @@ logging for service-layer methods. It is **opt-in** per service via the
 
 - **Entry** (`DEBUG`): method name and arguments
 - **Exit** (`DEBUG`): method name and execution time in milliseconds
-- **Exception** (`ERROR`): method name, exception class, and message
+- **Exception** (`DEBUG`): method name, exception class, and message (error-level logging is left to the global exception handler)
 
 ### Configuration
 
