@@ -54,7 +54,7 @@ public class ResilienceAutoConfiguration {
                 .slowCallRateThreshold(cb.getSlowCallRateThreshold())
                 .slowCallDurationThreshold(
                         Duration.ofSeconds(cb.getSlowCallDurationThresholdSeconds()))
-                .recordExceptions(IOException.class, TimeoutException.class)
+                .recordExceptions(IOException.class, TimeoutException.class, RuntimeException.class)
                 .build();
     }
 
@@ -72,7 +72,7 @@ public class ResilienceAutoConfiguration {
                 .intervalFunction(
                         io.github.resilience4j.core.IntervalFunction.ofExponentialBackoff(
                                 retry.getInitialIntervalMillis(), retry.getMultiplier()))
-                .retryExceptions(IOException.class, TimeoutException.class)
+                .retryExceptions(IOException.class, TimeoutException.class, RuntimeException.class)
                 .build();
     }
 
