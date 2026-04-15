@@ -10,6 +10,7 @@ on:
       - "build-logic/**"
       - "gradle/libs.versions.toml"
       - "services/settings.gradle"
+      - "config/**"
       - ".github/workflows/ci-courier-service.yml"
   pull_request:
     branches: [main, master, feat/microservices-migration]
@@ -20,6 +21,7 @@ on:
       - "build-logic/**"
       - "gradle/libs.versions.toml"
       - "services/settings.gradle"
+      - "config/**"
       - ".github/workflows/ci-courier-service.yml"
 
 permissions:
@@ -65,4 +67,15 @@ jobs:
         with:
           name: courier-service-test-reports
           path: services/ftgo-courier-service/build/reports/tests/
+          retention-days: 14
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: courier-service-quality-reports
+          path: |
+            services/ftgo-courier-service/build/reports/checkstyle/
+            services/ftgo-courier-service/build/reports/spotbugs/
+            services/ftgo-courier-service/build/reports/jacoco/
           retention-days: 14

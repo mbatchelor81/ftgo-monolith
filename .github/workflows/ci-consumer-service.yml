@@ -10,6 +10,7 @@ on:
       - "build-logic/**"
       - "gradle/libs.versions.toml"
       - "services/settings.gradle"
+      - "config/**"
       - ".github/workflows/ci-consumer-service.yml"
   pull_request:
     branches: [main, master, feat/microservices-migration]
@@ -20,6 +21,7 @@ on:
       - "build-logic/**"
       - "gradle/libs.versions.toml"
       - "services/settings.gradle"
+      - "config/**"
       - ".github/workflows/ci-consumer-service.yml"
 
 permissions:
@@ -65,4 +67,15 @@ jobs:
         with:
           name: consumer-service-test-reports
           path: services/ftgo-consumer-service/build/reports/tests/
+          retention-days: 14
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-service-quality-reports
+          path: |
+            services/ftgo-consumer-service/build/reports/checkstyle/
+            services/ftgo-consumer-service/build/reports/spotbugs/
+            services/ftgo-consumer-service/build/reports/jacoco/
           retention-days: 14

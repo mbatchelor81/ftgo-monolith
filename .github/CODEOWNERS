@@ -1,0 +1,49 @@
+# FTGO Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters — later patterns take precedence over earlier ones.
+
+# Default owner for everything
+*                                           @mbatchelor81
+
+# ─── Platform / Shared Infrastructure ───────────────────────────────────────
+
+# Build system and CI
+build-logic/                                @mbatchelor81/ftgo-platform-team
+gradle/                                     @mbatchelor81/ftgo-platform-team
+.github/workflows/                          @mbatchelor81/ftgo-platform-team
+config/                                     @mbatchelor81/ftgo-platform-team
+
+# Shared libraries
+services/ftgo-common/                       @mbatchelor81/ftgo-platform-team
+services/ftgo-common-jpa/                   @mbatchelor81/ftgo-platform-team
+services/ftgo-domain/                       @mbatchelor81/ftgo-platform-team
+services/ftgo-security-lib/                 @mbatchelor81/ftgo-platform-team
+services/ftgo-observability-lib/            @mbatchelor81/ftgo-platform-team
+services/ftgo-openapi-lib/                  @mbatchelor81/ftgo-platform-team
+
+# ─── Service Teams ──────────────────────────────────────────────────────────
+
+# Order Service
+services/ftgo-order-service/                @mbatchelor81/ftgo-order-team
+services/ftgo-order-service-api/            @mbatchelor81/ftgo-order-team
+
+# Consumer Service
+services/ftgo-consumer-service/             @mbatchelor81/ftgo-consumer-team
+services/ftgo-consumer-service-api/         @mbatchelor81/ftgo-consumer-team
+
+# Restaurant Service
+services/ftgo-restaurant-service/           @mbatchelor81/ftgo-restaurant-team
+services/ftgo-restaurant-service-api/       @mbatchelor81/ftgo-restaurant-team
+
+# Courier Service
+services/ftgo-courier-service/              @mbatchelor81/ftgo-courier-team
+services/ftgo-courier-service-api/          @mbatchelor81/ftgo-courier-team
+
+# ─── Documentation & Quality ───────────────────────────────────────────────
+
+CONTRIBUTING.md                             @mbatchelor81/ftgo-platform-team
+.github/PULL_REQUEST_TEMPLATE.md            @mbatchelor81/ftgo-platform-team
+.github/CODEOWNERS                          @mbatchelor81/ftgo-platform-team
+.editorconfig                               @mbatchelor81/ftgo-platform-team

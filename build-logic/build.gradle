@@ -11,4 +11,8 @@ dependencies {
     implementation libs.plugins.spring.boot.map { "org.springframework.boot:spring-boot-gradle-plugin:${it.version}" }.get()
     implementation libs.plugins.spring.dependency.management.map { "io.spring.gradle:dependency-management-plugin:${it.version}" }.get()
     implementation libs.plugins.jib.map { "com.google.cloud.tools:jib-gradle-plugin:${it.version}" }.get()
+
+    // Quality plugins
+    implementation 'com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.12'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.25.0'
 }

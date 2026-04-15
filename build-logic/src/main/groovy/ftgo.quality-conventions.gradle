@@ -1,0 +1,87 @@
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.Confidence
+
+/**
+ * Convention plugin that configures static analysis and formatting
+ * for FTGO microservices.
+ *
+ * Applies:
+ *   - Checkstyle for style enforcement
+ *   - SpotBugs for bug detection
+ *   - Spotless for auto-formatting (Google Java Format)
+ *
+ * JaCoCo coverage configuration lives in ftgo.testing-conventions.gradle.
+ * This plugin only wires jacocoTestCoverageVerification into the check task.
+ */
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'com.github.spotbugs'
+    id 'com.diffplug.spotless'
+}
+
+// ---------------------------------------------------------------------------
+// Checkstyle
+// ---------------------------------------------------------------------------
+checkstyle {
+    toolVersion = '10.15.0'
+    configFile = rootProject.file('../config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+    maxErrors = 0
+    ignoreFailures = false
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SpotBugs
+// ---------------------------------------------------------------------------
+spotbugs {
+    toolVersion = '4.8.4'
+    effort = Effort.valueOf('MAX')
+    reportLevel = Confidence.valueOf('MEDIUM')
+    excludeFilter = rootProject.file('../config/spotbugs/exclude.xml')
+    ignoreFailures = false
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        html.required = true
+        xml.required = false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo — wire coverage verification into the check lifecycle.
+// All other JaCoCo config (plugin, toolVersion, reports, thresholds) lives in
+// ftgo.testing-conventions.gradle to avoid duplication.
+// Deferred via pluginManager.withPlugin so this plugin does not depend on
+// jacoco being applied first in the plugin chain.
+// ---------------------------------------------------------------------------
+pluginManager.withPlugin('jacoco') {
+    tasks.named('check') {
+        dependsOn tasks.named('jacocoTestCoverageVerification')
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Spotless (Google Java Format)
+// ---------------------------------------------------------------------------
+spotless {
+    java {
+        googleJavaFormat('1.22.0').aosp()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        targetExclude 'build/**'
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('spotlessCheck')
+}

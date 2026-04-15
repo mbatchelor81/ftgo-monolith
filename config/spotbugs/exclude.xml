@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+        FTGO SpotBugs Exclusion Filter
+
+        Excludes known false positives and patterns that are acceptable
+        in the FTGO codebase. Keep exclusions minimal and well-documented.
+    -->
+
+    <!-- Exclude Spring-managed classes from serialization warnings -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!-- Exclude test classes from all checks -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+    <Match>
+        <Source name="~.*Tests\.java"/>
+    </Match>
+    <Match>
+        <Source name="~.*IT\.java"/>
+    </Match>
+
+    <!-- Exclude Spring configuration classes from certain checks -->
+    <Match>
+        <Class name="~.*Configuration"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
+
+    <!-- Exclude DTOs and API models from equals/hashCode warnings -->
+    <Match>
+        <Package name="~.*\.api\..*"/>
+        <Bug pattern="EQ_UNUSUAL"/>
+    </Match>
+
+    <!-- Exclude generated code -->
+    <Match>
+        <Source name="~.*Generated.*\.java"/>
+    </Match>
+
+    <!--
+        Exclude Spring Boot main classes from static analysis
+        (entry points with public static void main)
+    -->
+    <Match>
+        <Class name="~.*Application(Main)?"/>
+        <Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS"/>
+    </Match>
+</FindBugsFilter>
