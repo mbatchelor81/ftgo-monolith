@@ -2,6 +2,7 @@ package com.ftgo.orderservice.api.web;
 
 import java.time.LocalDateTime;
 
+/** DTO representing an order acceptance by a restaurant. */
 public class OrderAcceptance {
 
     private LocalDateTime readyBy;

@@ -2,10 +2,17 @@ package com.ftgo.domain;
 
 import com.ftgo.common.Address;
 import com.ftgo.common.PersonName;
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
+/** JPA entity representing a delivery courier. */
 @Entity
 @Access(AccessType.FIELD)
 @DynamicUpdate

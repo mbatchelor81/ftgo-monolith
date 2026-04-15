@@ -1,5 +1,6 @@
 package com.ftgo.orderservice.api.web;
 
+/** Response DTO returned after creating an order. */
 public class CreateOrderResponse {
 
     private long orderId;

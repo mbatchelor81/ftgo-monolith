@@ -1,11 +1,21 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Address;
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.List;
 import java.util.Optional;
 import org.hibernate.annotations.DynamicUpdate;
 
+/** JPA entity representing a restaurant with a menu. */
 @Entity
 @Table(name = "restaurants")
 @Access(AccessType.FIELD)

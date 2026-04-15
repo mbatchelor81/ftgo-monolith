@@ -2,6 +2,7 @@ package com.ftgo.restaurantservice.api.events;
 
 import com.ftgo.common.Address;
 
+/** Request DTO for creating a new restaurant. */
 public class CreateRestaurantRequest {
 
     private String name;

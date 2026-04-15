@@ -2,6 +2,7 @@ package com.ftgo.orderservice.api.web;
 
 import java.util.Map;
 
+/** Request DTO for revising an existing order. */
 public class ReviseOrderRequest {
 
     private Map<String, Integer> revisedLineItemQuantities;

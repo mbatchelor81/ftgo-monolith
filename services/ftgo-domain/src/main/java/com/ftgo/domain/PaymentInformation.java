@@ -4,6 +4,7 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Embeddable;
 
+/** Embeddable containing payment method details. */
 @Embeddable
 @Access(AccessType.FIELD)
 public class PaymentInformation {

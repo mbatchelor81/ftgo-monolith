@@ -1,5 +1,6 @@
 package com.ftgo.orderservice.api.events;
 
+/** DTO representing a single line item in an order. */
 public class OrderLineItemDTO {
 
     private int quantity;

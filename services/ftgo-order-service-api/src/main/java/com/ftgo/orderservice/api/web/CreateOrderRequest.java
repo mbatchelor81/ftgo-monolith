@@ -2,6 +2,7 @@ package com.ftgo.orderservice.api.web;
 
 import java.util.List;
 
+/** Request DTO for creating a new order. */
 public class CreateOrderRequest {
 
     private long restaurantId;
@@ -40,6 +41,7 @@ public class CreateOrderRequest {
         this.lineItems = lineItems;
     }
 
+    /** Represents a single line item in the order request. */
     public static class LineItem {
 
         private String menuItemId;

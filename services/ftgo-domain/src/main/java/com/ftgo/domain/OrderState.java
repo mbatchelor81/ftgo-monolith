@@ -1,5 +1,6 @@
 package com.ftgo.domain;
 
+/** Enum representing the lifecycle states of an order. */
 public enum OrderState {
     APPROVED,
     ACCEPTED,

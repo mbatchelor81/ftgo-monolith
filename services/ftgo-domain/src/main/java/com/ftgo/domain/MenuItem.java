@@ -1,11 +1,17 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Money;
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+/** Embeddable representing a single item on a restaurant menu. */
 @Embeddable
 @Access(AccessType.FIELD)
 public class MenuItem {

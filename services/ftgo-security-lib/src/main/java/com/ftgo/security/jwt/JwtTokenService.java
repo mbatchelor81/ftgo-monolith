@@ -19,7 +19,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
  */
 public class JwtTokenService {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JwtTokenService.class);
 
     private static final Set<String> RESERVED_CLAIMS =
             Set.of(
@@ -93,7 +93,7 @@ public class JwtTokenService {
         additionalClaims.forEach(
                 (key, value) -> {
                     if (RESERVED_CLAIMS.contains(key)) {
-                        log.warn(
+                        LOG.warn(
                                 "Ignoring reserved claim '{}' in additionalClaims — "
                                         + "standard claims cannot be overridden",
                                 key);

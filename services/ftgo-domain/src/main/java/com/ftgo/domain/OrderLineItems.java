@@ -7,6 +7,7 @@ import jakarta.persistence.Embeddable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/** Embeddable managing the collection of order line items. */
 @Embeddable
 public class OrderLineItems {
 

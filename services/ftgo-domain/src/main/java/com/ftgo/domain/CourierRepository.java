@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+/** Spring Data repository for {@link Courier} entities. */
 public interface CourierRepository extends CrudRepository<Courier, Long> {
 
     @Query("SELECT c FROM Courier c WHERE c.available = true")

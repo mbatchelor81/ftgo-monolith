@@ -1,14 +1,35 @@
 package com.ftgo.domain;
 
-import static com.ftgo.domain.OrderState.*;
+import static com.ftgo.domain.OrderState.ACCEPTED;
+import static com.ftgo.domain.OrderState.APPROVED;
+import static com.ftgo.domain.OrderState.CANCELLED;
+import static com.ftgo.domain.OrderState.DELIVERED;
+import static com.ftgo.domain.OrderState.PICKED_UP;
+import static com.ftgo.domain.OrderState.PREPARING;
+import static com.ftgo.domain.OrderState.READY_FOR_PICKUP;
 
 import com.ftgo.common.Money;
 import com.ftgo.common.UnsupportedStateTransitionException;
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
+/** JPA entity representing a food delivery order with state machine. */
 @Entity
 @Table(name = "orders")
 @Access(AccessType.FIELD)
@@ -116,8 +137,9 @@ public class Order {
     public void acceptTicket(LocalDateTime readyBy) {
         if (orderState == APPROVED) {
             this.acceptTime = LocalDateTime.now();
-            if (!acceptTime.isBefore(readyBy))
+            if (!acceptTime.isBefore(readyBy)) {
                 throw new IllegalArgumentException("readyBy is not in the future");
+            }
             this.readyBy = readyBy;
             this.orderState = ACCEPTED;
             return;

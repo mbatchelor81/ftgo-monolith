@@ -2,6 +2,7 @@ package com.ftgo.restaurantservice.api.events;
 
 import com.ftgo.common.Money;
 
+/** DTO representing a menu item. */
 public class MenuItemDTO {
 
     private String id;

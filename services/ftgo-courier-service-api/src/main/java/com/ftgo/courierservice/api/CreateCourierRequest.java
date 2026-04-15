@@ -3,6 +3,7 @@ package com.ftgo.courierservice.api;
 import com.ftgo.common.Address;
 import com.ftgo.common.PersonName;
 
+/** Request DTO for creating a new courier. */
 public class CreateCourierRequest {
 
     private PersonName name;

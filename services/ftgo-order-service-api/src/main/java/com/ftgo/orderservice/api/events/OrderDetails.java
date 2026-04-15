@@ -3,6 +3,7 @@ package com.ftgo.orderservice.api.events;
 import com.ftgo.common.Money;
 import java.util.List;
 
+/** Event payload containing order details. */
 public class OrderDetails {
 
     private List<OrderLineItemDTO> lineItems;

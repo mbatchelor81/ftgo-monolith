@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Embeddable holding a courier's scheduled list of actions. */
 public class Plan {
 
     @ElementCollection private List<Action> actions = new LinkedList<>();

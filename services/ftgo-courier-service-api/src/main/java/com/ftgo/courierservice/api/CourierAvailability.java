@@ -1,5 +1,6 @@
 package com.ftgo.courierservice.api;
 
+/** DTO representing courier availability status. */
 public class CourierAvailability {
 
     private boolean available;

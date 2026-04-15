@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
+/** Embeddable representing a courier pickup or dropoff action. */
 @Embeddable
 public class Action {
 

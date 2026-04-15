@@ -1,5 +1,6 @@
 package com.ftgo.courierservice.api;
 
+/** Response DTO returned after creating a courier. */
 public class CreateCourierResponse {
 
     private long id;

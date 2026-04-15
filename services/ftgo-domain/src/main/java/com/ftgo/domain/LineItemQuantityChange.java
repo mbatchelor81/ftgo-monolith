@@ -2,6 +2,7 @@ package com.ftgo.domain;
 
 import com.ftgo.common.Money;
 
+/** Value object holding the result of an order line-item revision. */
 public class LineItemQuantityChange {
 
     private final Money currentOrderTotal;

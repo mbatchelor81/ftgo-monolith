@@ -3,6 +3,7 @@ package com.ftgo.domain;
 import java.util.Map;
 import java.util.Optional;
 
+/** Domain object carrying revised line-item quantities and delivery info. */
 public class OrderRevision {
 
     private Optional<DeliveryInformation> deliveryInformation = Optional.empty();

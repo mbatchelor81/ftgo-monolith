@@ -1,9 +1,16 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Address;
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import java.time.LocalDateTime;
 
+/** Embeddable containing delivery address and scheduled time. */
 @Embeddable
 @Access(AccessType.FIELD)
 public class DeliveryInformation {

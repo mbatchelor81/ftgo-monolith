@@ -35,10 +35,19 @@
         <Bug pattern="EQ_UNUSUAL"/>
     </Match>
 
-    <!-- Exclude DTOs and API models from mutable-object exposure warnings -->
+    <!-- Exclude all FTGO packages from mutable-object exposure warnings.
+         JPA entities, DTOs, and config classes commonly return/store mutable
+         objects; these are false positives in a Spring/JPA codebase. -->
     <Match>
-        <Package name="~.*\.api\..*"/>
+        <Package name="~com\.ftgo\..*"/>
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude JPA domain entities from unread field warnings
+         (JPA accesses fields via reflection, so SpotBugs cannot see the reads) -->
+    <Match>
+        <Package name="com.ftgo.domain"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
     </Match>
 
     <!-- Exclude generated code -->

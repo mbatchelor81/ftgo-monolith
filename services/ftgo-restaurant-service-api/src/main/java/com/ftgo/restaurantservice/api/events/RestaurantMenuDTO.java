@@ -2,6 +2,7 @@ package com.ftgo.restaurantservice.api.events;
 
 import java.util.List;
 
+/** DTO representing a restaurant menu. */
 public class RestaurantMenuDTO {
 
     private List<MenuItemDTO> menuItems;

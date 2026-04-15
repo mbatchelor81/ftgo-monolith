@@ -35,7 +35,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 @EnableConfigurationProperties({JwtProperties.class, RsaKeyProperties.class})
 public class JwtConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JwtConfiguration.class);
 
     @Bean
     @ConditionalOnMissingBean
@@ -44,7 +44,7 @@ public class JwtConfiguration {
         if (rsaKeyProperties.getPublicKey() != null) {
             return rsaKeyProperties.getPublicKey();
         }
-        log.warn(
+        LOG.warn(
                 "No RSA keys configured — generating ephemeral key pair. "
                         + "Configure ftgo.security.jwt.rsa.public-key and private-key for production use.");
         return generateKeyPair().rsaPublicKey;
