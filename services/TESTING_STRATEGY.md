@@ -298,7 +298,7 @@ findById_whenNotExists_returnsEmpty()
 | Test Type   | Convention                        | Example                          |
 |-------------|-----------------------------------|----------------------------------|
 | Unit        | `{ClassName}Test`                 | `OrderServiceTest`               |
-| Integration | `{ClassName}IntegrationTest`      | `OrderRepositoryIntegrationTest` |
+| Integration | `{ClassName}IT`                   | `OrderRepositoryIT`              |
 | Contract    | `{ServiceName}ContractTest`       | `OrderApiContractTest`           |
 | API         | `{Endpoint}ApiTest`               | `OrderApiTest`                   |
 | E2E         | `{Feature}E2eTest`                | `OrderLifecycleE2eTest`          |
@@ -456,17 +456,17 @@ module for reusable builders and the individual service modules for example test
 ### Order Context
 - **Unit:** `OrderTest` — state machine transitions, cancel/revise logic
 - **Unit:** `OrderLineItemsTest` — order total calculations
-- **Integration:** `OrderRepositoryIntegrationTest` — JPA persistence
+- **Integration:** `OrderRepositoryIT` — JPA persistence
 - **Contract:** `OrderApiContractTest` — REST API response shapes
 
 ### Consumer Context
 - **Unit:** `ConsumerTest` — order validation logic
-- **Integration:** `ConsumerRepositoryIntegrationTest` — persistence
+- **Integration:** `ConsumerRepositoryIT` — persistence
 
 ### Restaurant Context
 - **Unit:** `RestaurantTest` — menu item lookup, creation
-- **Integration:** `RestaurantRepositoryIntegrationTest` — persistence
+- **Integration:** `RestaurantRepositoryIT` — persistence
 
 ### Courier Context
 - **Unit:** `CourierTest` — availability, plan management
-- **Integration:** `CourierRepositoryIntegrationTest` — persistence
+- **Integration:** `CourierRepositoryIT` — persistence
