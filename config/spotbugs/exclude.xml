@@ -35,6 +35,12 @@
         <Bug pattern="EQ_UNUSUAL"/>
     </Match>
 
+    <!-- Exclude DTOs and API models from mutable-object exposure warnings -->
+    <Match>
+        <Package name="~.*\.api\..*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
     <!-- Exclude generated code -->
     <Match>
         <Source name="~.*Generated.*\.java"/>

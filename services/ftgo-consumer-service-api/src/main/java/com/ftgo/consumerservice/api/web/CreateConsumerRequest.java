@@ -2,6 +2,7 @@ package com.ftgo.consumerservice.api.web;
 
 import com.ftgo.common.PersonName;
 
+/** Request DTO for creating a new consumer. */
 public class CreateConsumerRequest {
 
     private PersonName name;

@@ -1,5 +1,6 @@
 package com.ftgo.consumerservice.api.web;
 
+/** Response DTO returned after creating a consumer. */
 public class CreateConsumerResponse {
 
     private long consumerId;
