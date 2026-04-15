@@ -19,6 +19,7 @@ include 'ftgo-domain'
 include 'ftgo-security-lib'
 include 'ftgo-observability-lib'
 include 'ftgo-openapi-lib'
+include 'ftgo-test-lib'
 
 // Service API/DTO contracts
 include 'ftgo-order-service-api'
