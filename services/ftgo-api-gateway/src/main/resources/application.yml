@@ -1,0 +1,110 @@
+spring:
+  application:
+    name: ftgo-api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: ${RATE_LIMIT_REPLENISH:20}
+            redis-rate-limiter.burstCapacity: ${RATE_LIMIT_BURST:40}
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@apiKeyResolver}"
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:}
+          jwk-set-uri: ${JWT_JWK_SET_URI:}
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE:classpath:keystore.p12}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:}
+    key-store-type: ${SSL_KEYSTORE_TYPE:PKCS12}
+    key-alias: ${SSL_KEY_ALIAS:ftgo-gateway}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    gateway:
+      enabled: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+    propagation:
+      type: b3_multi
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+# FTGO gateway-specific properties
+ftgo:
+  gateway:
+    services:
+      order-service-url: ${ORDER_SERVICE_URL:http://ftgo-order-service}
+      consumer-service-url: ${CONSUMER_SERVICE_URL:http://ftgo-consumer-service}
+      restaurant-service-url: ${RESTAURANT_SERVICE_URL:http://ftgo-restaurant-service}
+      courier-service-url: ${COURIER_SERVICE_URL:http://ftgo-courier-service}
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+      allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+      allow-credentials: false
+      max-age: 3600
+    jwt:
+      issuer: ${JWT_ISSUER:ftgo-platform}
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:7d}
+
+# Resilience4j circuit breaker configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - java.io.IOException
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+    instances:
+      orderServiceCB:
+        base-config: default
+      consumerServiceCB:
+        base-config: default
+      restaurantServiceCB:
+        base-config: default
+      courierServiceCB:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+
+logging:
+  level:
+    com.ftgo.apigateway: INFO
+    org.springframework.cloud.gateway: INFO
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
