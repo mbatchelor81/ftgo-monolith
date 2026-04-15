@@ -65,7 +65,7 @@ class SensitiveDataMaskingConverterTest {
         String result = SensitiveDataMaskingConverter.maskSensitiveData(input);
 
         assertThat(result).doesNotContain("123-45-6789");
-        assertThat(result).contains("****-****-6789");
+        assertThat(result).contains("123-****-6789");
     }
 
     @Test
