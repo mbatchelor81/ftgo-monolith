@@ -46,11 +46,11 @@ public class PrometheusMetricsConfiguration {
                             .percentilesHistogram(true)
                             .percentiles(0.5, 0.9, 0.95, 0.99)
                             .serviceLevelObjectives(
-                                    java.time.Duration.ofMillis(50).toNanos() / 1e9,
-                                    java.time.Duration.ofMillis(100).toNanos() / 1e9,
-                                    java.time.Duration.ofMillis(250).toNanos() / 1e9,
-                                    java.time.Duration.ofMillis(500).toNanos() / 1e9,
-                                    java.time.Duration.ofMillis(1000).toNanos() / 1e9
+                                    java.time.Duration.ofMillis(50).toNanos(),
+                                    java.time.Duration.ofMillis(100).toNanos(),
+                                    java.time.Duration.ofMillis(250).toNanos(),
+                                    java.time.Duration.ofMillis(500).toNanos(),
+                                    java.time.Duration.ofMillis(1000).toNanos()
                             )
                             .build()
                             .merge(config);
