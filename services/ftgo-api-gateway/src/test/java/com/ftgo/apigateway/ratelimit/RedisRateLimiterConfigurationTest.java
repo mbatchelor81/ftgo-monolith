@@ -13,7 +13,7 @@ class RedisRateLimiterConfigurationTest {
     private final RedisRateLimiterConfiguration config = new RedisRateLimiterConfiguration();
 
     @Test
-    void apiKeyResolver_usesApiKeyHeader_whenPresent() {
+    void apiKeyResolver_usesIpEvenWhenApiKeyHeaderPresent() {
         KeyResolver resolver = config.apiKeyResolver();
         MockServerHttpRequest request =
                 MockServerHttpRequest.get("/api/orders")
@@ -22,7 +22,8 @@ class RedisRateLimiterConfigurationTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
         String key = resolver.resolve(exchange).block();
-        assertThat(key).isEqualTo("my-api-key-123");
+        // Should resolve to IP address, not the X-Api-Key header value
+        assertThat(key).isNotNull().isNotBlank().isNotEqualTo("my-api-key-123");
     }
 
     @Test

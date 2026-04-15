@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 /**
  * Configures Redis-backed rate limiting for the API Gateway.
  *
- * <p>Rate limiting is applied per client, resolved by the {@code X-Api-Key} header when present, or
- * falling back to the remote IP address. This protects downstream services from excessive traffic.
+ * <p>Rate limiting is applied per client, resolved by the client's remote IP address. This protects
+ * downstream services from excessive traffic.
  *
  * <p>Default limits:
  *
@@ -27,16 +27,15 @@ import reactor.core.publisher.Mono;
 public class RedisRateLimiterConfiguration {
 
     /**
-     * Resolves the rate-limit key from the {@code X-Api-Key} header, falling back to the client IP
-     * address.
+     * Resolves the rate-limit key from the client's remote IP address.
+     *
+     * <p>Handles unresolved {@link java.net.InetSocketAddress} instances (common behind load
+     * balancers with {@code server.forward-headers-strategy: framework}) by falling back to {@link
+     * java.net.InetSocketAddress#getHostString()}.
      */
     @Bean
     public KeyResolver apiKeyResolver() {
         return exchange -> {
-            String apiKey = exchange.getRequest().getHeaders().getFirst("X-Api-Key");
-            if (apiKey != null && !apiKey.isBlank()) {
-                return Mono.just(apiKey);
-            }
             String remoteAddress;
             var socketAddr = exchange.getRequest().getRemoteAddress();
             if (socketAddr != null && socketAddr.getAddress() != null) {

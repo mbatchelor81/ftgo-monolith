@@ -45,6 +45,16 @@ spec:
                 configMapKeyRef:
                   name: ftgo-api-gateway-config
                   key: jwt-issuer
+            - name: JWT_ISSUER_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-api-gateway-config
+                  key: jwt-issuer-uri
+            - name: JWT_JWK_SET_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-api-gateway-config
+                  key: jwt-jwk-set-uri
             - name: SSL_ENABLED
               value: "false"
           readinessProbe:
@@ -116,3 +126,5 @@ data:
   redis-host: "redis"
   redis-port: "6379"
   jwt-issuer: "ftgo-platform"
+  jwt-issuer-uri: "https://auth.ftgo-platform.example.com"
+  jwt-jwk-set-uri: "https://auth.ftgo-platform.example.com/.well-known/jwks.json"
