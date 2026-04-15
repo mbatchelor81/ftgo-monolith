@@ -18,7 +18,8 @@ public class ServiceLivenessHealthIndicator implements HealthIndicator {
             // Basic sanity check — verify the JVM can allocate memory and the thread is responsive
             long freeMemory = Runtime.getRuntime().freeMemory();
             long totalMemory = Runtime.getRuntime().totalMemory();
-            double memoryUsagePercent = 1.0 - ((double) freeMemory / totalMemory);
+            long maxMemory = Runtime.getRuntime().maxMemory();
+            double memoryUsagePercent = (double) (totalMemory - freeMemory) / maxMemory;
 
             if (memoryUsagePercent > 0.95) {
                 return Health.down()
