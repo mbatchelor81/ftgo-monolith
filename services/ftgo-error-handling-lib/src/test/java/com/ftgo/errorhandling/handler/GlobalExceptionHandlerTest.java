@@ -21,11 +21,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +42,9 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Uses a minimal Spring MVC context with a stub controller that throws the various exceptions
  * handled by the global handler.
  */
-@WebMvcTest(controllers = GlobalExceptionHandlerTest.StubController.class)
+@WebMvcTest(
+        controllers = GlobalExceptionHandlerTest.StubController.class,
+        excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @Import(GlobalExceptionHandlerTest.TestConfig.class)
 @DisplayName("GlobalExceptionHandler")
 class GlobalExceptionHandlerTest {
@@ -97,6 +102,16 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/internal-error")
         public void internalError() {
             throw new RuntimeException("unexpected NPE");
+        }
+
+        @GetMapping("/authentication-required")
+        public void authenticationRequired() {
+            throw new BadCredentialsException("Bad credentials");
+        }
+
+        @GetMapping("/access-denied")
+        public void accessDenied() {
+            throw new AccessDeniedException("Access is denied");
         }
 
         @PostMapping("/validate")
@@ -259,6 +274,42 @@ class GlobalExceptionHandlerTest {
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("FTGO-500-001"))
                     .andExpect(jsonPath("$.message").value("An unexpected internal error occurred"))
+                    .andExpect(jsonPath("$.timestamp").value(notNullValue()));
+        }
+    }
+
+    // ---- Authentication (401) ----
+
+    @Nested
+    @DisplayName("Authentication errors (401)")
+    class AuthenticationErrors {
+
+        @Test
+        @DisplayName("returns 401 for AuthenticationException")
+        void authenticationException_returns401() throws Exception {
+            mockMvc.perform(get("/test/authentication-required"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.code").value("FTGO-401-001"))
+                    .andExpect(jsonPath("$.message").value("Authentication is required"))
+                    .andExpect(jsonPath("$.timestamp").value(notNullValue()));
+        }
+    }
+
+    // ---- Forbidden (403) ----
+
+    @Nested
+    @DisplayName("Access denied errors (403)")
+    class AccessDeniedErrors {
+
+        @Test
+        @DisplayName("returns 403 for AccessDeniedException")
+        void accessDenied_returns403() throws Exception {
+            mockMvc.perform(get("/test/access-denied"))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FTGO-403-001"))
+                    .andExpect(
+                            jsonPath("$.message")
+                                    .value("Access to the requested resource is denied"))
                     .andExpect(jsonPath("$.timestamp").value(notNullValue()));
         }
     }
