@@ -65,7 +65,7 @@ public class SensitiveDataMaskingConverter extends ClassicConverter {
         masked = PASSWORD_PATTERN.matcher(masked).replaceAll("$1" + "=" + MASKED);
         masked = BEARER_TOKEN_PATTERN.matcher(masked).replaceAll("$1 " + MASKED);
         masked = BASIC_AUTH_PATTERN.matcher(masked).replaceAll("$1 " + MASKED);
-        masked = SSN_PATTERN.matcher(masked).replaceAll("$1-" + MASKED + "-$3");
+        masked = SSN_PATTERN.matcher(masked).replaceAll(MASKED + "-" + MASKED + "-$3");
         return masked;
     }
 }

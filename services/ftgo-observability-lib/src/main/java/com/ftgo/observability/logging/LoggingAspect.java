@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *   <li>{@code DEBUG} — method entry with arguments and method exit with duration
- *   <li>{@code ERROR} — exceptions with class and message
+ *   <li>{@code DEBUG} — exceptions with class and message (error-level logging is left to the
+ *       global exception handler)
  * </ul>
  */
 @Aspect
@@ -58,7 +59,7 @@ public class LoggingAspect {
             return result;
         } catch (Throwable ex) {
             long elapsed = System.currentTimeMillis() - startTime;
-            logger.error(
+            logger.debug(
                     "Exception in {}.{}() after {} ms — {}: {}",
                     joinPoint.getTarget().getClass().getSimpleName(),
                     methodName,
