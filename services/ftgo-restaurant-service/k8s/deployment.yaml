@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-restaurant-service
+  labels:
+    app: ftgo-restaurant-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ftgo-restaurant-service
+  template:
+    metadata:
+      labels:
+        app: ftgo-restaurant-service
+    spec:
+      containers:
+        - name: ftgo-restaurant-service
+          image: ftgo/restaurant-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "kubernetes"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftgo-restaurant-service
+spec:
+  selector:
+    app: ftgo-restaurant-service
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
