@@ -55,10 +55,10 @@ class MoneySerializationTest {
             this.price = price;
         }
 
-        public MoneyContainer() {
+        MoneyContainer() {
         }
 
-        public MoneyContainer(Money price) {
+        MoneyContainer(Money price) {
             this.price = price;
         }
     }

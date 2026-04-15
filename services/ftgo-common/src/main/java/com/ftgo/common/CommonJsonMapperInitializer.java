@@ -7,15 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.PostConstruct;
 
+/**
+ * Initializes the shared {@link ObjectMapper} with common modules and settings.
+ */
 public class CommonJsonMapperInitializer {
 
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @PostConstruct
-  public void initialize() {
-    objectMapper.registerModule(new MoneyModule());
-    objectMapper.registerModule(new JavaTimeModule());
-    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-  }
+    /**
+     * Registers common Jackson modules and disables date-as-timestamp serialization.
+     */
+    @PostConstruct
+    public void initialize() {
+        objectMapper.registerModule(new MoneyModule());
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 }
