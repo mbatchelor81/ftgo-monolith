@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.ftgo'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll([
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation'
+    ])
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}

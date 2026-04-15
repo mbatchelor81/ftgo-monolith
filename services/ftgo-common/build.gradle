@@ -1,22 +1,19 @@
-apply plugin: 'java-library'
+plugins {
+    id 'ftgo.library-conventions'
+}
+
 apply plugin: 'maven-publish'
 
 group = 'com.ftgo'
 version = '1.0.0'
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // JPA API for @Embeddable annotations on value objects
     compileOnly 'javax.persistence:javax.persistence-api:2.2'
 
     // Jackson for Money serialization/deserialization
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7'
+    api libs.jackson.databind
+    api libs.jackson.datatype.jsr310
 
     // Apache Commons Lang for equals/hashCode/toString builders
     compile 'commons-lang:commons-lang:2.6'

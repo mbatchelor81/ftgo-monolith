@@ -1,0 +1,28 @@
+plugins {
+    id 'ftgo.java-conventions'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom libs.jackson.bom.get().toString()
+        mavenBom libs.testcontainers.bom.get().toString()
+    }
+}
+
+springBoot {
+    buildInfo()
+}
+
+// Placeholder services have no source code yet. Disable bootJar and enable plain jar
+// so the build succeeds. Once a @SpringBootApplication main class is added, set
+//   bootJar.enabled = true   and   jar.enabled = false
+// in the service's own build.gradle to produce the executable fat jar.
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}
