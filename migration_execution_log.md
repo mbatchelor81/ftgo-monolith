@@ -9,8 +9,8 @@
 | Batch | Jira Key | Summary | Phase | Child Session ID | Session Status | PR Link | Squash Status | Conflicts Resolved |
 |-------|----------|---------|-------|-----------------|----------------|---------|---------------|--------------------|
 | 1 | EM-30 | Define Microservices Repository Structure and Naming Conventions | Phase 1 | devin-8d7429dc2d464c408e11417371891bf8 | completed | [PR #55](https://github.com/mbatchelor81/ftgo-monolith/pull/55) | squashed | None |
-| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | — | — | — | — | — |
-| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | — | — | — | — | — |
+| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | devin-4586667534b643f3868cc18b3674915d | completed | [PR #57](https://github.com/mbatchelor81/ftgo-monolith/pull/57) | squashed | gradle/libs.versions.toml, services/ftgo-common/build.gradle |
+| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | devin-5d44ab68ae5545949c19522de147fa45 | completed | [PR #56](https://github.com/mbatchelor81/ftgo-monolith/pull/56) | squashed | None |
 | 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain as Versioned Shared Libraries | Phase 1 | — | — | — | — | — |
 | 3 | EM-33 | Set Up Automated Gradle Build Pipeline with GitHub Actions | Phase 2 | — | — | — | — | — |
 | 3 | EM-39 | Implement Spring Security Foundation and Authentication Configuration | Phase 3 | — | — | — | — | — |
@@ -34,7 +34,9 @@
 ## Conflict Resolution Log
 
 | Batch | Jira Key | File | Resolution Strategy | Details |
-|-------|----------|------|--------------------|---------| 
+|-------|----------|------|--------------------|--------|
+| 2 | EM-28 | gradle/libs.versions.toml | Combined both sides | Merged EM-32's ftgo-common version entry into EM-28's comprehensive version catalog |
+| 2 | EM-28 | services/ftgo-common/build.gradle | Prefer EM-32 (service-specific) | Reverted to EM-32's Gradle 4.x-compatible syntax since module is included in root build |
 
 ## Deferrals
 
