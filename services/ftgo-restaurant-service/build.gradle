@@ -2,10 +2,12 @@ plugins {
     id 'ftgo.spring-boot-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.docker-conventions'
+    id 'ftgo.observability-conventions'
 }
 
 dependencies {
     implementation project(':ftgo-common')
+    implementation project(':ftgo-security-lib')
     implementation project(':ftgo-openapi-lib')
 
     implementation libs.spring.boot.starter.web
@@ -15,4 +17,6 @@ dependencies {
 
     runtimeOnly libs.postgresql
     runtimeOnly libs.flyway.database.postgresql
+
+    testImplementation libs.spring.security.test
 }

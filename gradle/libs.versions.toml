@@ -4,6 +4,8 @@ java = "17"
 
 # FTGO shared libraries
 ftgo-common = "1.0.0"
+ftgo-common-jpa = "1.0.0"
+ftgo-domain = "1.0.0"
 
 # Spring
 spring-boot = "3.2.5"
@@ -17,6 +19,7 @@ h2 = "2.2.224"
 # Observability
 micrometer = "1.12.5"
 micrometer-tracing = "1.2.5"
+prometheus-simpleclient = "0.16.0"
 
 # Serialization
 jackson-bom = "2.17.0"
@@ -40,6 +43,8 @@ jib = "3.4.2"
 [libraries]
 # FTGO shared libraries
 ftgo-common = { group = "com.ftgo", name = "ftgo-common", version.ref = "ftgo-common" }
+ftgo-common-jpa = { group = "com.ftgo", name = "ftgo-common-jpa", version.ref = "ftgo-common-jpa" }
+ftgo-domain = { group = "com.ftgo", name = "ftgo-domain", version.ref = "ftgo-domain" }
 
 # Spring Boot starters
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -48,6 +53,7 @@ spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
 
 # Database
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
@@ -58,8 +64,10 @@ h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 # Observability
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-observation = { module = "io.micrometer:micrometer-observation", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel", version.ref = "micrometer-tracing" }
+prometheus-simpleclient = { module = "io.prometheus:simpleclient", version.ref = "prometheus-simpleclient" }
 
 # Serialization
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson-bom" }

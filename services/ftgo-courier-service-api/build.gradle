@@ -1,0 +1,10 @@
+plugins {
+    id 'ftgo.library-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    api project(':ftgo-common')
+}

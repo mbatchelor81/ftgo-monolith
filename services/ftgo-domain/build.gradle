@@ -1,0 +1,14 @@
+plugins {
+    id 'ftgo.library-conventions'
+}
+
+group = 'com.ftgo'
+version = '1.0.0'
+
+dependencies {
+    api project(':ftgo-common')
+    api project(':ftgo-common-jpa')
+
+    // Apache Commons Lang for equals/hashCode/toString builders
+    implementation 'commons-lang:commons-lang:2.6'
+}

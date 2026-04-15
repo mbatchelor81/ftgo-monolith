@@ -1,0 +1,19 @@
+plugins {
+    id 'ftgo.library-conventions'
+}
+
+dependencies {
+    api libs.spring.boot.starter.security
+    api libs.spring.boot.starter.web
+
+    // Optional actuator support for securing management endpoints
+    compileOnly libs.spring.boot.starter.actuator
+
+    // Jackson for JSON error responses
+    implementation libs.jackson.databind
+
+    // Test dependencies
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.actuator
+    testImplementation libs.spring.security.test
+}
