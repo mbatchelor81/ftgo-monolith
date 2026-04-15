@@ -1,0 +1,21 @@
+/**
+ * Convention plugin that adds Micrometer + Prometheus observability to FTGO microservices.
+ *
+ * Applies to any service that needs metrics collection and a /actuator/prometheus endpoint.
+ * Adds:
+ *   - micrometer-core for metrics API
+ *   - micrometer-registry-prometheus for Prometheus exposition
+ *   - spring-boot-starter-actuator for /actuator endpoints
+ *   - ftgo-observability-lib for shared metric helpers
+ */
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation libs.micrometer.core
+    implementation libs.micrometer.registry.prometheus
+    implementation libs.spring.boot.starter.actuator
+
+    implementation project(':ftgo-observability-lib')
+}

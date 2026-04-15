@@ -2,6 +2,7 @@ plugins {
     id 'ftgo.spring-boot-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.docker-conventions'
+    id 'ftgo.observability-conventions'
 }
 
 dependencies {

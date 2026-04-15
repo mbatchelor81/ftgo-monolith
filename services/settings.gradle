@@ -15,6 +15,7 @@ rootProject.name = 'ftgo-services'
 // Shared libraries
 include 'ftgo-common'
 include 'ftgo-common-jpa'
+include 'ftgo-observability-lib'
 
 // Microservices
 include 'ftgo-consumer-service'

@@ -1,0 +1,55 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert-rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # Add alertmanager target when available:
+          # - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # FTGO Order Service
+  - job_name: "ftgo-order-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["ftgo-order-service:8080"]
+        labels:
+          application: "ftgo-order-service"
+
+  # FTGO Consumer Service
+  - job_name: "ftgo-consumer-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["ftgo-consumer-service:8080"]
+        labels:
+          application: "ftgo-consumer-service"
+
+  # FTGO Restaurant Service
+  - job_name: "ftgo-restaurant-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["ftgo-restaurant-service:8080"]
+        labels:
+          application: "ftgo-restaurant-service"
+
+  # FTGO Courier Service
+  - job_name: "ftgo-courier-service"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["ftgo-courier-service:8080"]
+        labels:
+          application: "ftgo-courier-service"
