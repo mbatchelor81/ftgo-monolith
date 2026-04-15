@@ -75,7 +75,7 @@ The artifact is published to `services/ftgo-common/build/repo/`.
 ## Testing
 
 ```bash
-./gradlew :services:ftgo-common:test
+./gradlew :ftgo-common:test
 ```
 
 Tests included:
