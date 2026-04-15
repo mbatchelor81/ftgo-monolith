@@ -1,12 +1,22 @@
 package com.ftgo.orderservice.api.web;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 /** Request DTO for creating a new order. */
 public class CreateOrderRequest {
 
+    @Positive(message = "restaurantId must be positive")
     private long restaurantId;
+
+    @Positive(message = "consumerId must be positive")
     private long consumerId;
+
+    @NotEmpty(message = "lineItems must not be empty")
+    @Valid
     private List<LineItem> lineItems;
 
     public CreateOrderRequest(long consumerId, long restaurantId, List<LineItem> lineItems) {
@@ -44,7 +54,10 @@ public class CreateOrderRequest {
     /** Represents a single line item in the order request. */
     public static class LineItem {
 
+        @NotNull(message = "menuItemId must not be null")
         private String menuItemId;
+
+        @Positive(message = "quantity must be positive")
         private int quantity;
 
         private LineItem() {}

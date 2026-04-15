@@ -1,12 +1,21 @@
 package com.ftgo.restaurantservice.api.events;
 
 import com.ftgo.common.Address;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /** Request DTO for creating a new restaurant. */
 public class CreateRestaurantRequest {
 
+    @NotBlank(message = "name must not be blank")
     private String name;
+
+    @NotNull(message = "menu must not be null")
+    @Valid
     private RestaurantMenuDTO menu;
+
+    @NotNull(message = "address must not be null")
     private Address address;
 
     private CreateRestaurantRequest() {}

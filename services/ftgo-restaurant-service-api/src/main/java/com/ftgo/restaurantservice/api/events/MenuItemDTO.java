@@ -1,12 +1,19 @@
 package com.ftgo.restaurantservice.api.events;
 
 import com.ftgo.common.Money;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /** DTO representing a menu item. */
 public class MenuItemDTO {
 
+    @NotBlank(message = "id must not be blank")
     private String id;
+
+    @NotBlank(message = "name must not be blank")
     private String name;
+
+    @NotNull(message = "price must not be null")
     private Money price;
 
     private MenuItemDTO() {}

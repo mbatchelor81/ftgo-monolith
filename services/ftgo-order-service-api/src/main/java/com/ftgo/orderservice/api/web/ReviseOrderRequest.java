@@ -1,10 +1,12 @@
 package com.ftgo.orderservice.api.web;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.Map;
 
 /** Request DTO for revising an existing order. */
 public class ReviseOrderRequest {
 
+    @NotEmpty(message = "revisedLineItemQuantities must not be empty")
     private Map<String, Integer> revisedLineItemQuantities;
 
     private ReviseOrderRequest() {}
