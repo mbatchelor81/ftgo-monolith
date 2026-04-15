@@ -24,10 +24,10 @@
 | 4 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | devin-87bbf6d3bd0345828379db74a2113750 | completed | [PR #70](https://github.com/mbatchelor81/ftgo-monolith/pull/70) | squashed (e4bc054) | None |
 | 4 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | devin-6acc5f12a2c14abb87b7098ad8dedc97 | completed | [PR #66](https://github.com/mbatchelor81/ftgo-monolith/pull/66) | squashed (9c120f8) | None |
 | 4 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | devin-2cd03cc5c7e1422888853651185a0a64 | completed | [PR #69](https://github.com/mbatchelor81/ftgo-monolith/pull/69) | squashed (14f496a) | None (+pre-existing quality fixes: 8a52bf6, 0e61e48, e04ddab, edbb40c, 30f470b, 077fb2a) |
-| 5 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | — | — | — | — | — |
-| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | — | — | — | — | — |
-| 5 | EM-42 | Implement Distributed Tracing with Spring Cloud Sleuth and Zipkin/Jaeger | Phase 4 | — | — | — | — | — |
-| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | — | — | — | — | — |
+| 5 | EM-42 | Implement Distributed Tracing with Micrometer Tracing (Brave + Zipkin) | Phase 4 | devin-5c54b18be7264ea8aaddddfb64c754fb | completed | [PR #72](https://github.com/mbatchelor81/ftgo-monolith/pull/72) | squashed (9c30244) | None |
+| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | devin-a4ee3455056d45bdaceea2ab01297d04 | completed | [PR #74](https://github.com/mbatchelor81/ftgo-monolith/pull/74) | squashed (955efad) | None |
+| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | devin-824ce3b6f08f4e4f921e09642e6b4511 | completed | [PR #73](https://github.com/mbatchelor81/ftgo-monolith/pull/73) | squashed (844ef79) | None |
+| 5 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | devin-30f12c4ee728441cafac8497b6567161 | completed | [PR #71](https://github.com/mbatchelor81/ftgo-monolith/pull/71) | squashed (74718a3) | None |
 | 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | — | — | — | — | — |
 | 6 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | — | — | — | — | — |
 | 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | — | — | — | — | — |
