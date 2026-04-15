@@ -8,7 +8,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 /**
@@ -30,6 +32,14 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
+        String tokenType = claimsExtractor.extractTokenType(jwt);
+        if (!"access".equals(tokenType)) {
+            throw new JwtValidationException(
+                    "Token type '" + tokenType + "' is not permitted for API access",
+                    List.of(new OAuth2Error("invalid_token",
+                            "Only access tokens are accepted", null)));
+        }
+
         FtgoUserDetails userDetails = claimsExtractor.extractUserDetails(jwt);
         Collection<GrantedAuthority> authorities = buildAuthorities(userDetails);
 
