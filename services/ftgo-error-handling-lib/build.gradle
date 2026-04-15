@@ -1,0 +1,26 @@
+plugins {
+    id 'ftgo.library-conventions'
+}
+
+dependencies {
+    api project(':ftgo-common')
+    api project(':ftgo-domain')
+    api project(':ftgo-observability-lib')
+
+    // Spring Web for @RestControllerAdvice and servlet API
+    api libs.spring.boot.starter.web
+
+    // Bean Validation API
+    api libs.spring.boot.starter.validation
+
+    // Jackson for JSON serialization
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+
+    // SLF4J logging (provided by Spring Boot)
+    compileOnly 'org.slf4j:slf4j-api'
+
+    // Testing
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.web
+}
