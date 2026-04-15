@@ -43,7 +43,7 @@ management:
         readiness:
           include: readinessState,db,diskSpace
         liveness:
-          include: livenessState,serviceLivenessHealthIndicator
+          include: livenessState,serviceLiveness
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
