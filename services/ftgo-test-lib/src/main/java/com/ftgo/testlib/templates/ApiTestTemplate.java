@@ -2,7 +2,7 @@ package com.ftgo.testlib.templates;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ftgo.testlib.base.BaseIntegrationTest;
+import com.ftgo.testlib.base.BaseApiTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  *
  * <ul>
  *   <li>Use {@code @SpringBootTest(webEnvironment = RANDOM_PORT)} for a full server
- *   <li>Extend {@link BaseIntegrationTest} for Testcontainers setup
+ *   <li>Extend {@link BaseApiTest} for Testcontainers setup (without {@code @Transactional})
  *   <li>Group tests by endpoint using {@code @Nested} classes
  *   <li>Test status codes, response bodies, and error handling
  * </ul>
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
  * @SpringBootTest(
  *     classes = OrderServiceApplication.class,
  *     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
- * class OrderApiTest extends BaseIntegrationTest {
+ * class OrderApiTest extends BaseApiTest {
  *
  *     @LocalServerPort
  *     private int port;
@@ -59,7 +59,7 @@ import org.junit.jupiter.api.Test;
  * }</pre>
  *
  * @see io.restassured.RestAssured
- * @see BaseIntegrationTest
+ * @see BaseApiTest
  */
 // @SpringBootTest(
 //     classes = YourServiceApplication.class,
@@ -67,7 +67,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("ApiTestTemplate — copy and rename")
 @SuppressWarnings(
         "checkstyle:MethodName") // Template uses test naming convention: method_condition_result
-public class ApiTestTemplate extends BaseIntegrationTest {
+public class ApiTestTemplate extends BaseApiTest {
 
     // @LocalServerPort
     // private int port;
