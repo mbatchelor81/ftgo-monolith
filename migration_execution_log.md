@@ -32,7 +32,7 @@
 | 6 | EM-43 | Set Up Centralized Logging with ELK/EFK Stack | Phase 4 | devin-834933e6cc4443dbb8e89519edcb7baa | completed | [PR #76](https://github.com/mbatchelor81/ftgo-monolith/pull/76) | squashed (4b64c0a) | None (+post-squash Spotless fix 50d1298) |
 | 6 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | devin-8a66f1b5d1fc47828ca30a7db0b7be29 | completed | [PR #78](https://github.com/mbatchelor81/ftgo-monolith/pull/78) | squashed (7e5e84f) | ftgo-observability-lib/build.gradle, AutoConfiguration.imports |
 | 6 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | devin-f79bc7f3465c4db19e88316eecd06f94 | completed | [PR #75](https://github.com/mbatchelor81/ftgo-monolith/pull/75) | squashed (6b738bc) | libs.versions.toml (duplicate resilience4j entries — fixes: 8afaa38, 6cdb9a2) |
-| 7 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | — | — | — | — | — |
+| 7 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | devin-7fdfec0d9bf34c3ba1eaa730f4becb4f | completed | [PR #79](https://github.com/mbatchelor81/ftgo-monolith/pull/79) | squashed (914f91a) | None |
 
 ---
 
