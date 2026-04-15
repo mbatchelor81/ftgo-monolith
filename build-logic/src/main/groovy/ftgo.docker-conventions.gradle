@@ -7,7 +7,7 @@ jib {
         image = 'eclipse-temurin:17-jre-alpine'
     }
     to {
-        image = "ftgo/${project.name}"
+        image = "ftgo/${project.name.replace('ftgo-', '')}"
         tags = [project.version.toString(), 'latest']
     }
     container {

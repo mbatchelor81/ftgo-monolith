@@ -46,7 +46,7 @@ Add the dependency in your service's `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation project(':services:ftgo-common')
+    implementation project(':ftgo-common')
 }
 ```
 
@@ -61,13 +61,13 @@ dependencies {
 ## Building
 
 ```bash
-./gradlew :services:ftgo-common:build
+./gradlew :ftgo-common:build
 ```
 
 ## Publishing to Local Repository
 
 ```bash
-./gradlew :services:ftgo-common:publishMavenJavaPublicationToLocalRepository
+./gradlew :ftgo-common:publishMavenJavaPublicationToLocalRepository
 ```
 
 The artifact is published to `services/ftgo-common/build/repo/`.
