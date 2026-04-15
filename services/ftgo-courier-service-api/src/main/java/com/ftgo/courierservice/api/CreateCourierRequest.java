@@ -8,8 +8,7 @@ public class CreateCourierRequest {
     private PersonName name;
     private Address address;
 
-    public CreateCourierRequest() {
-    }
+    public CreateCourierRequest() {}
 
     public CreateCourierRequest(PersonName name, Address address) {
         this.name = name;

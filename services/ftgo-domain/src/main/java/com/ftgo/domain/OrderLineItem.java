@@ -1,17 +1,15 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Money;
+import jakarta.persistence.*;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import jakarta.persistence.*;
-
 @Embeddable
 public class OrderLineItem {
 
-    public OrderLineItem() {
-    }
+    public OrderLineItem() {}
 
     private int quantity;
     private String menuItemId;

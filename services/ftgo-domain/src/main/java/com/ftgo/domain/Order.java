@@ -1,14 +1,13 @@
 package com.ftgo.domain;
 
+import static com.ftgo.domain.OrderState.*;
+
 import com.ftgo.common.Money;
 import com.ftgo.common.UnsupportedStateTransitionException;
-import org.hibernate.annotations.DynamicUpdate;
-
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.ftgo.domain.OrderState.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "orders")
@@ -20,8 +19,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version
-    private Long version;
+    @Version private Long version;
 
     @Enumerated(EnumType.STRING)
     private OrderState orderState;
@@ -31,14 +29,11 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     private Restaurant restaurant;
 
-    @Embedded
-    private OrderLineItems orderLineItems;
+    @Embedded private OrderLineItems orderLineItems;
 
-    @Embedded
-    private DeliveryInformation deliveryInformation;
+    @Embedded private DeliveryInformation deliveryInformation;
 
-    @Embedded
-    private PaymentInformation paymentInformation;
+    @Embedded private PaymentInformation paymentInformation;
 
     @Embedded
     @AttributeOverride(name = "amount", column = @Column(name = "order_minimum"))
@@ -51,11 +46,9 @@ public class Order {
     private LocalDateTime pickedUpTime;
     private LocalDateTime deliveredTime;
 
-    @ManyToOne
-    private Courier assignedCourier;
+    @ManyToOne private Courier assignedCourier;
 
-    private Order() {
-    }
+    private Order() {}
 
     public Order(long consumerId, Restaurant restaurant, List<OrderLineItem> orderLineItems) {
         this.consumerId = consumerId;

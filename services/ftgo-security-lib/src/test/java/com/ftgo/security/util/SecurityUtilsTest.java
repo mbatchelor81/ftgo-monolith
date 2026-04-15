@@ -1,16 +1,14 @@
 package com.ftgo.security.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Collection;
 import java.util.List;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class SecurityUtilsTest {
 
@@ -70,9 +68,8 @@ class SecurityUtilsTest {
     }
 
     private void setAuthentication(String username, String... authorities) {
-        List<SimpleGrantedAuthority> grantedAuthorities = java.util.Arrays.stream(authorities)
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        List<SimpleGrantedAuthority> grantedAuthorities =
+                java.util.Arrays.stream(authorities).map(SimpleGrantedAuthority::new).toList();
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
         SecurityContextHolder.getContext().setAuthentication(auth);

@@ -1,17 +1,15 @@
 package com.ftgo.openapi.model;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class PagedResponseTest {
 
     @Test
     void constructorCalculatesPaginationFields() {
-        PagedResponse<String> response = new PagedResponse<>(
-                List.of("a", "b", "c"), 0, 3, 10);
+        PagedResponse<String> response = new PagedResponse<>(List.of("a", "b", "c"), 0, 3, 10);
 
         assertThat(response.getContent()).containsExactly("a", "b", "c");
         assertThat(response.getPage()).isZero();
@@ -24,8 +22,7 @@ class PagedResponseTest {
 
     @Test
     void lastPageIsDetectedCorrectly() {
-        PagedResponse<String> response = new PagedResponse<>(
-                List.of("x"), 3, 3, 10);
+        PagedResponse<String> response = new PagedResponse<>(List.of("x"), 3, 3, 10);
 
         assertThat(response.isFirst()).isFalse();
         assertThat(response.isLast()).isTrue();

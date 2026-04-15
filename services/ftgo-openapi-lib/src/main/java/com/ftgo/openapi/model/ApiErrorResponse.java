@@ -2,15 +2,14 @@ package com.ftgo.openapi.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.Instant;
 import java.util.List;
 
 /**
  * Standard error response format for all FTGO REST APIs.
  *
- * <p>Follows the Problem Details pattern (RFC 9457) adapted for FTGO services.
- * All error responses across microservices should use this format for consistency.</p>
+ * <p>Follows the Problem Details pattern (RFC 9457) adapted for FTGO services. All error responses
+ * across microservices should use this format for consistency.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Standard error response for FTGO APIs")
@@ -94,9 +93,7 @@ public class ApiErrorResponse {
         this.fieldErrors = fieldErrors;
     }
 
-    /**
-     * Represents a single field-level validation error.
-     */
+    /** Represents a single field-level validation error. */
     @Schema(description = "Field-level validation error detail")
     public static class FieldError {
 
@@ -109,8 +106,7 @@ public class ApiErrorResponse {
         @Schema(description = "The rejected value", example = "")
         private Object rejectedValue;
 
-        public FieldError() {
-        }
+        public FieldError() {}
 
         public FieldError(String field, String message, Object rejectedValue) {
             this.field = field;

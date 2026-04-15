@@ -14,5 +14,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan
 @EnableJpaRepositories
 @Import(CommonConfiguration.class)
-public class DomainConfiguration {
-}
+public class DomainConfiguration {}

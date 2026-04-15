@@ -1,7 +1,6 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Money;
-
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
@@ -15,8 +14,7 @@ public class OrderLineItems {
     @CollectionTable(name = "order_line_items")
     private List<OrderLineItem> lineItems;
 
-    private OrderLineItems() {
-    }
+    private OrderLineItems() {}
 
     public OrderLineItems(List<OrderLineItem> lineItems) {
         this.lineItems = lineItems;
@@ -31,24 +29,36 @@ public class OrderLineItems {
     }
 
     OrderLineItem findOrderLineItem(String lineItemId) {
-        return lineItems.stream().filter(li -> li.getMenuItemId().equals(lineItemId)).findFirst().get();
+        return lineItems.stream()
+                .filter(li -> li.getMenuItemId().equals(lineItemId))
+                .findFirst()
+                .get();
     }
 
     Money changeToOrderTotal(OrderRevision orderRevision) {
         AtomicReference<Money> delta = new AtomicReference<>(Money.ZERO);
 
-        orderRevision.getRevisedLineItemQuantities().forEach((lineItemId, newQuantity) -> {
-            OrderLineItem lineItem = findOrderLineItem(lineItemId);
-            delta.set(delta.get().add(lineItem.deltaForChangedQuantity(newQuantity)));
-        });
+        orderRevision
+                .getRevisedLineItemQuantities()
+                .forEach(
+                        (lineItemId, newQuantity) -> {
+                            OrderLineItem lineItem = findOrderLineItem(lineItemId);
+                            delta.set(
+                                    delta.get().add(lineItem.deltaForChangedQuantity(newQuantity)));
+                        });
         return delta.get();
     }
 
     void updateLineItems(OrderRevision orderRevision) {
-        getLineItems().stream().forEach(li -> {
-            Integer revised = orderRevision.getRevisedLineItemQuantities().get(li.getMenuItemId());
-            li.setQuantity(revised);
-        });
+        getLineItems().stream()
+                .forEach(
+                        li -> {
+                            Integer revised =
+                                    orderRevision
+                                            .getRevisedLineItemQuantities()
+                                            .get(li.getMenuItemId());
+                            li.setQuantity(revised);
+                        });
     }
 
     Money orderTotal() {

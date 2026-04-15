@@ -6,8 +6,7 @@ public class RestaurantMenuDTO {
 
     private List<MenuItemDTO> menuItems;
 
-    private RestaurantMenuDTO() {
-    }
+    private RestaurantMenuDTO() {}
 
     public RestaurantMenuDTO(List<MenuItemDTO> menuItems) {
         this.menuItems = menuItems;

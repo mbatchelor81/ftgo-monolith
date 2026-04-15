@@ -14,8 +14,7 @@ public class CreateOrderRequest {
         this.lineItems = lineItems;
     }
 
-    private CreateOrderRequest() {
-    }
+    private CreateOrderRequest() {}
 
     public long getRestaurantId() {
         return restaurantId;
@@ -46,8 +45,7 @@ public class CreateOrderRequest {
         private String menuItemId;
         private int quantity;
 
-        private LineItem() {
-        }
+        private LineItem() {}
 
         public LineItem(String menuItemId, int quantity) {
             this.menuItemId = menuItemId;

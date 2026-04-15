@@ -1,25 +1,23 @@
 package com.ftgo.SERVICENAME.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit test template demonstrating JUnit 5 + Mockito + AssertJ patterns.
  *
  * <p>Unit tests should:
+ *
  * <ul>
- *   <li>Run fast (no external dependencies)</li>
- *   <li>Follow Arrange-Act-Assert pattern</li>
- *   <li>Use descriptive method names: methodName_condition_expectedResult</li>
- *   <li>Mock external dependencies with Mockito</li>
+ *   <li>Run fast (no external dependencies)
+ *   <li>Follow Arrange-Act-Assert pattern
+ *   <li>Use descriptive method names: methodName_condition_expectedResult
+ *   <li>Mock external dependencies with Mockito
  * </ul>
  *
  * <p>Replace SERVICENAME with the actual service name when copying this template.

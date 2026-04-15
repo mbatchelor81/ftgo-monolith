@@ -3,7 +3,6 @@ package com.ftgo.security.handler;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,9 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Global exception handler for security-related exceptions.
  *
- * <p>Intercepts {@link AuthenticationException} and {@link AccessDeniedException}
- * thrown during request processing and returns structured JSON error responses
- * without leaking internal details.
+ * <p>Intercepts {@link AuthenticationException} and {@link AccessDeniedException} thrown during
+ * request processing and returns structured JSON error responses without leaking internal details.
  */
 @RestControllerAdvice
 public class SecurityExceptionHandler {

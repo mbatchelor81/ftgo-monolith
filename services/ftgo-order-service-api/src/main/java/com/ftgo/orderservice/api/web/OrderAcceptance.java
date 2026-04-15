@@ -6,8 +6,7 @@ public class OrderAcceptance {
 
     private LocalDateTime readyBy;
 
-    public OrderAcceptance() {
-    }
+    public OrderAcceptance() {}
 
     public OrderAcceptance(LocalDateTime readyBy) {
         this.readyBy = readyBy;

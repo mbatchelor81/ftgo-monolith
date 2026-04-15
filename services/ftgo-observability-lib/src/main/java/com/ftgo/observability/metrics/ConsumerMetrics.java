@@ -19,20 +19,23 @@ public class ConsumerMetrics {
     private final Counter consumerValidationsFailed;
 
     public ConsumerMetrics(MeterRegistry registry) {
-        this.consumersRegistered = Counter.builder("ftgo.consumers.registered")
-                .description("Total number of consumers registered")
-                .tag("service", "consumer-service")
-                .register(registry);
+        this.consumersRegistered =
+                Counter.builder("ftgo.consumers.registered")
+                        .description("Total number of consumers registered")
+                        .tag("service", "consumer-service")
+                        .register(registry);
 
-        this.consumerValidationsPerformed = Counter.builder("ftgo.consumers.validations.performed")
-                .description("Total number of order validations performed for consumers")
-                .tag("service", "consumer-service")
-                .register(registry);
+        this.consumerValidationsPerformed =
+                Counter.builder("ftgo.consumers.validations.performed")
+                        .description("Total number of order validations performed for consumers")
+                        .tag("service", "consumer-service")
+                        .register(registry);
 
-        this.consumerValidationsFailed = Counter.builder("ftgo.consumers.validations.failed")
-                .description("Total number of consumer order validations that failed")
-                .tag("service", "consumer-service")
-                .register(registry);
+        this.consumerValidationsFailed =
+                Counter.builder("ftgo.consumers.validations.failed")
+                        .description("Total number of consumer order validations that failed")
+                        .tag("service", "consumer-service")
+                        .register(registry);
     }
 
     public void recordConsumerRegistered() {

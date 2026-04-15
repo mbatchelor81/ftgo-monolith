@@ -1,11 +1,11 @@
 package com.ftgo.observability.metrics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CourierMetricsTest {
 
@@ -22,7 +22,8 @@ class CourierMetricsTest {
     void recordCourierCreated_incrementsCounter() {
         courierMetrics.recordCourierCreated();
 
-        double count = registry.counter("ftgo.couriers.created", "service", "courier-service").count();
+        double count =
+                registry.counter("ftgo.couriers.created", "service", "courier-service").count();
         assertThat(count).isEqualTo(1.0);
     }
 
@@ -30,7 +31,9 @@ class CourierMetricsTest {
     void recordDeliveryAssigned_incrementsCounter() {
         courierMetrics.recordDeliveryAssigned();
 
-        double count = registry.counter("ftgo.couriers.deliveries.assigned", "service", "courier-service").count();
+        double count =
+                registry.counter("ftgo.couriers.deliveries.assigned", "service", "courier-service")
+                        .count();
         assertThat(count).isEqualTo(1.0);
     }
 

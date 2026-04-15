@@ -1,11 +1,10 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Address;
-import org.hibernate.annotations.DynamicUpdate;
-
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.Optional;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "restaurants")
@@ -19,16 +18,14 @@ public class Restaurant {
 
     private String name;
 
-    @Embedded
-    private Address address;
+    @Embedded private Address address;
 
     @Embedded
     @ElementCollection
     @CollectionTable(name = "restaurant_menu_items")
     private List<MenuItem> menuItems;
 
-    public Restaurant() {
-    }
+    public Restaurant() {}
 
     public Restaurant(String name, Address address, RestaurantMenu menu) {
         this.name = name;

@@ -6,8 +6,7 @@ public class OrderLineItemDTO {
     private String menuItemId;
     private String name;
 
-    public OrderLineItemDTO() {
-    }
+    public OrderLineItemDTO() {}
 
     public OrderLineItemDTO(int quantity, String menuItemId, String name) {
         this.quantity = quantity;

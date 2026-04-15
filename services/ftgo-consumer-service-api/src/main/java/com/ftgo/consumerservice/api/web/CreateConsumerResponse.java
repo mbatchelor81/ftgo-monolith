@@ -4,8 +4,7 @@ public class CreateConsumerResponse {
 
     private long consumerId;
 
-    public CreateConsumerResponse() {
-    }
+    public CreateConsumerResponse() {}
 
     public CreateConsumerResponse(long consumerId) {
         this.consumerId = consumerId;

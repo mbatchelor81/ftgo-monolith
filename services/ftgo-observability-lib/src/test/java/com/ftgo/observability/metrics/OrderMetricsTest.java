@@ -1,11 +1,11 @@
 package com.ftgo.observability.metrics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderMetricsTest {
 
@@ -39,7 +39,8 @@ class OrderMetricsTest {
     void recordOrderCancelled_incrementsCounter() {
         orderMetrics.recordOrderCancelled();
 
-        double count = registry.counter("ftgo.orders.cancelled", "service", "order-service").count();
+        double count =
+                registry.counter("ftgo.orders.cancelled", "service", "order-service").count();
         assertThat(count).isEqualTo(1.0);
     }
 
@@ -47,13 +48,15 @@ class OrderMetricsTest {
     void recordOrderDelivered_incrementsCounter() {
         orderMetrics.recordOrderDelivered();
 
-        double count = registry.counter("ftgo.orders.delivered", "service", "order-service").count();
+        double count =
+                registry.counter("ftgo.orders.delivered", "service", "order-service").count();
         assertThat(count).isEqualTo(1.0);
     }
 
     @Test
     void orderProcessingTimer_isRegistered() {
         assertThat(orderMetrics.getOrderProcessingTime()).isNotNull();
-        assertThat(registry.timer("ftgo.orders.processing.time", "service", "order-service")).isNotNull();
+        assertThat(registry.timer("ftgo.orders.processing.time", "service", "order-service"))
+                .isNotNull();
     }
 }

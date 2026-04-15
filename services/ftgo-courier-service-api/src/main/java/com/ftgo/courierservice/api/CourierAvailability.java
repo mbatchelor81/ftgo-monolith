@@ -4,8 +4,7 @@ public class CourierAvailability {
 
     private boolean available;
 
-    public CourierAvailability() {
-    }
+    public CourierAvailability() {}
 
     public CourierAvailability(boolean available) {
         this.available = available;

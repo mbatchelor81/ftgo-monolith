@@ -2,10 +2,9 @@ package com.ftgo.domain;
 
 import com.ftgo.common.Address;
 import com.ftgo.common.PersonName;
-import org.hibernate.annotations.DynamicUpdate;
-
 import jakarta.persistence.*;
 import java.util.List;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -16,19 +15,15 @@ public class Courier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private PersonName name;
+    @Embedded private PersonName name;
 
-    @Embedded
-    private Address address;
+    @Embedded private Address address;
 
-    @Embedded
-    private Plan plan;
+    @Embedded private Plan plan;
 
     private Boolean available;
 
-    public Courier() {
-    }
+    public Courier() {}
 
     public Courier(PersonName name, Address address) {
         this.name = name;

@@ -10,8 +10,7 @@ public class PaymentInformation {
 
     private String paymentToken;
 
-    public PaymentInformation() {
-    }
+    public PaymentInformation() {}
 
     public PaymentInformation(String paymentToken) {
         this.paymentToken = paymentToken;

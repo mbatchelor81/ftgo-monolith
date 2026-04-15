@@ -18,15 +18,17 @@ public class RestaurantMetrics {
     private final Counter menuRevisionsPerformed;
 
     public RestaurantMetrics(MeterRegistry registry) {
-        this.restaurantsCreated = Counter.builder("ftgo.restaurants.created")
-                .description("Total number of restaurants created")
-                .tag("service", "restaurant-service")
-                .register(registry);
+        this.restaurantsCreated =
+                Counter.builder("ftgo.restaurants.created")
+                        .description("Total number of restaurants created")
+                        .tag("service", "restaurant-service")
+                        .register(registry);
 
-        this.menuRevisionsPerformed = Counter.builder("ftgo.restaurants.menu.revisions")
-                .description("Total number of menu revisions performed")
-                .tag("service", "restaurant-service")
-                .register(registry);
+        this.menuRevisionsPerformed =
+                Counter.builder("ftgo.restaurants.menu.revisions")
+                        .description("Total number of menu revisions performed")
+                        .tag("service", "restaurant-service")
+                        .register(registry);
     }
 
     public void recordRestaurantCreated() {

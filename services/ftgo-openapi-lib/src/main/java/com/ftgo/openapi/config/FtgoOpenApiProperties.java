@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Configuration properties for FTGO OpenAPI documentation.
  *
- * <p>Each microservice can customize its API documentation metadata via
- * {@code application.yml} under the {@code ftgo.openapi} prefix.</p>
+ * <p>Each microservice can customize its API documentation metadata via {@code application.yml}
+ * under the {@code ftgo.openapi} prefix.
  *
  * <pre>{@code
  * ftgo:

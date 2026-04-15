@@ -1,19 +1,16 @@
 package com.ftgo.security.jwt;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,13 +21,14 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 /**
- * Central JWT configuration that provides encoder, decoder, token service,
- * claims extractor, and authentication converter beans.
+ * Central JWT configuration that provides encoder, decoder, token service, claims extractor, and
+ * authentication converter beans.
  *
  * <p>RSA keys are resolved in order of precedence:
+ *
  * <ol>
- *   <li>Externally configured via {@link RsaKeyProperties}</li>
- *   <li>Auto-generated ephemeral key pair (development/testing only)</li>
+ *   <li>Externally configured via {@link RsaKeyProperties}
+ *   <li>Auto-generated ephemeral key pair (development/testing only)
  * </ol>
  */
 @Configuration
@@ -46,8 +44,9 @@ public class JwtConfiguration {
         if (rsaKeyProperties.getPublicKey() != null) {
             return rsaKeyProperties.getPublicKey();
         }
-        log.warn("No RSA keys configured — generating ephemeral key pair. "
-                + "Configure ftgo.security.jwt.rsa.public-key and private-key for production use.");
+        log.warn(
+                "No RSA keys configured — generating ephemeral key pair. "
+                        + "Configure ftgo.security.jwt.rsa.public-key and private-key for production use.");
         return generateKeyPair().rsaPublicKey;
     }
 
@@ -67,8 +66,9 @@ public class JwtConfiguration {
         if (hasPublic != hasPrivate) {
             throw new IllegalStateException(
                     "Both ftgo.security.jwt.rsa.public-key and ftgo.security.jwt.rsa.private-key "
-                    + "must be configured together. Found only "
-                    + (hasPublic ? "public" : "private") + " key.");
+                            + "must be configured together. Found only "
+                            + (hasPublic ? "public" : "private")
+                            + " key.");
         }
     }
 
@@ -81,9 +81,7 @@ public class JwtConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public JwtEncoder jwtEncoder(RSAPublicKey rsaPublicKey, RSAPrivateKey rsaPrivateKey) {
-        RSAKey rsaKey = new RSAKey.Builder(rsaPublicKey)
-                .privateKey(rsaPrivateKey)
-                .build();
+        RSAKey rsaKey = new RSAKey.Builder(rsaPublicKey).privateKey(rsaPrivateKey).build();
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(rsaKey));
         return new NimbusJwtEncoder(jwkSource);
     }
@@ -102,7 +100,8 @@ public class JwtConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtAuthenticationConverter jwtAuthenticationConverter(JwtClaimsExtractor claimsExtractor) {
+    public JwtAuthenticationConverter jwtAuthenticationConverter(
+            JwtClaimsExtractor claimsExtractor) {
         return new JwtAuthenticationConverter(claimsExtractor);
     }
 
@@ -120,9 +119,10 @@ public class JwtConfiguration {
                         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
                         generator.initialize(2048);
                         KeyPair keyPair = generator.generateKeyPair();
-                        cachedKeyPair = new RsaKeyHolder(
-                                (RSAPublicKey) keyPair.getPublic(),
-                                (RSAPrivateKey) keyPair.getPrivate());
+                        cachedKeyPair =
+                                new RsaKeyHolder(
+                                        (RSAPublicKey) keyPair.getPublic(),
+                                        (RSAPrivateKey) keyPair.getPrivate());
                     } catch (Exception e) {
                         throw new IllegalStateException("Failed to generate RSA key pair", e);
                     }

@@ -1,4 +1,3 @@
 package com.ftgo.domain;
 
-public class OrderMinimumNotMetException extends RuntimeException {
-}
+public class OrderMinimumNotMetException extends RuntimeException {}

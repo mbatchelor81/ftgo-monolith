@@ -1,7 +1,6 @@
 package com.ftgo.security.config;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,12 +12,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * CORS configuration for FTGO microservices.
  *
  * <p>Configurable via application properties:
+ *
  * <ul>
- *   <li>{@code ftgo.security.cors.allowed-origins} - comma-separated list of allowed origins</li>
- *   <li>{@code ftgo.security.cors.allowed-methods} - comma-separated list of allowed HTTP methods</li>
- *   <li>{@code ftgo.security.cors.allowed-headers} - comma-separated list of allowed headers</li>
- *   <li>{@code ftgo.security.cors.allow-credentials} - whether to allow credentials</li>
- *   <li>{@code ftgo.security.cors.max-age} - max age for preflight cache in seconds</li>
+ *   <li>{@code ftgo.security.cors.allowed-origins} - comma-separated list of allowed origins
+ *   <li>{@code ftgo.security.cors.allowed-methods} - comma-separated list of allowed HTTP methods
+ *   <li>{@code ftgo.security.cors.allowed-headers} - comma-separated list of allowed headers
+ *   <li>{@code ftgo.security.cors.allow-credentials} - whether to allow credentials
+ *   <li>{@code ftgo.security.cors.max-age} - max age for preflight cache in seconds
  * </ul>
  */
 @Configuration

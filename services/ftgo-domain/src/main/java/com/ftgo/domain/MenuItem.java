@@ -1,11 +1,10 @@
 package com.ftgo.domain;
 
 import com.ftgo.common.Money;
+import jakarta.persistence.*;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-import jakarta.persistence.*;
 
 @Embeddable
 @Access(AccessType.FIELD)
@@ -18,8 +17,7 @@ public class MenuItem {
     @AttributeOverride(name = "amount", column = @Column(name = "price"))
     private Money price;
 
-    private MenuItem() {
-    }
+    private MenuItem() {}
 
     public MenuItem(String id, String name, Money price) {
         this.id = id;

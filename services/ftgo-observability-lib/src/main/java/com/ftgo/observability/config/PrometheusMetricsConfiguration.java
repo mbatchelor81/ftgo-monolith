@@ -12,9 +12,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configures Prometheus-specific meter registry settings.
  *
- * <p>Adds a common {@code application} tag to all metrics so that Prometheus
- * and Grafana dashboards can filter by service name. Also configures
- * histogram buckets for HTTP request duration metrics.
+ * <p>Adds a common {@code application} tag to all metrics so that Prometheus and Grafana dashboards
+ * can filter by service name. Also configures histogram buckets for HTTP request duration metrics.
  */
 @Configuration
 public class PrometheusMetricsConfiguration {
@@ -28,19 +27,19 @@ public class PrometheusMetricsConfiguration {
      */
     @Bean
     public MeterRegistryCustomizer<MeterRegistry> commonTags() {
-        return registry -> registry.config()
-                .commonTags("application", applicationName);
+        return registry -> registry.config().commonTags("application", applicationName);
     }
 
     /**
-     * Publishes histogram buckets for HTTP server request duration so that Grafana
-     * can compute percentile-based latency (p50, p95, p99) via PromQL.
+     * Publishes histogram buckets for HTTP server request duration so that Grafana can compute
+     * percentile-based latency (p50, p95, p99) via PromQL.
      */
     @Bean
     public MeterFilter httpHistogramFilter() {
         return new MeterFilter() {
             @Override
-            public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+            public DistributionStatisticConfig configure(
+                    Meter.Id id, DistributionStatisticConfig config) {
                 if (id.getName().startsWith("http.server.requests")) {
                     return DistributionStatisticConfig.builder()
                             .percentilesHistogram(true)
@@ -50,8 +49,7 @@ public class PrometheusMetricsConfiguration {
                                     java.time.Duration.ofMillis(100).toNanos(),
                                     java.time.Duration.ofMillis(250).toNanos(),
                                     java.time.Duration.ofMillis(500).toNanos(),
-                                    java.time.Duration.ofMillis(1000).toNanos()
-                            )
+                                    java.time.Duration.ofMillis(1000).toNanos())
                             .build()
                             .merge(config);
                 }

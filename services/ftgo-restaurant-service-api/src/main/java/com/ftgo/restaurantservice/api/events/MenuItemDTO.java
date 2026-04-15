@@ -8,8 +8,7 @@ public class MenuItemDTO {
     private String name;
     private Money price;
 
-    private MenuItemDTO() {
-    }
+    private MenuItemDTO() {}
 
     public MenuItemDTO(String id, String name, Money price) {
         this.id = id;

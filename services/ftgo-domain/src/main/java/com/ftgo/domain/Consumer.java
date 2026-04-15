@@ -2,9 +2,8 @@ package com.ftgo.domain;
 
 import com.ftgo.common.Money;
 import com.ftgo.common.PersonName;
-import org.hibernate.annotations.DynamicUpdate;
-
 import jakarta.persistence.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "consumers")
@@ -12,15 +11,11 @@ import jakarta.persistence.*;
 @DynamicUpdate
 public class Consumer {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+    @Id @GeneratedValue private Long id;
 
-    @Embedded
-    private PersonName name;
+    @Embedded private PersonName name;
 
-    private Consumer() {
-    }
+    private Consumer() {}
 
     public Consumer(PersonName name) {
         this.name = name;

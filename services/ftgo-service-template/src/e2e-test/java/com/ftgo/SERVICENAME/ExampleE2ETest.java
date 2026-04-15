@@ -1,23 +1,25 @@
 package com.ftgo.SERVICENAME;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * E2E test template — tests run against the full service stack.
  *
  * <p>E2E tests should:
+ *
  * <ul>
- *   <li>Use the @Tag("e2e") annotation so the Gradle e2eTest task picks them up</li>
- *   <li>Test critical user journeys across service boundaries</li>
- *   <li>Use REST calls to verify API contracts</li>
- *   <li>Be few in number (test pyramid: fewer E2E, more unit)</li>
+ *   <li>Use the @Tag("e2e") annotation so the Gradle e2eTest task picks them up
+ *   <li>Test critical user journeys across service boundaries
+ *   <li>Use REST calls to verify API contracts
+ *   <li>Be few in number (test pyramid: fewer E2E, more unit)
  * </ul>
  *
  * <p>When copying this template to a real service, add:
+ *
  * <pre>
  * {@literal @}SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
  * {@literal @}ActiveProfiles("e2e")

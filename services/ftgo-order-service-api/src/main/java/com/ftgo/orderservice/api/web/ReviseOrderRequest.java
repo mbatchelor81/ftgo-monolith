@@ -6,8 +6,7 @@ public class ReviseOrderRequest {
 
     private Map<String, Integer> revisedLineItemQuantities;
 
-    private ReviseOrderRequest() {
-    }
+    private ReviseOrderRequest() {}
 
     public ReviseOrderRequest(Map<String, Integer> revisedLineItemQuantities) {
         this.revisedLineItemQuantities = revisedLineItemQuantities;

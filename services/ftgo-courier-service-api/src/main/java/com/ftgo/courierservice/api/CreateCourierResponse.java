@@ -4,8 +4,7 @@ public class CreateCourierResponse {
 
     private long id;
 
-    public CreateCourierResponse() {
-    }
+    public CreateCourierResponse() {}
 
     public CreateCourierResponse(long id) {
         this.id = id;

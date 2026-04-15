@@ -8,8 +8,8 @@ import java.util.Set;
 /**
  * Immutable representation of an authenticated FTGO user extracted from a JWT.
  *
- * <p>Available in the service layer via
- * {@link com.ftgo.security.util.SecurityUtils#getCurrentUserDetails()}.
+ * <p>Available in the service layer via {@link
+ * com.ftgo.security.util.SecurityUtils#getCurrentUserDetails()}.
  */
 public class FtgoUserDetails {
 
@@ -19,11 +19,12 @@ public class FtgoUserDetails {
     private final Set<String> permissions;
     private final Map<String, Object> claims;
 
-    public FtgoUserDetails(String userId,
-                           String username,
-                           Set<String> roles,
-                           Set<String> permissions,
-                           Map<String, Object> claims) {
+    public FtgoUserDetails(
+            String userId,
+            String username,
+            Set<String> roles,
+            Set<String> permissions,
+            Map<String, Object> claims) {
         this.userId = userId;
         this.username = username;
         this.roles = roles != null ? Set.copyOf(roles) : Collections.emptySet();
@@ -52,8 +53,8 @@ public class FtgoUserDetails {
     }
 
     /**
-     * Returns all granted authorities — both {@code ROLE_*} prefixed roles
-     * and raw permission strings.
+     * Returns all granted authorities — both {@code ROLE_*} prefixed roles and raw permission
+     * strings.
      */
     public Collection<String> getAuthorities() {
         var authorities = new java.util.ArrayList<String>();

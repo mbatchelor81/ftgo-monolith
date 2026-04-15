@@ -4,8 +4,7 @@ public class CreateOrderResponse {
 
     private long orderId;
 
-    private CreateOrderResponse() {
-    }
+    private CreateOrderResponse() {}
 
     public CreateOrderResponse(long orderId) {
         this.orderId = orderId;

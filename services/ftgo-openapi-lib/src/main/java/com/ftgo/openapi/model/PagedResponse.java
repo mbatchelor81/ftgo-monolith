@@ -1,14 +1,12 @@
 package com.ftgo.openapi.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 
 /**
  * Standard paginated response wrapper for FTGO REST APIs.
  *
- * <p>All list endpoints that support pagination should return data
- * wrapped in this envelope format.</p>
+ * <p>All list endpoints that support pagination should return data wrapped in this envelope format.
  *
  * @param <T> the type of items in the page
  */
@@ -36,8 +34,7 @@ public class PagedResponse<T> {
     @Schema(description = "Whether this is the last page", example = "false")
     private boolean last;
 
-    public PagedResponse() {
-    }
+    public PagedResponse() {}
 
     public PagedResponse(List<T> content, int page, int size, long totalElements) {
         this.content = content;

@@ -11,13 +11,12 @@ public class Action {
 
     @Enumerated(EnumType.STRING)
     private ActionType type;
+
     private LocalDateTime time;
 
-    @ManyToOne
-    private Order order;
+    @ManyToOne private Order order;
 
-    private Action() {
-    }
+    private Action() {}
 
     public Action(ActionType type, Order order, LocalDateTime time) {
         this.type = type;

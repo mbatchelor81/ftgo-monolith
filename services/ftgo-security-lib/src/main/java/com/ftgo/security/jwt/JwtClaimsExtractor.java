@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
  * Extracts FTGO-specific claims from a validated {@link Jwt} token.
  *
- * <p>Converts the raw JWT into an {@link FtgoUserDetails} that the rest
- * of the application can use for authorization decisions.
+ * <p>Converts the raw JWT into an {@link FtgoUserDetails} that the rest of the application can use
+ * for authorization decisions.
  */
 public class JwtClaimsExtractor {
 
@@ -33,9 +32,7 @@ public class JwtClaimsExtractor {
         return new FtgoUserDetails(userId, username, roles, permissions, additionalClaims);
     }
 
-    /**
-     * Extracts the token type claim ({@code "access"} or {@code "refresh"}).
-     */
+    /** Extracts the token type claim ({@code "access"} or {@code "refresh"}). */
     public String extractTokenType(Jwt jwt) {
         String type = jwt.getClaimAsString("type");
         return type != null ? type : "access";
@@ -53,16 +50,27 @@ public class JwtClaimsExtractor {
     }
 
     private Map<String, Object> extractAdditionalClaims(Jwt jwt) {
-        Set<String> standardClaims = Set.of(
-                "sub", "iss", "iat", "exp", "jti", "nbf",
-                "userId", "roles", "permissions", "type");
+        Set<String> standardClaims =
+                Set.of(
+                        "sub",
+                        "iss",
+                        "iat",
+                        "exp",
+                        "jti",
+                        "nbf",
+                        "userId",
+                        "roles",
+                        "permissions",
+                        "type");
 
         Map<String, Object> additional = new LinkedHashMap<>();
-        jwt.getClaims().forEach((key, value) -> {
-            if (!standardClaims.contains(key)) {
-                additional.put(key, value);
-            }
-        });
+        jwt.getClaims()
+                .forEach(
+                        (key, value) -> {
+                            if (!standardClaims.contains(key)) {
+                                additional.put(key, value);
+                            }
+                        });
         return additional;
     }
 }

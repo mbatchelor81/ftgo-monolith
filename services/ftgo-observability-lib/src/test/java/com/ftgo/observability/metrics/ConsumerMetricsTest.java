@@ -1,11 +1,11 @@
 package com.ftgo.observability.metrics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ConsumerMetricsTest {
 
@@ -22,7 +22,9 @@ class ConsumerMetricsTest {
     void recordConsumerRegistered_incrementsCounter() {
         consumerMetrics.recordConsumerRegistered();
 
-        double count = registry.counter("ftgo.consumers.registered", "service", "consumer-service").count();
+        double count =
+                registry.counter("ftgo.consumers.registered", "service", "consumer-service")
+                        .count();
         assertThat(count).isEqualTo(1.0);
     }
 
@@ -31,7 +33,12 @@ class ConsumerMetricsTest {
         consumerMetrics.recordValidationPerformed();
         consumerMetrics.recordValidationPerformed();
 
-        double count = registry.counter("ftgo.consumers.validations.performed", "service", "consumer-service").count();
+        double count =
+                registry.counter(
+                                "ftgo.consumers.validations.performed",
+                                "service",
+                                "consumer-service")
+                        .count();
         assertThat(count).isEqualTo(2.0);
     }
 
@@ -39,7 +46,9 @@ class ConsumerMetricsTest {
     void recordValidationFailed_incrementsCounter() {
         consumerMetrics.recordValidationFailed();
 
-        double count = registry.counter("ftgo.consumers.validations.failed", "service", "consumer-service").count();
+        double count =
+                registry.counter("ftgo.consumers.validations.failed", "service", "consumer-service")
+                        .count();
         assertThat(count).isEqualTo(1.0);
     }
 }

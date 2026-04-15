@@ -2,10 +2,7 @@ package com.ftgo.security.jwt;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * DTO returned by the token endpoint after successful authentication
- * or token refresh.
- */
+/** DTO returned by the token endpoint after successful authentication or token refresh. */
 public class TokenResponse {
 
     @JsonProperty("access_token")

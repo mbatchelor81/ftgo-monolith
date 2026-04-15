@@ -8,8 +8,7 @@ public class CreateRestaurantRequest {
     private RestaurantMenuDTO menu;
     private Address address;
 
-    private CreateRestaurantRequest() {
-    }
+    private CreateRestaurantRequest() {}
 
     public CreateRestaurantRequest(String name, Address address, RestaurantMenuDTO menu) {
         this.name = name;

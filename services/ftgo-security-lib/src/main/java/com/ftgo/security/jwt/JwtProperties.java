@@ -1,7 +1,6 @@
 package com.ftgo.security.jwt;
 
 import java.time.Duration;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -21,19 +20,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "ftgo.security.jwt")
 public class JwtProperties {
 
-    /**
-     * Token issuer claim ({@code iss}).
-     */
+    /** Token issuer claim ({@code iss}). */
     private String issuer = "ftgo-platform";
 
-    /**
-     * Access token time-to-live. Defaults to 30 minutes.
-     */
+    /** Access token time-to-live. Defaults to 30 minutes. */
     private Duration accessTokenExpiration = Duration.ofMinutes(30);
 
-    /**
-     * Refresh token time-to-live. Defaults to 7 days.
-     */
+    /** Refresh token time-to-live. Defaults to 7 days. */
     private Duration refreshTokenExpiration = Duration.ofDays(7);
 
     public String getIssuer() {

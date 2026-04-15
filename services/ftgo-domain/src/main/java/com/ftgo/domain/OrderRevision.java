@@ -8,10 +8,11 @@ public class OrderRevision {
     private Optional<DeliveryInformation> deliveryInformation = Optional.empty();
     private Map<String, Integer> revisedLineItemQuantities;
 
-    private OrderRevision() {
-    }
+    private OrderRevision() {}
 
-    public OrderRevision(Optional<DeliveryInformation> deliveryInformation, Map<String, Integer> revisedLineItemQuantities) {
+    public OrderRevision(
+            Optional<DeliveryInformation> deliveryInformation,
+            Map<String, Integer> revisedLineItemQuantities) {
         this.deliveryInformation = deliveryInformation;
         this.revisedLineItemQuantities = revisedLineItemQuantities;
     }

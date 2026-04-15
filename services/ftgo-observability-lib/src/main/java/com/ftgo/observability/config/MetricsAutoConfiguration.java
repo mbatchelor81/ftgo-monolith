@@ -15,16 +15,14 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Auto-configuration for common Micrometer metrics across all FTGO services.
  *
- * <p>Registers JVM, system, and custom metric binders so that every service
- * exposes a consistent baseline of metrics at {@code /actuator/prometheus}.
+ * <p>Registers JVM, system, and custom metric binders so that every service exposes a consistent
+ * baseline of metrics at {@code /actuator/prometheus}.
  */
 @Configuration
 @ConditionalOnClass(MeterRegistry.class)
 public class MetricsAutoConfiguration {
 
-    /**
-     * Enables the {@code @Timed} annotation on any Spring-managed bean.
-     */
+    /** Enables the {@code @Timed} annotation on any Spring-managed bean. */
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);

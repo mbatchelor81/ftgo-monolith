@@ -1,7 +1,6 @@
 package com.ftgo.orderservice.api.events;
 
 import com.ftgo.common.Money;
-
 import java.util.List;
 
 public class OrderDetails {
@@ -11,10 +10,13 @@ public class OrderDetails {
     private long restaurantId;
     private long consumerId;
 
-    private OrderDetails() {
-    }
+    private OrderDetails() {}
 
-    public OrderDetails(long consumerId, long restaurantId, List<OrderLineItemDTO> lineItems, Money orderTotal) {
+    public OrderDetails(
+            long consumerId,
+            long restaurantId,
+            List<OrderLineItemDTO> lineItems,
+            Money orderTotal) {
         this.consumerId = consumerId;
         this.restaurantId = restaurantId;
         this.lineItems = lineItems;

@@ -6,8 +6,7 @@ public class CreateConsumerRequest {
 
     private PersonName name;
 
-    private CreateConsumerRequest() {
-    }
+    private CreateConsumerRequest() {}
 
     public CreateConsumerRequest(PersonName name) {
         this.name = name;

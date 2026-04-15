@@ -3,7 +3,6 @@ package com.ftgo.security.jwt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,13 +11,13 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 /**
- * Converts a validated {@link Jwt} into a Spring Security {@link JwtAuthenticationToken}
- * populated with FTGO-specific authorities derived from the token's
- * {@code roles} and {@code permissions} claims.
+ * Converts a validated {@link Jwt} into a Spring Security {@link JwtAuthenticationToken} populated
+ * with FTGO-specific authorities derived from the token's {@code roles} and {@code permissions}
+ * claims.
  *
- * <p>The resulting authentication token stores an {@link FtgoUserDetails}
- * as its {@code details} property, making it accessible throughout the
- * request lifecycle via {@code SecurityContextHolder}.
+ * <p>The resulting authentication token stores an {@link FtgoUserDetails} as its {@code details}
+ * property, making it accessible throughout the request lifecycle via {@code
+ * SecurityContextHolder}.
  */
 public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
@@ -33,7 +32,8 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
         FtgoUserDetails userDetails = claimsExtractor.extractUserDetails(jwt);
         Collection<GrantedAuthority> authorities = buildAuthorities(userDetails);
 
-        JwtAuthenticationToken authToken = new JwtAuthenticationToken(jwt, authorities, userDetails.getUsername());
+        JwtAuthenticationToken authToken =
+                new JwtAuthenticationToken(jwt, authorities, userDetails.getUsername());
         authToken.setDetails(userDetails);
         return authToken;
     }
