@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
  * resilience patterns are layered in the following order (outermost to innermost):
  *
  * <ol>
- *   <li>Bulkhead — limits concurrent calls to prevent resource exhaustion
- *   <li>Rate Limiter — throttles call rate to protect downstream services
- *   <li>Circuit Breaker — prevents calls to failing services
  *   <li>Retry — retries transient failures with exponential backoff
+ *   <li>Circuit Breaker — prevents calls to failing services
+ *   <li>Rate Limiter — throttles call rate to protect downstream services
+ *   <li>Bulkhead — limits concurrent calls to prevent resource exhaustion
  * </ol>
  */
 public class ResilientServiceClient {
@@ -58,12 +58,13 @@ public class ResilientServiceClient {
      */
     public <T> T execute(Supplier<T> supplier) {
         Supplier<T> decoratedSupplier =
-                Bulkhead.decorateSupplier(
-                        bulkhead,
-                        RateLimiter.decorateSupplier(
-                                rateLimiter,
-                                CircuitBreaker.decorateSupplier(
-                                        circuitBreaker, Retry.decorateSupplier(retry, supplier))));
+                Retry.decorateSupplier(
+                        retry,
+                        CircuitBreaker.decorateSupplier(
+                                circuitBreaker,
+                                RateLimiter.decorateSupplier(
+                                        rateLimiter,
+                                        Bulkhead.decorateSupplier(bulkhead, supplier))));
 
         try {
             return decoratedSupplier.get();
@@ -83,12 +84,13 @@ public class ResilientServiceClient {
      */
     public void execute(Runnable runnable) {
         Runnable decoratedRunnable =
-                Bulkhead.decorateRunnable(
-                        bulkhead,
-                        RateLimiter.decorateRunnable(
-                                rateLimiter,
-                                CircuitBreaker.decorateRunnable(
-                                        circuitBreaker, Retry.decorateRunnable(retry, runnable))));
+                Retry.decorateRunnable(
+                        retry,
+                        CircuitBreaker.decorateRunnable(
+                                circuitBreaker,
+                                RateLimiter.decorateRunnable(
+                                        rateLimiter,
+                                        Bulkhead.decorateRunnable(bulkhead, runnable))));
 
         try {
             decoratedRunnable.run();

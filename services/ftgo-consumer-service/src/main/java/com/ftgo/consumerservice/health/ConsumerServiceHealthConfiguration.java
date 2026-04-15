@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Health indicator configuration for the Consumer Service.
  *
- * <p>The Consumer Service has no downstream service dependencies in the current architecture, but
- * this configuration is included to demonstrate the pattern and allow future additions.
+ * <p>Registers downstream health checks for the Order Service, which the Consumer Service
+ * communicates with.
  */
 @Configuration
 public class ConsumerServiceHealthConfiguration {

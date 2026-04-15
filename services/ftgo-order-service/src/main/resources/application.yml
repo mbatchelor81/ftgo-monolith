@@ -41,7 +41,7 @@ management:
       show-details: always
       group:
         readiness:
-          include: readinessState,db,diskSpace,consumerServiceHealth,restaurantServiceHealth,courierServiceHealth
+          include: readinessState,db,diskSpace
         liveness:
           include: livenessState,serviceLivenessHealthIndicator
   tracing:
