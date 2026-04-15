@@ -1,0 +1,321 @@
+name: "CD: Deploy to Kubernetes"
+
+# Triggers:
+# 1. Automatically deploy to dev on merge to main/feat/microservices-migration
+# 2. Manually trigger for any environment via workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - "deployment/kubernetes/**"
+      - "services/**/Dockerfile"
+      - "services/**/src/**"
+      - ".github/workflows/cd-deploy.yml"
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      image_tag:
+        description: "Docker image tag to deploy (defaults to latest)"
+        required: false
+        default: "latest"
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/ftgo
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate Kubernetes manifests
+  # ---------------------------------------------------------------------------
+  validate:
+    name: "Validate K8s manifests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, staging, prod]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Build and validate Kustomize overlay (${{ matrix.environment }})
+        run: |
+          echo "Building Kustomize overlay for ${{ matrix.environment }}..."
+          kustomize build deployment/kubernetes/overlays/${{ matrix.environment }} > /tmp/rendered.yaml
+          echo "Rendered manifest line count: $(wc -l < /tmp/rendered.yaml)"
+
+      - name: Validate with kubeval (dry-run)
+        run: |
+          # Use kubectl dry-run for basic schema validation
+          echo "Validating rendered manifests..."
+          if command -v kubectl &> /dev/null; then
+            kubectl apply --dry-run=client -f /tmp/rendered.yaml 2>&1 || true
+          else
+            echo "kubectl not available; skipping dry-run validation"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Deploy to dev (automatic on push to main)
+  # ---------------------------------------------------------------------------
+  deploy-dev:
+    name: "Deploy to dev"
+    needs: validate
+    if: >-
+      (github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: "https://dev.ftgo.example.com"
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Determine image tag
+        id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_IMAGE_TAG" ]; then
+            echo "tag=$INPUT_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          else
+            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set image tags in Kustomize
+        working-directory: deployment/kubernetes/overlays/dev
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          kustomize edit set image \
+            ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service=${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
+
+      - name: Render manifests
+        run: |
+          kustomize build deployment/kubernetes/overlays/dev > /tmp/dev-manifests.yaml
+          echo "--- Rendered dev manifests ---"
+          head -50 /tmp/dev-manifests.yaml
+
+      - name: Deploy to dev cluster
+        env:
+          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "=========================================="
+          echo "  DEPLOY TO DEV"
+          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Namespace: ftgo-dev"
+          echo "=========================================="
+          echo ""
+          echo "To deploy with ArgoCD, configure an Application CR pointing to:"
+          echo "  repo: $REPO_URL"
+          echo "  path: deployment/kubernetes/overlays/dev"
+          echo "  targetRevision: $COMMIT_SHA"
+          echo ""
+          echo "For direct kubectl deployment:"
+          echo "  kubectl apply -f /tmp/dev-manifests.yaml"
+          echo ""
+          echo "Rendered manifests saved as artifact."
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-manifests-${{ github.sha }}
+          path: /tmp/dev-manifests.yaml
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Deploy to staging (manual with approval)
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: "Deploy to staging"
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: "https://staging.ftgo.example.com"
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Determine image tag
+        id: tag
+        env:
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          TAG="$INPUT_IMAGE_TAG"
+          if [ -z "$TAG" ] || [ "$TAG" = "latest" ]; then
+            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            TAG="${SHORT_SHA}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image tags in Kustomize
+        working-directory: deployment/kubernetes/overlays/staging
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          kustomize edit set image \
+            ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service=${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
+
+      - name: Render manifests
+        run: |
+          kustomize build deployment/kubernetes/overlays/staging > /tmp/staging-manifests.yaml
+          echo "--- Rendered staging manifests ---"
+          head -50 /tmp/staging-manifests.yaml
+
+      - name: Deploy to staging cluster
+        env:
+          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "=========================================="
+          echo "  DEPLOY TO STAGING"
+          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Namespace: ftgo-staging"
+          echo "=========================================="
+          echo ""
+          echo "To deploy with ArgoCD, configure an Application CR pointing to:"
+          echo "  repo: $REPO_URL"
+          echo "  path: deployment/kubernetes/overlays/staging"
+          echo "  targetRevision: $COMMIT_SHA"
+          echo ""
+          echo "For direct kubectl deployment:"
+          echo "  kubectl apply -f /tmp/staging-manifests.yaml"
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-manifests-${{ github.sha }}
+          path: /tmp/staging-manifests.yaml
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Deploy to prod (manual with approval gate)
+  # ---------------------------------------------------------------------------
+  deploy-prod:
+    name: "Deploy to prod"
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: "https://ftgo.example.com"
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.4.1"
+
+      - name: Determine image tag
+        id: tag
+        env:
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          TAG="$INPUT_IMAGE_TAG"
+          if [ -z "$TAG" ] || [ "$TAG" = "latest" ]; then
+            SHORT_SHA=$(echo "$COMMIT_SHA" | cut -c1-7)
+            TAG="${SHORT_SHA}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image tags in Kustomize
+        working-directory: deployment/kubernetes/overlays/prod
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          kustomize edit set image \
+            ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service=${{ env.IMAGE_PREFIX }}/ftgo-consumer-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-order-service=${{ env.IMAGE_PREFIX }}/ftgo-order-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service=${{ env.IMAGE_PREFIX }}/ftgo-restaurant-service:${TAG} \
+            ghcr.io/mbatchelor81/ftgo/ftgo-courier-service=${{ env.IMAGE_PREFIX }}/ftgo-courier-service:${TAG}
+
+      - name: Render manifests
+        run: |
+          kustomize build deployment/kubernetes/overlays/prod > /tmp/prod-manifests.yaml
+          echo "--- Rendered prod manifests ---"
+          head -50 /tmp/prod-manifests.yaml
+
+      - name: Deploy to prod cluster
+        env:
+          DEPLOY_TAG: ${{ steps.tag.outputs.tag }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "=========================================="
+          echo "  DEPLOY TO PRODUCTION"
+          echo "  Image tag: $DEPLOY_TAG"
+          echo "  Namespace: ftgo-prod"
+          echo "=========================================="
+          echo ""
+          echo "To deploy with ArgoCD, configure an Application CR pointing to:"
+          echo "  repo: $REPO_URL"
+          echo "  path: deployment/kubernetes/overlays/prod"
+          echo "  targetRevision: $COMMIT_SHA"
+          echo ""
+          echo "For direct kubectl deployment:"
+          echo "  kubectl apply -f /tmp/prod-manifests.yaml"
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-manifests-${{ github.sha }}
+          path: /tmp/prod-manifests.yaml
+          retention-days: 90

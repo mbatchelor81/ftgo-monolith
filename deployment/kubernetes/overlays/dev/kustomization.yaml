@@ -1,0 +1,81 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-dev
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+commonLabels:
+  app.kubernetes.io/environment: dev
+
+patches:
+  # Dev: single replica, lower resource limits
+  - target:
+      kind: Deployment
+      labelSelector: app.kubernetes.io/component=service
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 384Mi
+
+  # Dev: scale down HPA minimums
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 3
+
+  # Dev: smaller PG storage
+  - target:
+      kind: StatefulSet
+      name: ftgo-postgres
+    patch: |
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 2Gi
+
+# Dev uses placeholder secrets for local development
+secretGenerator:
+  - name: ftgo-db-credentials
+    behavior: replace
+    literals:
+      - postgres-user=ftgo
+      - postgres-password=ftgo-dev-password
+    options:
+      disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: ftgo-consumer-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-order-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-restaurant-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-courier-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev

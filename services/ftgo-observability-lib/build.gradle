@@ -7,6 +7,14 @@ dependencies {
     api libs.micrometer.registry.prometheus
     api libs.spring.boot.starter.actuator
 
+    // Distributed tracing
+    api libs.micrometer.tracing.bridge.brave
+    api libs.zipkin.reporter.brave
+    api libs.zipkin.sender.urlconnection
+
     // Spring Boot auto-configuration support
     compileOnly libs.spring.boot.starter.web
+
+    // Testing
+    testImplementation libs.micrometer.tracing.test
 }

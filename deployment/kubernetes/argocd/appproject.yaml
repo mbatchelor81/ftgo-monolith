@@ -1,0 +1,32 @@
+# ArgoCD AppProject restricting FTGO applications to their own namespaces
+# and repository sources.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ftgo
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ftgo
+spec:
+  description: FTGO Food Delivery Platform
+  sourceRepos:
+    - "https://github.com/mbatchelor81/ftgo-monolith.git"
+  destinations:
+    - namespace: ftgo-dev
+      server: https://kubernetes.default.svc
+    - namespace: ftgo-staging
+      server: https://kubernetes.default.svc
+    - namespace: ftgo-prod
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: apps
+      kind: "*"
+    - group: autoscaling
+      kind: "*"
+    - group: policy
+      kind: "*"

@@ -1,0 +1,35 @@
+# ArgoCD Application CR for the staging environment.
+# Staging uses manual sync — changes require explicit approval.
+# Apply this to the ArgoCD namespace in your management cluster:
+#   kubectl apply -f application-staging.yaml -n argocd
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ftgo-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ftgo
+    app.kubernetes.io/environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: ftgo
+  source:
+    repoURL: https://github.com/mbatchelor81/ftgo-monolith.git
+    targetRevision: feat/microservices-migration
+    path: deployment/kubernetes/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ftgo-staging
+  syncPolicy:
+    # Manual sync — requires approval before deploying
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

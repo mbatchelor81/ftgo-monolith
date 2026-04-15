@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-courier-service-config
+  labels:
+    app.kubernetes.io/name: ftgo-courier-service
+    app.kubernetes.io/component: service
+data:
+  spring-profiles: "kubernetes"
+  datasource-url: "jdbc:postgresql://ftgo-postgres:5432/ftgo_courier_service"

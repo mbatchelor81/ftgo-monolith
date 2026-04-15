@@ -1,54 +1,112 @@
+# =============================================================================
+# DEPRECATED: Legacy MySQL StatefulSet
+#
+# This manifest is retained for reference only. The FTGO platform has migrated
+# to PostgreSQL. See deployment/kubernetes/base/postgres/ for the current
+# database deployment.
+#
+# Migration notes:
+#   - Updated from apps/v1beta1 to apps/v1 (required selector field)
+#   - Removed hardcoded credentials (now via Secret references)
+#   - Added resource limits and health checks
+#   - Added selector.matchLabels (required by apps/v1)
+# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:
   name: ftgo-mysql
   labels:
-    name: ftgo-mysql
+    app.kubernetes.io/name: ftgo-mysql
+    app.kubernetes.io/component: database
 spec:
   ports:
-  - port: 3306
-    targetPort: 3306
+    - port: 3306
+      targetPort: 3306
   clusterIP: None
   selector:
-    role: ftgo-mysql
+    app.kubernetes.io/name: ftgo-mysql
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: ftgo-mysql
+  labels:
+    app.kubernetes.io/name: ftgo-mysql
+    app.kubernetes.io/component: database
+  annotations:
+    deprecated: "true"
+    migration-target: "deployment/kubernetes/base/postgres/"
 spec:
-  serviceName: "mysql"
+  serviceName: ftgo-mysql
   replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ftgo-mysql
   template:
     metadata:
       labels:
-        role: ftgo-mysql
+        app.kubernetes.io/name: ftgo-mysql
+        app.kubernetes.io/component: database
     spec:
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 30
       containers:
         - name: ftgo-mysql
-          image: msapatterns/mysql:latest
-          imagePullPolicy: Always
-          args:
-              - "--ignore-db-dir=lost+found"
+          image: mysql:8.0
           ports:
-              - containerPort: 3306
+            - containerPort: 3306
+              name: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: rootpassword
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: root-password
             - name: MYSQL_USER
-              value: mysqluser
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: username
             - name: MYSQL_PASSWORD
-              value: mysqlpw
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-db-secret
+                  key: password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
           volumeMounts:
             - name: ftgo-mysql-persistent-storage
               mountPath: /var/lib/mysql
   volumeClaimTemplates:
-  - metadata:
-      name: ftgo-mysql-persistent-storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
----
+    - metadata:
+        name: ftgo-mysql-persistent-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
