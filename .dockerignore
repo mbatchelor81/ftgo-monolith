@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+.vscode
+.settings
+.classpath
+.project
+
+# Build artifacts
+**/build/
+**/out/
+**/.gradle/
+
+# Documentation
+*.md
+!services/README.md
+LICENSE
+
+# Root monolith (not needed for microservice builds)
+ftgo-application/
+ftgo-flyway/
+ftgo-end-to-end-tests/
+ftgo-end-to-end-tests-common/
+mysql/
+
+# CI/CD
+.github/
+.circleci/
+
+# Docker
+docker-compose.yml
+**/Dockerfile
+
+# Misc
+deployment/
+*.sh

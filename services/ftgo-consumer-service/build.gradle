@@ -5,6 +5,10 @@ plugins {
     id 'ftgo.observability-conventions'
 }
 
+// Enable Spring Boot executable fat jar (overrides convention default for placeholder services)
+tasks.named('bootJar') { enabled = true }
+tasks.named('jar') { enabled = false }
+
 dependencies {
     implementation project(':ftgo-common')
     implementation project(':ftgo-security-lib')

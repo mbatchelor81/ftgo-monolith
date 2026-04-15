@@ -1,0 +1,124 @@
+version: "3.8"
+
+# ---------------------------------------------------------------------------
+# FTGO Microservices - Local Development Docker Compose
+#
+# Usage:
+#   cd services/
+#   docker compose up -d                     # Start all services
+#   docker compose up -d consumer-service    # Start a single service + deps
+#   docker compose logs -f order-service     # Tail logs for one service
+#   docker compose down -v                   # Stop and remove volumes
+#
+# Build images locally:
+#   docker compose build                     # Build all service images
+#   docker compose build consumer-service    # Build a single service
+# ---------------------------------------------------------------------------
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks:
+    - ftgo-network
+  environment: &common-env
+    SPRING_PROFILES_ACTIVE: docker
+    DB_USERNAME: ftgo
+    DB_PASSWORD: ftgo
+  healthcheck:
+    test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/liveness"]
+    interval: 15s
+    timeout: 5s
+    start_period: 30s
+    retries: 3
+
+services:
+  # -------------------------------------------------------------------------
+  # Infrastructure
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo
+      POSTGRES_MULTIPLE_DATABASES: ftgo_consumer_service,ftgo_order_service,ftgo_restaurant_service,ftgo_courier_service
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh:ro
+    networks:
+      - ftgo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # Microservices
+  # -------------------------------------------------------------------------
+  consumer-service:
+    <<: *service-defaults
+    build:
+      context: ..
+      dockerfile: services/ftgo-consumer-service/Dockerfile
+    image: ghcr.io/mbatchelor81/ftgo/ftgo-consumer-service:local
+    ports:
+      - "8081:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_consumer_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  order-service:
+    <<: *service-defaults
+    build:
+      context: ..
+      dockerfile: services/ftgo-order-service/Dockerfile
+    image: ghcr.io/mbatchelor81/ftgo/ftgo-order-service:local
+    ports:
+      - "8082:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_order_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  restaurant-service:
+    <<: *service-defaults
+    build:
+      context: ..
+      dockerfile: services/ftgo-restaurant-service/Dockerfile
+    image: ghcr.io/mbatchelor81/ftgo/ftgo-restaurant-service:local
+    ports:
+      - "8083:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_restaurant_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  courier-service:
+    <<: *service-defaults
+    build:
+      context: ..
+      dockerfile: services/ftgo-courier-service/Dockerfile
+    image: ghcr.io/mbatchelor81/ftgo/ftgo-courier-service:local
+    ports:
+      - "8084:8080"
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ftgo_courier_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+
+networks:
+  ftgo-network:
+    driver: bridge

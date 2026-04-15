@@ -1,0 +1,238 @@
+name: "Docker: Build, Scan & Push"
+
+on:
+  push:
+    branches: [main, master, feat/microservices-migration]
+    paths:
+      - "services/**/src/**"
+      - "services/**/build.gradle"
+      - "services/**/Dockerfile"
+      - "services/settings.gradle"
+      - "build-logic/**"
+      - "gradle/libs.versions.toml"
+      - ".github/workflows/docker-build.yml"
+      - ".trivy.yaml"
+  pull_request:
+    branches: [main, master, feat/microservices-migration]
+    paths:
+      - "services/**/src/**"
+      - "services/**/build.gradle"
+      - "services/**/Dockerfile"
+      - "services/settings.gradle"
+      - "build-logic/**"
+      - "gradle/libs.versions.toml"
+      - ".github/workflows/docker-build.yml"
+      - ".trivy.yaml"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/ftgo
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Detect which services changed to avoid unnecessary builds
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect path changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ftgo-consumer-service:
+              - "services/ftgo-consumer-service/**"
+              - "services/ftgo-common/**"
+              - "services/ftgo-common-jpa/**"
+              - "services/ftgo-domain/**"
+              - "services/ftgo-security-lib/**"
+              - "services/ftgo-observability-lib/**"
+              - "services/ftgo-openapi-lib/**"
+              - "services/ftgo-consumer-service-api/**"
+              - "build-logic/**"
+              - "gradle/libs.versions.toml"
+            ftgo-order-service:
+              - "services/ftgo-order-service/**"
+              - "services/ftgo-common/**"
+              - "services/ftgo-common-jpa/**"
+              - "services/ftgo-domain/**"
+              - "services/ftgo-security-lib/**"
+              - "services/ftgo-observability-lib/**"
+              - "services/ftgo-openapi-lib/**"
+              - "services/ftgo-order-service-api/**"
+              - "build-logic/**"
+              - "gradle/libs.versions.toml"
+            ftgo-restaurant-service:
+              - "services/ftgo-restaurant-service/**"
+              - "services/ftgo-common/**"
+              - "services/ftgo-common-jpa/**"
+              - "services/ftgo-domain/**"
+              - "services/ftgo-security-lib/**"
+              - "services/ftgo-observability-lib/**"
+              - "services/ftgo-openapi-lib/**"
+              - "services/ftgo-restaurant-service-api/**"
+              - "build-logic/**"
+              - "gradle/libs.versions.toml"
+            ftgo-courier-service:
+              - "services/ftgo-courier-service/**"
+              - "services/ftgo-common/**"
+              - "services/ftgo-common-jpa/**"
+              - "services/ftgo-domain/**"
+              - "services/ftgo-security-lib/**"
+              - "services/ftgo-observability-lib/**"
+              - "services/ftgo-openapi-lib/**"
+              - "services/ftgo-courier-service-api/**"
+              - "build-logic/**"
+              - "gradle/libs.versions.toml"
+
+  # ---------------------------------------------------------------------------
+  # Build, scan, and push Docker images
+  # ---------------------------------------------------------------------------
+  build:
+    name: "Build: ${{ matrix.service }}"
+    needs: changes
+    if: needs.changes.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version and short SHA
+        id: version
+        run: |
+          VERSION=$(grep -oP "version\s*=\s*['\"]?\K[^'\"]*" services/${{ matrix.service }}/build.gradle || echo "0.1.0")
+          if [ -z "$VERSION" ]; then VERSION="0.1.0"; fi
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
+          tags: |
+            # Tag: <version>-<short-sha>
+            type=raw,value=${{ steps.version.outputs.version }}-{{sha}}
+            # Tag: latest (only on default branch push)
+            type=raw,value=latest,enable={{is_default_branch}}
+            # Tag: branch name
+            type=ref,event=branch
+            # Tag: PR number
+            type=ref,event=pr
+
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/Dockerfile
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Check image size
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          SIZE_BYTES=$(docker image inspect "${IMAGE_TAG}" --format='{{.Size}}')
+          SIZE_MB=$((SIZE_BYTES / 1024 / 1024))
+          echo "Image size: ${SIZE_MB}MB"
+          if [ "${SIZE_MB}" -gt 200 ]; then
+            echo "::error::Image size ${SIZE_MB}MB exceeds 200MB limit"
+            exit 1
+          fi
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
+          format: table
+          exit-code: 0
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          trivy-config: .trivy.yaml
+
+      - name: Upload Trivy scan results (SARIF)
+        id: trivy-sarif
+        if: always() && steps.build.outcome == 'success'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
+          format: sarif
+          output: trivy-results-${{ matrix.service }}.sarif
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy SARIF to GitHub Security
+        if: always() && steps.trivy-sarif.outcome == 'success'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results-${{ matrix.service }}.sarif
+          category: trivy-${{ matrix.service }}
+
+      - name: Push Docker image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # ---------------------------------------------------------------------------
+  # Image cleanup / retention policy
+  # ---------------------------------------------------------------------------
+  cleanup:
+    name: Clean up old images
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - ftgo-consumer-service
+          - ftgo-order-service
+          - ftgo-restaurant-service
+          - ftgo-courier-service
+    steps:
+      - name: Delete old untagged images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ftgo/${{ matrix.service }}
+          package-type: container
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: true
