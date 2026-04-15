@@ -17,8 +17,8 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.jackson.datatype.jsr310
 
-    // Spring Security (compileOnly — only needed for exception type references)
-    compileOnly libs.spring.boot.starter.security
+    // Spring Security — needed at runtime for @ExceptionHandler class literal resolution
+    implementation libs.spring.boot.starter.security
 
     // SLF4J logging (provided by Spring Boot)
     compileOnly 'org.slf4j:slf4j-api'
