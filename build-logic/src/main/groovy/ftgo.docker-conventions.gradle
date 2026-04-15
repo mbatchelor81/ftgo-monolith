@@ -1,0 +1,27 @@
+plugins {
+    id 'com.google.cloud.tools.jib'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre-alpine'
+    }
+    to {
+        image = "ftgo/${project.name}"
+        tags = [project.version.toString(), 'latest']
+    }
+    container {
+        jvmFlags = [
+            '-XX:+UseContainerSupport',
+            '-XX:MaxRAMPercentage=75.0',
+            '-Djava.security.egd=file:/dev/./urandom'
+        ]
+        ports = ['8080']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        format = 'OCI'
+        labels = [
+            'maintainer': 'ftgo-team',
+            'org.opencontainers.image.source': 'https://github.com/ftgo/ftgo-monolith'
+        ]
+    }
+}

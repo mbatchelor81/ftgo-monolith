@@ -1,0 +1,26 @@
+pluginManagement {
+    includeBuild '../build-logic'
+}
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files('../gradle/libs.versions.toml'))
+        }
+    }
+}
+
+rootProject.name = 'ftgo-services'
+
+// Shared libraries
+include 'ftgo-common'
+include 'ftgo-common-jpa'
+
+// Microservices
+include 'ftgo-consumer-service'
+include 'ftgo-order-service'
+include 'ftgo-restaurant-service'
+include 'ftgo-courier-service'
+
+// Template (excluded from default build)
+include 'ftgo-service-template'

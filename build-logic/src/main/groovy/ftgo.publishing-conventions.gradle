@@ -1,0 +1,43 @@
+plugins {
+    id 'maven-publish'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = "FTGO ${project.name} module"
+                url = 'https://github.com/ftgo/ftgo-monolith'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'local'
+            url = layout.buildDirectory.dir('repo')
+        }
+        // Additional repositories can be configured via environment variables:
+        // MAVEN_PUBLISH_URL, MAVEN_PUBLISH_USERNAME, MAVEN_PUBLISH_PASSWORD
+        if (System.getenv('MAVEN_PUBLISH_URL')) {
+            maven {
+                name = 'release'
+                url = uri(System.getenv('MAVEN_PUBLISH_URL'))
+                credentials {
+                    username = System.getenv('MAVEN_PUBLISH_USERNAME') ?: ''
+                    password = System.getenv('MAVEN_PUBLISH_PASSWORD') ?: ''
+                }
+            }
+        }
+    }
+}

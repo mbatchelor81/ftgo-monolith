@@ -2,24 +2,23 @@ package com.ftgo.common;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MoneySerializationTest {
 
   private static ObjectMapper objectMapper = new ObjectMapper();
 
-  @BeforeClass
-  public static void initialize() {
+  @BeforeAll
+  static void initialize() {
     objectMapper.registerModule(new MoneyModule());
   }
 
@@ -58,28 +57,23 @@ public class MoneySerializationTest {
   }
 
   @Test
-  public void shouldSer() throws IOException {
+  void shouldSer() throws IOException {
     Money price = new Money("12.34");
     MoneyContainer mc = new MoneyContainer(price);
     assertEquals("{\"price\":\"12.34\"}", objectMapper.writeValueAsString(mc));
   }
 
   @Test
-  public void shouldDe() throws IOException {
+  void shouldDe() throws IOException {
     Money price = new Money("12.34");
     MoneyContainer mc = new MoneyContainer(price);
     assertEquals(mc, objectMapper.readValue("{\"price\":\"12.34\"}", MoneyContainer.class));
   }
 
   @Test
-  public void shouldFailToDe() throws IOException {
-    JsonMappingException jsonMappingException = null;
-    try {
-      objectMapper.readValue("{\"price\": { \"amount\" : \"12.34\"} }", MoneyContainer.class);
-      fail("expected exception");
-    } catch (JsonMappingException e) {
-      jsonMappingException = e;
-    }
-    Assert.notNull(jsonMappingException);
+  void shouldFailToDe() {
+    assertThrows(JsonMappingException.class, () ->
+      objectMapper.readValue("{\"price\": { \"amount\" : \"12.34\"} }", MoneyContainer.class)
+    );
   }
 }

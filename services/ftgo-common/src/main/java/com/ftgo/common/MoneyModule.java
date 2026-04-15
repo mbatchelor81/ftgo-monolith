@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
@@ -29,7 +30,7 @@ public class MoneyModule extends SimpleModule {
         else
           return new Money(str);
       } else
-        throw ctxt.mappingException(getValueClass());
+        throw MismatchedInputException.from(jp, getValueClass(), "Expected VALUE_STRING for Money");
     }
   }
 
