@@ -7,5 +7,4 @@ version = '1.0.0'
 
 dependencies {
     api project(':ftgo-common')
-    api libs.spring.boot.starter.data.jpa
 }

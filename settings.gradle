@@ -28,6 +28,7 @@ include "ftgo-application"
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
 
-// Microservices modules (under services/)
-include "services:ftgo-common"
+// Microservices modules live under services/ with their own Gradle wrapper
+// and settings.gradle. They are NOT included in the root monolith build.
+// To build services: cd services && ./gradlew build
 

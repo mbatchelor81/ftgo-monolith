@@ -15,6 +15,13 @@ rootProject.name = 'ftgo-services'
 // Shared libraries
 include 'ftgo-common'
 include 'ftgo-common-jpa'
+include 'ftgo-domain'
+
+// Service API/DTO contracts
+include 'ftgo-order-service-api'
+include 'ftgo-consumer-service-api'
+include 'ftgo-restaurant-service-api'
+include 'ftgo-courier-service-api'
 
 // Microservices
 include 'ftgo-consumer-service'

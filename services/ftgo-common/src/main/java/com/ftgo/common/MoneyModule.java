@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -28,8 +29,9 @@ public class MoneyModule extends SimpleModule {
           return null;
         else
           return new Money(str);
-      } else
-        throw ctxt.mappingException(getValueClass());
+      } else {
+        return (Money) ctxt.handleUnexpectedToken(Money.class, jp);
+      }
     }
   }
 
