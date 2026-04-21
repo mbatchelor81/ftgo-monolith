@@ -85,12 +85,15 @@ pointers.
 
 Per-service matrix entries are **gated** on the presence of a real
 Spring Boot app. Before any Docker work runs, the workflow inspects
-`services/<service>/build.gradle` for `org.springframework.boot` and
-falls back to searching `src/main` for `@SpringBootApplication`. When
-neither signal is present, every downstream step (Gradle build, image
-build, scan, push) is skipped and a summary is appended to the GitHub
-Actions run. This keeps the workflow green while the scaffolds from
-EM-30 are incrementally wired up in later tickets.
+`services/<service>/build.gradle` for the `org.springframework.boot`
+plugin. When the plugin is not applied, every downstream step (Gradle
+build, image build, scan, push) is skipped and a summary is appended to
+the GitHub Actions run. Note that a placeholder `@SpringBootApplication`
+entrypoint under `src/main` alone does **not** trigger a build — the
+scaffolds ship such placeholders without wiring in the plugin, so the
+plugin itself is the authoritative signal. This keeps the workflow
+green while the scaffolds from EM-30 are incrementally wired up in
+later tickets.
 
 ## Vulnerability scanning
 

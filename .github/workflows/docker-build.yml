@@ -93,7 +93,7 @@ jobs:
           {
             echo "### ${{ matrix.service }} — Docker build skipped"
             echo ""
-            echo "\`services/${{ matrix.service }}\` is a scaffold during the strangler-fig migration. The Docker image build is gated on either the \`org.springframework.boot\` plugin being applied in \`build.gradle\` or a \`@SpringBootApplication\` entrypoint under \`src/main\`. Wire in Spring Boot to enable this matrix entry."
+            echo "\`services/${{ matrix.service }}\` is a scaffold during the strangler-fig migration. The Docker image build is gated on the \`org.springframework.boot\` plugin being applied in \`build.gradle\`. Wire in Spring Boot to enable this matrix entry."
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Set up JDK 8

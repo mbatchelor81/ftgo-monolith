@@ -55,6 +55,11 @@ services:
         condition: service_healthy
     environment:
       <<: *service-env
+      # Preserve the legacy monolith's explicit 192MB heap cap. Without this,
+      # the shared -XX:MaxRAMPercentage=75.0 default would size the heap off
+      # the host's total RAM (no mem_limit is set on this service), which is
+      # significantly larger than the monolith's historical footprint.
+      JAVA_OPTS: "-Xmx192m -Djava.security.egd=file:/dev/./urandom"
 
   consumer-service:
     <<: *service-defaults
