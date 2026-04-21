@@ -1,5 +1,6 @@
 package com.ftgo.order.web;
 
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,6 +47,16 @@ public class ServiceInfoController {
           content = @Content(schema = @Schema(implementation = ServiceInfoResponse.class))
       )
   })
+  // Reference wiring of Micrometer Observation's `@Observed` annotation
+  // (EM-42). The `ObservedAspect` bean registered by ftgo-logging's
+  // ObservedAspectConfiguration intercepts this call and produces a
+  // `ftgo.order.service.info` span on every request, giving a canonical
+  // example for teams adding custom spans to business operations.
+  @Observed(
+      name = "ftgo.order.service.info",
+      contextualName = "order.service-info.lookup",
+      lowCardinalityKeyValues = {"service", "order-service"}
+  )
   @GetMapping
   public ServiceInfoResponse getServiceInfo() {
     return new ServiceInfoResponse(applicationName, apiVersion);

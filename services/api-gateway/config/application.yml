@@ -12,3 +12,29 @@ management:
     web:
       exposure:
         include: health,info,prometheus,gateway
+  # Distributed tracing (EM-42). The gateway originates trace IDs for
+  # incoming client requests and propagates them to every downstream
+  # service via W3C Trace Context + B3 headers. See the bundled
+  # src/main/resources/application.yml for the full tracing stanza;
+  # overriding MANAGEMENT_TRACING_SAMPLING_PROBABILITY here is the
+  # per-environment escape hatch, and the `prod` profile below drops
+  # the default sample rate to 10%.
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+---
+# Production profile overrides — 10% sampling per the EM-42 acceptance
+# criteria; operators can tune MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+# per-deployment without a rebuild.
+spring:
+  config:
+    activate:
+      on-profile: prod
+management:
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}

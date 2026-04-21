@@ -47,6 +47,11 @@ dependencies {
     // only need the Logback config + MDC keys don't pull in web deps.
     compileOnly "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"
     compileOnly "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+    // Micrometer Observation is scoped compileOnly so the ObservedAspect
+    // auto-configuration compiles. Services that actually use @Observed
+    // pull the runtime library in via the shared `tracing` bundle applied
+    // by `ftgo.observability-conventions`.
+    compileOnly libs.micrometer.observation
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testImplementation "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"
