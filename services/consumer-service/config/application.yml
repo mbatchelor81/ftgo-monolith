@@ -13,27 +13,156 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  # Resilience4j is bundled by the ftgo-resilience library; Spring Cloud
+  # Circuit Breaker / LoadBalancer auto-configuration is disabled so the
+  # service never reaches for Eureka or Consul — service discovery is
+  # pure Kubernetes DNS (see `ftgo.services.*` below).
+  cloud:
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
 
 server:
   port: 8080
+  # Spring Boot stops accepting new requests then drains in-flight ones;
+  # the K8s preStop hook + terminationGracePeriodSeconds complete the
+  # graceful-shutdown contract so rolling deploys never drop a request.
   shutdown: graceful
+
+spring.lifecycle:
+  timeout-per-shutdown-phase: 25s
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        # `health` and `health/liveness`/`health/readiness` back the K8s
+        # probes; `info` feeds build metadata; `prometheus` powers
+        # /actuator/prometheus; `circuitbreakers`/`retries`/`bulkheads`
+        # expose Resilience4j internals for debugging.
+        include: health,info,prometheus,metrics,circuitbreakers,retries,bulkheads
   endpoint:
     health:
       probes:
+        # Serves /actuator/health/liveness and /actuator/health/readiness.
         enabled: true
       show-details: when-authorized
+      show-components: always
+      group:
+        # Readiness rolls up every dependent-service health indicator
+        # registered by libs/ftgo-resilience so a broken downstream
+        # service removes this pod from the K8s load balancer.
+        readiness:
+          include: readinessState,db,diskSpace,dependentServices
+        liveness:
+          # Liveness stays intentionally narrow — only the JVM itself.
+          include: livenessState
+  health:
+    diskspace:
+      enabled: true
+    db:
+      enabled: true
   metrics:
     tags:
       application: consumer-service
       bounded-context: consumer
 
+# ------------------------------------------------------------------
+# Resilience4j — circuit breaker, retry (exponential backoff), bulkhead
+# (thread-pool isolation), time limiter. The `default` instance below
+# is applied to every outbound call; per-downstream instances inherit
+# from it via `baseConfig` and can tune limits independently.
+# ------------------------------------------------------------------
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+    instances:
+      default:
+        baseConfig: default
+      order-service:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 200ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        exponentialMaxWaitDuration: 5s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+    instances:
+      default:
+        baseConfig: default
+      order-service:
+        baseConfig: default
+  bulkhead:
+    configs:
+      default:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 100ms
+    instances:
+      default:
+        baseConfig: default
+      order-service:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+        cancelRunningFuture: true
+    instances:
+      default:
+        baseConfig: default
+      order-service:
+        baseConfig: default
+
+# ------------------------------------------------------------------
+# Kubernetes-native service discovery. Every outbound URL is a cluster
+# DNS name of the form `<service>.<namespace>.svc.cluster.local` so pods
+# resolve peers through the standard kube-dns/CoreDNS path — no Eureka
+# client on the classpath, no Consul agent.
+#
+# `ftgo.resilience.dependent-services` lists the services whose health
+# is rolled up into this pod's readiness probe (see libs/ftgo-resilience
+# DependentServiceHealthIndicator).
+# ------------------------------------------------------------------
+ftgo:
+  services:
+    order-service:
+      base-url: ${FTGO_ORDER_SERVICE_URL:http://order-service.ftgo.svc.cluster.local:8080}
+      health-path: /actuator/health
+  resilience:
+    default-instance-name: default
+    dependent-services:
+      # Consumer service currently has no hard runtime dependency on
+      # other services; listing order-service as advisory so operational
+      # dashboards surface cross-service health without failing
+      # readiness when order-service is briefly unavailable.
+      - order-service
+
 logging:
   level:
     root: INFO
     com.ftgo.consumer: INFO
+    net.chrisrichardson.ftgo.resilience: INFO
+    io.github.resilience4j: INFO

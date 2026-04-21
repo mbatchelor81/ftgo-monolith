@@ -27,6 +27,9 @@ spring-cloud = "2023.0.1"
 # Observability
 micrometer = "1.12.5"
 
+# Resilience
+resilience4j = "2.2.0"
+
 # Persistence / migrations
 flyway = "10.10.0"
 mysql = "8.3.0"
@@ -57,6 +60,18 @@ spring-boot-starter-test             = { module = "org.springframework.boot:spri
 
 # --- Observability --------------------------------------------------------
 micrometer-registry-prometheus       = { module = "io.micrometer:micrometer-registry-prometheus",                  version.ref = "micrometer" }
+
+# --- Resilience (Resilience4j) --------------------------------------------
+# Resilience4j is the officially supported successor to Hystrix and the
+# standard choice for circuit breakers / retries / bulkheads in the Spring
+# Boot 3 / Spring Cloud 2023 line used by FTGO (see EM-44).
+resilience4j-spring-boot3            = { module = "io.github.resilience4j:resilience4j-spring-boot3",              version.ref = "resilience4j" }
+resilience4j-circuitbreaker          = { module = "io.github.resilience4j:resilience4j-circuitbreaker",            version.ref = "resilience4j" }
+resilience4j-retry                   = { module = "io.github.resilience4j:resilience4j-retry",                     version.ref = "resilience4j" }
+resilience4j-bulkhead                = { module = "io.github.resilience4j:resilience4j-bulkhead",                  version.ref = "resilience4j" }
+resilience4j-timelimiter             = { module = "io.github.resilience4j:resilience4j-timelimiter",               version.ref = "resilience4j" }
+resilience4j-reactor                 = { module = "io.github.resilience4j:resilience4j-reactor",                   version.ref = "resilience4j" }
+resilience4j-micrometer              = { module = "io.github.resilience4j:resilience4j-micrometer",                version.ref = "resilience4j" }
 
 # --- Persistence ----------------------------------------------------------
 flyway-core                          = { module = "org.flywaydb:flyway-core",                                      version.ref = "flyway" }
@@ -121,6 +136,19 @@ rest-assured = [
 mockito = [
   "mockito-core",
   "mockito-junit-jupiter",
+]
+
+# Full Resilience4j stack for service-to-service calls: circuit breaker,
+# retry with exponential backoff, bulkhead (thread-pool isolation), time
+# limiter, reactor operators, and Micrometer metrics integration.
+resilience4j = [
+  "resilience4j-spring-boot3",
+  "resilience4j-circuitbreaker",
+  "resilience4j-retry",
+  "resilience4j-bulkhead",
+  "resilience4j-timelimiter",
+  "resilience4j-reactor",
+  "resilience4j-micrometer",
 ]
 
 [plugins]

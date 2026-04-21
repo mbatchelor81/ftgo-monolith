@@ -1,0 +1,43 @@
+// ----------------------------------------------------------------------------
+// ftgo-resilience shared library
+//
+// Provides Resilience4j configuration, resilient WebClient builders,
+// Kubernetes-native service discovery helpers, and custom Spring Boot
+// Actuator health indicators for every FTGO microservice.
+//
+// Introduced by EM-44 — Configure Health Checks, Service Discovery, and
+// Resilience Patterns. Uses the convention plugins from build-logic/ and
+// the shared version catalog (gradle/libs.versions.toml).
+// ----------------------------------------------------------------------------
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = '1.0.0'
+description = 'FTGO shared resilience patterns, health indicators, and K8s service discovery'
+
+// The library is not a deployable artifact, so it does not apply the
+// Spring Boot Gradle plugin. Versions flow through the version catalog
+// (Spring Boot starters are pinned to a full version there) and transitive
+// dependencies from the starters bring in spring-boot-autoconfigure /
+// spring-boot-starter / reactor without explicit declarations here.
+dependencies {
+    // Actuator supplies HealthIndicator, health groups, and the liveness /
+    // readiness probe infrastructure that EM-44 wires services to use.
+    api libs.spring.boot.starter.actuator
+
+    // Reactive WebClient powers the resilient inter-service HTTP calls.
+    api libs.spring.boot.starter.webflux
+
+    // Validation annotations on @ConfigurationProperties records.
+    api libs.spring.boot.starter.validation
+
+    // Resilience4j — circuit breaker, retry, bulkhead, time limiter,
+    // reactor operators, and Micrometer metrics integration.
+    api libs.bundles.resilience4j
+
+    testImplementation libs.spring.boot.starter.test
+}
