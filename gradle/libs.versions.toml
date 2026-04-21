@@ -25,7 +25,7 @@ spring-dependency-management = "1.1.4"
 spring-cloud = "2023.0.1"
 
 # Observability
-micrometer = "1.12.5"
+micrometer = "1.13.6"
 
 # Persistence / migrations
 flyway = "10.10.0"
@@ -56,7 +56,13 @@ spring-boot-starter-validation       = { module = "org.springframework.boot:spri
 spring-boot-starter-test             = { module = "org.springframework.boot:spring-boot-starter-test",             version.ref = "spring-boot" }
 
 # --- Observability --------------------------------------------------------
+# Explicit `micrometer-core` is pinned so the version catalog's `micrometer`
+# version wins over the Spring Boot BOM (which ships an older 1.12.x patch on
+# Boot 3.2.x). `micrometer-registry-prometheus` is the Prometheus-text-format
+# registry scraped by the Prometheus server.
+micrometer-core                      = { module = "io.micrometer:micrometer-core",                                 version.ref = "micrometer" }
 micrometer-registry-prometheus       = { module = "io.micrometer:micrometer-registry-prometheus",                  version.ref = "micrometer" }
+spring-boot-starter-security         = { module = "org.springframework.boot:spring-boot-starter-security",         version.ref = "spring-boot" }
 
 # --- Persistence ----------------------------------------------------------
 flyway-core                          = { module = "org.flywaydb:flyway-core",                                      version.ref = "flyway" }
@@ -92,6 +98,14 @@ spring-boot-web = [
   "spring-boot-starter-web",
   "spring-boot-starter-actuator",
   "spring-boot-starter-validation",
+]
+
+# Observability stack wired in by `ftgo.observability-conventions`. Services
+# never depend on these directly — applying the convention plugin is the
+# single entry point so upgrades happen in one place.
+observability = [
+  "spring-boot-starter-actuator",
+  "micrometer-core",
   "micrometer-registry-prometheus",
 ]
 

@@ -1,0 +1,64 @@
+# Prometheus scrape configuration for the FTGO microservices.
+#
+# Every service exposes its Micrometer registry at /actuator/prometheus on
+# the management port (9090 inside the container — see
+# `services/*/config/application.yml`). Host ports are offset in
+# docker-compose so developers can curl individual services from the host
+# without port collisions.
+#
+# The `service`, `bounded_context`, and `environment` labels are applied
+# uniformly so Grafana dashboards and alert rules can filter on them
+# without each service having to opt in.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: local-dev
+    stack: ftgo
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: ftgo-consumer-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - consumer-service:9090
+        labels:
+          service: consumer-service
+          bounded_context: consumer
+
+  - job_name: ftgo-order-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - order-service:9090
+        labels:
+          service: order-service
+          bounded_context: order
+
+  - job_name: ftgo-restaurant-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - restaurant-service:9090
+        labels:
+          service: restaurant-service
+          bounded_context: restaurant
+
+  - job_name: ftgo-courier-service
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - courier-service:9090
+        labels:
+          service: courier-service
+          bounded_context: courier
