@@ -1,13 +1,12 @@
+// ----------------------------------------------------------------------------
+// ftgo-common shared library
 //
-// libs/ftgo-common
-// ----------------
-// Shared FTGO value objects (Money, PersonName, Address, …). Consumed by
-// every service and so must stay strictly Spring-agnostic at the public
-// API level — do NOT add a Spring Boot starter here.
+// Framework-light value objects (Money, Address, PersonName) and Jackson
+// serialization support shared by every FTGO microservice.
 //
-// Migration tracked in EM-32; until then the live implementation still
-// lives at `/ftgo-common` and this directory is scaffolding only.
-//
+// Migrated from the legacy root-level `ftgo-common/` module as part of EM-32.
+// Uses convention plugins from EM-28's build-logic.
+// ----------------------------------------------------------------------------
 
 plugins {
     id 'ftgo.java-conventions'
@@ -15,8 +14,22 @@ plugins {
     id 'ftgo.publishing-conventions'
 }
 
-description = 'FTGO shared value objects (Money, PersonName, Address)'
+version = '1.0.0'
+description = 'FTGO shared value objects, Jackson serialization, and common exceptions'
 
 dependencies {
-    api libs.bundles.jackson
+    // JPA annotations required by @Embeddable value objects (Money, Address, PersonName).
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.7'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
+    api group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+
+    runtimeOnly "javax.xml.bind:jaxb-api:2.2.11"
+    runtimeOnly "com.sun.xml.bind:jaxb-core:2.2.11"
+    runtimeOnly "com.sun.xml.bind:jaxb-impl:2.2.11"
+    runtimeOnly "javax.activation:activation:1.1.1"
 }
