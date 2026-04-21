@@ -27,7 +27,7 @@
 | 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | 769d8ad108f54214bcbdf4f8e5538758 | completed | [PR #97](https://github.com/mbatchelor81/ftgo-monolith/pull/97) | ✅ squashed | none (libs.versions.toml auto-merged) |
 | 4 | EM-42 | Implement Distributed Tracing with Micrometer Tracing and Zipkin | Phase 4 | 401d5424364a4a14adb026e3c943f734 | completed | [PR #94](https://github.com/mbatchelor81/ftgo-monolith/pull/94) | ✅ squashed | none |
 | 4 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | d889a895264148c6b6ec9b6663b8f479 | completed | [PR #95](https://github.com/mbatchelor81/ftgo-monolith/pull/95) | ✅ squashed | none (libs.versions.toml auto-merged) |
-| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | — | — | — | — | — |
-| 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | — | — | — | — | — |
-| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | — | — | — | — | — |
-| 5 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | — | — | — | — | — |
+| 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | 5e4ab78b1af243808da26fa9e73fb745 | completed | [PR #98](https://github.com/mbatchelor81/ftgo-monolith/pull/98) | ✅ squashed | none |
+| 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | 643df933e53547e7bf0af0e7f1244bc9 | completed | [PR #101](https://github.com/mbatchelor81/ftgo-monolith/pull/101) | ✅ squashed | none |
+| 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | e80af3e366bd45f89af36d27571fbbe3 | completed | [PR #100](https://github.com/mbatchelor81/ftgo-monolith/pull/100) | ✅ squashed | none |
+| 5 | EM-49 | Define Logging Standards and Structured Logging Configuration | Phase 5 | 68c64249b3d24ef1a63ba6bec2e1b0ec | completed | [PR #99](https://github.com/mbatchelor81/ftgo-monolith/pull/99) | ✅ squashed | none |

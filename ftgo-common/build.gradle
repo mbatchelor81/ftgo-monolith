@@ -11,7 +11,26 @@ dependencies {
 
     api 'mysql:mysql-connector-java:5.1.39'
 
+    // EM-46: shared error-handling module.
+    //
+    // Bean Validation annotations (`@NotNull`, `@NotBlank`, `@Pattern`, …) are
+    // used by request DTOs in the *-service-api modules, so the API jar is
+    // published on the `api` configuration. The validator itself
+    // (`hibernate-validator`) comes in transitively from spring-boot-starter-web
+    // on the services that actually run.
+    api 'javax.validation:validation-api:2.0.1.Final'
+
+    // Spring MVC + Servlet APIs are only needed to compile
+    // `errors.GlobalExceptionHandler`. Kept `compileOnly` so pure data
+    // modules that depend on ftgo-common (e.g. event DTO jars) do not pull
+    // in the whole servlet stack — services that register the handler
+    // already have spring-boot-starter-web on their runtime classpath.
+    compileOnly "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    testImplementation 'javax.servlet:javax.servlet-api:3.1.0'
 
     runtimeOnly "javax.xml.bind:jaxb-api:2.2.11"
     runtimeOnly "com.sun.xml.bind:jaxb-core:2.2.11"

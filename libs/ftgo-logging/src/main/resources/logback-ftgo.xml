@@ -8,14 +8,23 @@
             <include resource="logback-ftgo.xml"/>
         </configuration>
 
-    Produces one JSON object per log line on stdout (so Fluentd / Docker
-    can tail the container stdout stream unmodified) with MDC fields
-    (correlationId, requestId, service, userId) flattened into the root
-    object.
+    Output strategy is profile-driven (Spring's <springProfile> gates):
 
-    The JSON console appender is wrapped in an AsyncAppender so logging
-    I/O never blocks request threads. Queue sizing and discardingThreshold
-    are tuned for typical microservice throughput (~2k req/s per pod).
+      * local dev  -> human-readable console + rolling file (logs/<service>.log)
+      * dev / stg  -> one JSON object per log line on stdout
+      * prod       -> one JSON object per log line on stdout
+
+    MDC fields (correlationId, requestId, traceId, spanId, userId, service)
+    are flattened into the JSON root in deployed environments and rendered
+    inline in the local dev pattern.
+
+    The appenders are wrapped in an AsyncAppender so logging I/O never
+    blocks request threads. Queue sizing and discardingThreshold are
+    tuned for typical microservice throughput (~2k req/s per pod).
+
+    Sensitive data (credit cards, passwords, tokens, JWTs, API keys) is
+    scrubbed by %maskedMsg / SensitiveDataMaskingConverter before any
+    appender sees it (EM-49).
 -->
 <included>
 
@@ -27,38 +36,92 @@
                     defaultValue="ftgo-service"/>
 
     <!-- Environment overrides for cluster-level tuning without rebuilding
-         the image. -->
+         the image. LOG_LEVEL_FRAMEWORK controls the Spring/Hibernate/Hikari
+         loggers so ops can crank up framework verbosity on demand. -->
     <property name="LOG_LEVEL_ROOT" value="${LOG_LEVEL_ROOT:-INFO}"/>
     <property name="LOG_LEVEL_FTGO" value="${LOG_LEVEL_FTGO:-INFO}"/>
+    <property name="LOG_LEVEL_FRAMEWORK" value="${LOG_LEVEL_FRAMEWORK:-INFO}"/>
 
-    <!-- JSON encoder: flatten MDC, include the service name, keep the
-         stack trace on exceptions, and drop per-line cost fields we
-         don't use. -->
+    <!-- Local-dev file sink configuration. LOG_DIR defaults to `logs/`
+         relative to the process working directory; override via env var
+         when running from a different CWD. -->
+    <property name="LOG_DIR" value="${LOG_DIR:-logs}"/>
+    <property name="LOG_FILE_NAME" value="${LOG_FILE_NAME:-${serviceName}}"/>
+
+    <!-- PII masking converter. Renders as %maskedMsg in pattern layouts
+         and is also applied to the `message` field of the JSON encoder. -->
+    <conversionRule conversionWord="maskedMsg"
+                    converterClass="net.chrisrichardson.ftgo.logging.SensitiveDataMaskingConverter"/>
+
+    <!-- ================================================================
+         JSON console appender (deployed environments). Uses the logstash
+         composite encoder so we can reference %maskedMsg in the message
+         field and keep every MDC key (traceId, spanId, requestId,
+         correlationId, userId) flattened at the JSON root.
+         ================================================================ -->
     <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeContext>false</includeContext>
-            <includeMdc>true</includeMdc>
-            <customFields>{"service":"${serviceName}"}</customFields>
-            <fieldNames>
-                <timestamp>@timestamp</timestamp>
-                <message>message</message>
-                <thread>thread</thread>
-                <logger>logger</logger>
-                <level>level</level>
-                <stackTrace>stack_trace</stackTrace>
-                <levelValue>[ignore]</levelValue>
-                <version>[ignore]</version>
-            </fieldNames>
-            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                <maxDepthPerThrowable>30</maxDepthPerThrowable>
-                <maxLength>4096</maxLength>
-                <shortenedClassNameLength>40</shortenedClassNameLength>
-                <rootCauseFirst>true</rootCauseFirst>
-            </throwableConverter>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>@timestamp</fieldName>
+                </timestamp>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <pattern>
+                    <pattern>{"message":"%maskedMsg"}</pattern>
+                </pattern>
+                <mdc/>
+                <stackTrace>
+                    <fieldName>stack_trace</fieldName>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                        <maxLength>4096</maxLength>
+                        <shortenedClassNameLength>40</shortenedClassNameLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+                <pattern>
+                    <pattern>{"service":"${serviceName}"}</pattern>
+                </pattern>
+            </providers>
         </encoder>
     </appender>
 
-    <!-- Async wrapper. `neverBlock=true` drops events rather than blocking
+    <!-- ================================================================
+         Human-readable console appender (local dev only).
+         ================================================================ -->
+    <appender name="LOCAL_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} [traceId=%X{traceId:-} spanId=%X{spanId:-} requestId=%X{requestId:-} userId=%X{userId:-}] - %maskedMsg%n%rEx{short}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================
+         Rolling file appender (local dev only). Daily rotation capped at
+         30 days / 1 GB of compressed history so a long-running dev laptop
+         doesn't fill its disk.
+         ================================================================ -->
+    <appender name="LOCAL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${LOG_FILE_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} [traceId=%X{traceId:-} spanId=%X{spanId:-} requestId=%X{requestId:-} userId=%X{userId:-}] - %maskedMsg%n%rEx</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Async wrappers. neverBlock=true drops events rather than blocking
          request threads if the queue fills during a logging spike. -->
     <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="JSON_CONSOLE"/>
@@ -68,18 +131,77 @@
         <neverBlock>true</neverBlock>
     </appender>
 
-    <!-- Keep framework noise at INFO so the signal-to-noise ratio in
-         Kibana stays high. Services can override individual loggers in
-         their own logback-spring.xml after the <include> tag. -->
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.hibernate" level="INFO"/>
-    <logger name="org.hibernate.SQL" level="INFO"/>
-    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <appender name="ASYNC_LOCAL_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOCAL_CONSOLE"/>
+        <queueSize>4096</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <appender name="ASYNC_LOCAL_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOCAL_FILE"/>
+        <queueSize>4096</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <!-- ================================================================
+         Framework logger baselines. Default to LOG_LEVEL_FRAMEWORK (INFO).
+         The dev/staging and prod profiles below raise these to WARN /
+         ERROR respectively. Services can still override individual
+         loggers in their own logback-spring.xml after the <include> tag.
+         ================================================================ -->
+    <logger name="org.springframework" level="${LOG_LEVEL_FRAMEWORK}"/>
+    <logger name="org.hibernate" level="${LOG_LEVEL_FRAMEWORK}"/>
+    <logger name="org.hibernate.SQL" level="${LOG_LEVEL_FRAMEWORK}"/>
+    <logger name="com.zaxxer.hikari" level="${LOG_LEVEL_FRAMEWORK}"/>
     <logger name="net.chrisrichardson.ftgo" level="${LOG_LEVEL_FTGO}"/>
     <logger name="com.ftgo" level="${LOG_LEVEL_FTGO}"/>
 
-    <root level="${LOG_LEVEL_ROOT}">
-        <appender-ref ref="ASYNC_JSON"/>
-    </root>
+    <!-- ================================================================
+         Profile-aware root wiring.
+         ================================================================ -->
+    <!-- Local dev: human-readable console + rolling file. DEBUG on
+         application code, INFO on frameworks (overrides above). -->
+    <springProfile name="local | default">
+        <logger name="net.chrisrichardson.ftgo" level="DEBUG"/>
+        <logger name="com.ftgo" level="DEBUG"/>
+        <root level="${LOG_LEVEL_ROOT}">
+            <appender-ref ref="ASYNC_LOCAL_CONSOLE"/>
+            <appender-ref ref="ASYNC_LOCAL_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- Dev / Staging: JSON to stdout. INFO for application, WARN for
+         frameworks. -->
+    <springProfile name="dev | staging">
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Production: JSON to stdout. INFO for application, ERROR for
+         frameworks — keeps the Elasticsearch ingestion bill predictable. -->
+    <springProfile name="prod">
+        <logger name="org.springframework" level="ERROR"/>
+        <logger name="org.hibernate" level="ERROR"/>
+        <logger name="org.hibernate.SQL" level="ERROR"/>
+        <logger name="com.zaxxer.hikari" level="ERROR"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Fallback used when no Spring profile is active (e.g. standalone
+         CLI tools that depend on ftgo-logging for MDC keys). JSON stdout
+         only — no file sink — so container logs still work. -->
+    <springProfile name="!local &amp; !default &amp; !dev &amp; !staging &amp; !prod">
+        <root level="${LOG_LEVEL_ROOT}">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
 
 </included>
