@@ -1,0 +1,271 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - feat/microservices-migration
+      - main
+      - master
+    paths:
+      - "deployment/kubernetes/**"
+      - "deployment/kustomize/**"
+      - "services/*/k8s/**"
+      - "platform/shared-infrastructure/k8s/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (overrides overlay default)"
+        required: false
+        default: ""
+      promote_to:
+        description: "Environment to deploy to"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+concurrency:
+  group: deploy-${{ github.ref }}-${{ github.event.inputs.promote_to || 'dev' }}
+  cancel-in-progress: false
+
+env:
+  KUSTOMIZE_VERSION: v5.4.2
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Validate — always runs; render every overlay to catch syntax drift early.
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+            | bash -s -- "${KUSTOMIZE_VERSION#v}"
+          sudo mv kustomize /usr/local/bin/kustomize
+          kustomize version
+
+      - name: Install kubeconform
+        run: |
+          curl -sSLo kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/kubeconform
+
+      - name: Render + validate every overlay
+        run: |
+          set -euo pipefail
+          for env in dev staging prod; do
+            echo "::group::Rendering overlays/${env}"
+            kustomize build "deployment/kustomize/overlays/${env}" > "rendered-${env}.yaml"
+            echo "::endgroup::"
+            echo "::group::Validating overlays/${env}"
+            kubeconform -strict -ignore-missing-schemas -summary "rendered-${env}.yaml"
+            echo "::endgroup::"
+          done
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-manifests
+          path: rendered-*.yaml
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # 2. Deploy to dev — automatic on merge to the integration/main branch.
+  # ---------------------------------------------------------------------------
+  deploy-dev:
+    name: Deploy to dev
+    needs: validate
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'dev')
+    runs-on: ubuntu-latest
+    environment:
+      name: ftgo-dev
+      url: https://dev.ftgo.example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl + kustomize
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+            | bash -s -- "${KUSTOMIZE_VERSION#v}"
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Write kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DEV }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Override image tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          cd deployment/kustomize/overlays/dev
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
+          done
+
+      - name: Apply shared infrastructure (namespaces, RBAC)
+        run: |
+          kubectl apply -k platform/shared-infrastructure/k8s/namespaces
+          kubectl apply -k platform/shared-infrastructure/k8s/rbac -n ftgo-dev
+
+      - name: Deploy dev overlay
+        run: |
+          kubectl apply -k deployment/kustomize/overlays/dev
+
+      - name: Wait for rollout
+        run: |
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kubectl rollout status deployment/${svc} -n ftgo-dev --timeout=5m
+          done
+
+  # ---------------------------------------------------------------------------
+  # 3. Deploy to staging — requires approval via the `ftgo-staging` environment.
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to staging
+    needs: [validate, deploy-dev]
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped') &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'staging'))
+    runs-on: ubuntu-latest
+    environment:
+      name: ftgo-staging
+      url: https://staging.ftgo.example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+            | bash -s -- "${KUSTOMIZE_VERSION#v}"
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Write kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_STAGING }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Override image tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          cd deployment/kustomize/overlays/staging
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
+          done
+
+      - name: Apply shared infrastructure (namespaces, RBAC)
+        run: |
+          kubectl apply -k platform/shared-infrastructure/k8s/namespaces
+          kubectl apply -k platform/shared-infrastructure/k8s/rbac -n ftgo-staging
+
+      - name: Deploy staging overlay
+        run: |
+          kubectl apply -k deployment/kustomize/overlays/staging
+
+      - name: Wait for rollout
+        run: |
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kubectl rollout status deployment/${svc} -n ftgo-staging --timeout=10m
+          done
+
+  # ---------------------------------------------------------------------------
+  # 4. Deploy to prod — second approval gate via the `ftgo-prod` environment.
+  # ---------------------------------------------------------------------------
+  deploy-prod:
+    name: Deploy to prod
+    needs: [validate, deploy-staging]
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.deploy-staging.result == 'success' || needs.deploy-staging.result == 'skipped') &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'prod'))
+    runs-on: ubuntu-latest
+    environment:
+      name: ftgo-prod
+      url: https://ftgo.example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+            | bash -s -- "${KUSTOMIZE_VERSION#v}"
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Write kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_PROD }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Override image tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+        run: |
+          cd deployment/kustomize/overlays/prod
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
+          done
+
+      - name: Apply shared infrastructure (namespaces, RBAC)
+        run: |
+          kubectl apply -k platform/shared-infrastructure/k8s/namespaces
+          kubectl apply -k platform/shared-infrastructure/k8s/rbac -n ftgo-prod
+
+      - name: Deploy prod overlay
+        run: |
+          kubectl apply -k deployment/kustomize/overlays/prod
+
+      - name: Wait for rollout
+        run: |
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kubectl rollout status deployment/${svc} -n ftgo-prod --timeout=15m
+          done
+
+      - name: Smoke test
+        run: |
+          for svc in consumer-service order-service courier-service restaurant-service; do
+            kubectl get pods -n ftgo-prod -l app=${svc} \
+              -o jsonpath='{.items[*].status.containerStatuses[*].ready}' \
+              | grep -qv false
+          done

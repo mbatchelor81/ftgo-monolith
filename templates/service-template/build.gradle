@@ -1,0 +1,38 @@
+//
+// templates/service-template
+// --------------------------
+// Canonical build script for a new FTGO microservice. Copy this file into
+// `services/<name>-service/` and tweak only the `description` and any
+// service-specific dependencies.
+//
+// Every deployable service applies the same convention plugin stack:
+//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions      → Jib container image build
+//
+// Keeping this file under 30 non-comment lines is an intentional forcing
+// function — if a service needs more, either roll the common bits back
+// into a convention plugin or justify the divergence in an ADR.
+//
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
+
+description = 'FTGO microservice template — replace this description'
+
+dependencies {
+    // Shared libraries (uncomment as needed)
+    // implementation project(':libs:ftgo-common')
+    // implementation project(':libs:ftgo-common-jpa')
+
+    // API contract module(s) this service exposes or consumes
+    // implementation project(':services:example-service-api')
+
+    implementation libs.bundles.spring.boot.web
+    implementation libs.bundles.spring.boot.data.jpa
+
+    testImplementation libs.spring.boot.starter.test
+}
