@@ -33,3 +33,19 @@ dependencies {
     runtimeOnly "com.sun.xml.bind:jaxb-impl:2.2.11"
     runtimeOnly "javax.activation:activation:1.1.1"
 }
+
+// Override the default publication coordinates supplied by
+// `ftgo.publishing-conventions` so this artifact matches the coordinates
+// documented in README.md and required by the EM-32 acceptance criteria.
+// The `net.chrisrichardson.ftgo` groupId mirrors the Java package root kept
+// for legacy interop; the `-lib` suffix disambiguates this published
+// artifact from the legacy root-level `ftgo-common/` Gradle module while
+// the migration is in progress.
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-lib'
+        }
+    }
+}
