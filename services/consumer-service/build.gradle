@@ -1,0 +1,32 @@
+//
+// services/consumer-service
+// --------------------------
+// Deployable Consumer microservice.
+//
+// Applies the standard FTGO service convention plugin stack:
+//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions      → Jib container image build
+//
+// Business code lives under src/main/java/com/ftgo/consumer (see
+// CONVENTIONS.md §3). Until EM-3x extracts that code from the legacy
+// `ftgo-consumer-service` module, only the Spring Boot baseline is wired up
+// here so the scaffold compiles cleanly.
+//
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
+
+description = 'FTGO Consumer microservice'
+
+dependencies {
+    implementation project(':libs:ftgo-security')
+
+    implementation libs.bundles.spring.boot.web
+    implementation libs.bundles.spring.boot.data.jpa
+
+    testImplementation libs.bundles.security.testing
+}

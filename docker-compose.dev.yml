@@ -1,0 +1,104 @@
+version: '3.8'
+
+# Local development compose file for the FTGO microservices.
+#
+# Builds every service image from source via its per-service Dockerfile so
+# developers can iterate without pushing to the registry. For production-like
+# smoke tests using registry images, see docker-compose.yml.
+#
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Each service listens on 8080 inside the container; host ports are offset so
+# they don't collide.
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+  environment: &service-env
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql/ftgo
+    SPRING_DATASOURCE_USERNAME: mysqluser
+    SPRING_DATASOURCE_PASSWORD: mysqlpw
+    SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
+    # Keep the image defaults intact (-XX:MaxRAMPercentage=75.0 +
+    # -Djava.security.egd=file:/dev/./urandom) so the heap scales with the
+    # container's memory limit. Override JAVA_OPTS per service if you need
+    # to tighten limits for a specific compose run.
+    JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+    SPRING_PROFILES_ACTIVE: dev
+
+services:
+  mysql:
+    build: ./mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpw
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  consumer-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/consumer-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: consumer-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-consumer-service:dev
+    ports:
+      - "8082:8080"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: consumer-service
+
+  order-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/order-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: order-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-order-service:dev
+    ports:
+      - "8083:8080"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: order-service
+
+  restaurant-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/restaurant-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: restaurant-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-restaurant-service:dev
+    ports:
+      - "8084:8080"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: restaurant-service
+
+  courier-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/courier-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: courier-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-courier-service:dev
+    ports:
+      - "8085:8080"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: courier-service

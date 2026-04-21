@@ -1,0 +1,32 @@
+// ----------------------------------------------------------------------------
+// libs/ftgo-security
+// ------------------
+// Shared Spring Security foundation for every FTGO microservice.
+//
+// Provides:
+//   * Base SecurityFilterChain configuration (stateless REST APIs)
+//   * CORS configuration source
+//   * Security exception handlers (401/403 JSON responses)
+//   * SecurityUtils helper for accessing the current authentication
+//
+// Applied automatically in consuming services via Spring Boot
+// auto-configuration (see META-INF/spring/...AutoConfiguration.imports).
+//
+// Migration tracked in EM-39.
+// ----------------------------------------------------------------------------
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+description = 'FTGO shared Spring Security configuration'
+
+dependencies {
+    api libs.spring.boot.starter.security
+    api libs.spring.boot.starter.web
+    api libs.spring.boot.starter.actuator
+
+    testImplementation libs.bundles.security.testing
+}
