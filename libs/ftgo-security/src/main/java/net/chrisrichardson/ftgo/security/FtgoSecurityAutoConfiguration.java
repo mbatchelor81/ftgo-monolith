@@ -1,6 +1,7 @@
 package net.chrisrichardson.ftgo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.chrisrichardson.ftgo.security.authorization.MethodSecurityConfiguration;
 import net.chrisrichardson.ftgo.security.jwt.JwtAuthenticationConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -23,7 +24,11 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 @AutoConfiguration
 @ConditionalOnClass(EnableWebSecurity.class)
 @ConditionalOnWebApplication
-@Import({BaseSecurityConfiguration.class, JwtAuthenticationConfiguration.class})
+@Import({
+        BaseSecurityConfiguration.class,
+        JwtAuthenticationConfiguration.class,
+        MethodSecurityConfiguration.class
+})
 public class FtgoSecurityAutoConfiguration {
 
     @Bean
