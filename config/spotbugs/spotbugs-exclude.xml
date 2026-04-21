@@ -19,20 +19,32 @@
     </Match>
 
     <!-- @Autowired fields are populated by the framework; nullability here
-         is a framework concern, not an application bug. -->
+         is a framework concern, not an application bug. The Source element
+         matches against the bare filename stored in the class file's
+         SourceFile attribute, not a path. -->
     <Match>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
-        <Source name="~.*/src/main/.*Controller\.java"/>
+        <Source name="~.*Controller\.java"/>
     </Match>
 
     <!-- Tests frequently use reflection, static mocks, and duplicated
-         constants; suppress noisy categories inside src/test. -->
+         constants; match by class-name suffix (Test / IT / Tests) because
+         the Source element sees only the bare filename. The spotbugsTest
+         Gradle task is also disabled in ftgo.quality-conventions to avoid
+         analyzing compiled test classes entirely. -->
     <Match>
-        <Source name="~.*/src/test/.*"/>
+        <Class name="~.*Test"/>
+    </Match>
+    <Match>
+        <Class name="~.*Tests"/>
+    </Match>
+    <Match>
+        <Class name="~.*IT"/>
     </Match>
 
-    <!-- Generated Gradle / Flyway / openapi sources. -->
+    <!-- Generated sources (openapi, annotation processors) commonly live
+         under packages with `.generated.` or end in `$Generated`. -->
     <Match>
-        <Source name="~.*/build/generated/.*"/>
+        <Class name="~.*\.generated\..*"/>
     </Match>
 </FindBugsFilter>
