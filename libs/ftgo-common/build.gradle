@@ -43,7 +43,9 @@ dependencies {
 // the migration is in progress.
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        // Configure the `mavenJava` publication already created by
+        // `ftgo.publishing-conventions`; do not re-create it.
+        mavenJava {
             groupId = 'net.chrisrichardson.ftgo'
             artifactId = 'ftgo-common-lib'
         }
