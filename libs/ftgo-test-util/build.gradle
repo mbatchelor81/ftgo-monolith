@@ -1,9 +1,18 @@
 //
 // libs/ftgo-test-util
 // -------------------
-// Shared test infrastructure: base classes, fixtures, and Rest-Assured
-// helpers. Expressed as an `api` on JUnit 5 + Rest-Assured so consuming
-// modules don't have to re-declare them.
+// Shared test infrastructure for the FTGO microservices testing strategy
+// (see docs/testing-strategy.md). Every consuming module gets:
+//
+//   * JUnit 5 + AssertJ + Rest-Assured transitively (via `api` scope),
+//   * Mockito (core + jupiter) so unit-test templates don't re-declare it,
+//   * Testcontainers core + JUnit-Jupiter + MySQL driver for the shared
+//     `FtgoMySqlContainer` used by integration tests — this replaces the
+//     legacy `docker-compose up mysql` dance for CI.
+//
+// This module is deliberately `java-library` (not Spring Boot): the
+// Testcontainers + builder APIs must be usable from plain `libs/*`
+// modules too, not only from services on the Spring Boot classpath.
 //
 
 plugins {
@@ -12,10 +21,32 @@ plugins {
     id 'ftgo.publishing-conventions'
 }
 
-description = 'FTGO shared test utilities'
+description = 'FTGO shared test utilities (builders, assertions, Testcontainers)'
 
 dependencies {
+    // ftgo-common exposes `Money` and friends — the builders and
+    // assertions produce/consume these value objects, so they must be
+    // on the consuming-module test classpath.
+    api project(':libs:ftgo-common')
+
     api libs.junit.jupiter.api
     api libs.bundles.rest.assured
     api libs.assertj.core
+
+    // Mockito is part of the unit-test template stack — exported so tests
+    // that depend on ftgo-test-util get it for free.
+    api libs.bundles.mockito
+
+    // Testcontainers replaces `docker-compose up mysql` for integration
+    // tests (EM-48). `FtgoMySqlContainer` below wraps the MySQL 8 module
+    // and applies Flyway migrations.
+    api libs.testcontainers.core
+    api libs.testcontainers.junit.jupiter
+    api libs.testcontainers.mysql
+
+    // MySQL JDBC driver + Flyway used by `FtgoMySqlContainer` to apply a
+    // module-specific migration classpath before each test class runs.
+    api libs.mysql.connector
+    api libs.flyway.core
+    api libs.flyway.mysql
 }
