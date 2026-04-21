@@ -167,16 +167,8 @@ ftgo:
     default-instance-name: default
     dependent-services:
       - order-service
-
-logging:
-  level:
-    root: INFO
-    com.ftgo.courier: INFO
-    net.chrisrichardson.ftgo.resilience: INFO
-    io.github.resilience4j: INFO
-# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
-# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
-ftgo:
+  # OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+  # Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
   openapi:
     title: "FTGO Courier Service API"
     description: >

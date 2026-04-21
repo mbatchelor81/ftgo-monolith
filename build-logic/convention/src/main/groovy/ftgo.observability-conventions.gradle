@@ -3,13 +3,16 @@
 // -------------------------------
 // Wires every FTGO microservice to the shared observability stack:
 //
-//   * Spring Boot Actuator — `/actuator/health`, `/actuator/prometheus`, …
-//   * Micrometer core       — the metrics facade used by service code
-//   * Micrometer Prometheus — the text-format registry scraped by Prometheus
+//   * Spring Boot Actuator  — `/actuator/health`, `/actuator/prometheus`, …
+//   * Micrometer core        — the metrics facade used by service code
+//   * Micrometer Prometheus  — the text-format registry scraped by Prometheus
+//   * Micrometer Tracing     — `@Observed` + Brave bridge + Zipkin reporter
+//                              for distributed tracing (EM-42)
 //
 // Apply AFTER `ftgo.spring-boot-conventions` so the Spring Boot BOM is
-// already in scope. The convention pulls the `observability` bundle from
-// `gradle/libs.versions.toml` so version bumps only happen in one place.
+// already in scope. The convention pulls the `observability` and `tracing`
+// bundles from `gradle/libs.versions.toml` so version bumps only happen in
+// one place.
 //
 // Services opt in with a single line in their `build.gradle`:
 //
@@ -32,4 +35,10 @@ def catalog = extensions.getByType(VersionCatalogsExtension).named('libs')
 
 dependencies {
     implementation catalog.findBundle('observability').get()
+    // Distributed tracing stack (EM-42). Pulls spring-boot-starter-aop,
+    // micrometer-observation, micrometer-tracing, the Brave bridge, and
+    // the Zipkin reporter so every service emitting metrics also emits
+    // spans — keeping the observability story consistent across the
+    // fleet without each service's build.gradle having to opt in.
+    implementation catalog.findBundle('tracing').get()
 }
