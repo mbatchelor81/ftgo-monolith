@@ -1,4 +1,4 @@
-package net.chrisrichardson.ftgo.courierservice.security;
+package com.ftgo.courier.security;
 
 import net.chrisrichardson.ftgo.security.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +15,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 /**
  * Courier service security overrides.
  *
- * <p>Extends the shared baseline from {@code libs/ftgo-security} by keeping the
- * courier REST endpoints authenticated. The shared actuator chain is reused
- * (health/info public, everything else secured).
+ * <p>Lives in {@code com.ftgo.courier.security} so it is picked up by the
+ * {@code @SpringBootApplication} component scan on
+ * {@code com.ftgo.courier.CourierServiceApplication}. The shared actuator
+ * chain from {@code libs/ftgo-security} is reused as-is.
  */
 @Configuration
 @EnableWebSecurity

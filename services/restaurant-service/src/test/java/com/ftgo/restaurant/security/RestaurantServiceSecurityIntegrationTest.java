@@ -1,4 +1,4 @@
-package net.chrisrichardson.ftgo.consumerservice.security;
+package com.ftgo.restaurant.security;
 
 import net.chrisrichardson.ftgo.security.FtgoSecurityAutoConfiguration;
 import org.junit.jupiter.api.Test;
@@ -26,14 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Verifies the consumer service wires the shared {@code libs/ftgo-security}
- * baseline: health is public, {@code /consumers/**} requires auth, 401 JSON
+ * Verifies the restaurant service wires the shared {@code libs/ftgo-security}
+ * baseline: health is public, {@code /restaurants/**} requires auth, 401 JSON
  * body is returned, and CSRF is disabled for stateless API calls.
  */
-@SpringBootTest(classes = ConsumerServiceSecurityIntegrationTest.TestApp.class)
+@SpringBootTest(classes = RestaurantServiceSecurityIntegrationTest.TestApp.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "management.endpoints.web.exposure.include=health,info")
-class ConsumerServiceSecurityIntegrationTest {
+class RestaurantServiceSecurityIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,22 +45,22 @@ class ConsumerServiceSecurityIntegrationTest {
     }
 
     @Test
-    void consumersEndpoint_withoutAuth_returns401WithJsonBody() throws Exception {
-        mockMvc.perform(get("/consumers/1").accept(MediaType.APPLICATION_JSON))
+    void restaurantsEndpoint_withoutAuth_returns401WithJsonBody() throws Exception {
+        mockMvc.perform(get("/restaurants/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.error").value("Unauthorized"));
     }
 
     @Test
-    void consumersEndpoint_withBasicAuth_returns200() throws Exception {
-        mockMvc.perform(get("/consumers/1").with(httpBasic("user", "test-password")))
+    void restaurantsEndpoint_withBasicAuth_returns200() throws Exception {
+        mockMvc.perform(get("/restaurants/1").with(httpBasic("user", "test-password")))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void postConsumers_withBasicAuthAndNoCsrfToken_succeeds() throws Exception {
-        mockMvc.perform(post("/consumers")
+    void postRestaurants_withBasicAuthAndNoCsrfToken_succeeds() throws Exception {
+        mockMvc.perform(post("/restaurants")
                         .with(httpBasic("user", "test-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -77,16 +77,16 @@ class ConsumerServiceSecurityIntegrationTest {
             HibernateJpaAutoConfiguration.class,
             FlywayAutoConfiguration.class
     })
-    @Import({FtgoSecurityAutoConfiguration.class, ConsumerServiceSecurityConfiguration.class})
+    @Import({FtgoSecurityAutoConfiguration.class, RestaurantServiceSecurityConfiguration.class})
     static class TestApp {
 
         @RestController
-        @RequestMapping("/consumers")
-        static class ConsumersController {
+        @RequestMapping("/restaurants")
+        static class RestaurantsController {
 
             @GetMapping("/{id}")
             public String get() {
-                return "consumer";
+                return "restaurant";
             }
 
             @PostMapping

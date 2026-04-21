@@ -1,4 +1,4 @@
-package net.chrisrichardson.ftgo.orderservice.security;
+package com.ftgo.restaurant.security;
 
 import net.chrisrichardson.ftgo.security.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -13,16 +13,16 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Order service security overrides.
+ * Restaurant service security overrides.
  *
- * <p>Extends the shared baseline from {@code libs/ftgo-security} by keeping the
- * order lifecycle endpoints under {@code /orders/**} and {@code /api/**}
- * authenticated. The shared {@code actuatorSecurityFilterChain} is reused
- * as-is (health/info public, everything else secured).
+ * <p>Lives in {@code com.ftgo.restaurant.security} so it is picked up by the
+ * {@code @SpringBootApplication} component scan on
+ * {@code com.ftgo.restaurant.RestaurantServiceApplication}. The shared
+ * actuator chain from {@code libs/ftgo-security} is reused as-is.
  */
 @Configuration
 @EnableWebSecurity
-public class OrderServiceSecurityConfiguration {
+public class RestaurantServiceSecurityConfiguration {
 
     @Bean("apiSecurityFilterChain")
     @Order(2)
@@ -31,7 +31,7 @@ public class OrderServiceSecurityConfiguration {
                                                       SecurityExceptionHandler securityExceptionHandler) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/orders/**", "/api/**").authenticated()
+                .requestMatchers("/restaurants/**", "/api/**").authenticated()
                 .anyRequest().authenticated()
             )
             .httpBasic(Customizer.withDefaults())

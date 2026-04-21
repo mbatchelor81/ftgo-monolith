@@ -1,4 +1,4 @@
-package net.chrisrichardson.ftgo.courierservice.security;
+package com.ftgo.order.security;
 
 import net.chrisrichardson.ftgo.security.FtgoSecurityAutoConfiguration;
 import org.junit.jupiter.api.Test;
@@ -26,14 +26,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Verifies the courier service wires the shared {@code libs/ftgo-security}
- * baseline: health is public, {@code /couriers/**} requires auth, 401 JSON
- * body is returned, and CSRF is disabled for stateless API calls.
+ * Verifies the order service wires the shared {@code libs/ftgo-security}
+ * baseline correctly:
+ * <ul>
+ *   <li>{@code /actuator/health} stays public</li>
+ *   <li>Business endpoints (e.g. {@code /orders}) require authentication</li>
+ *   <li>401 responses carry the shared JSON error body</li>
+ *   <li>CSRF is disabled so POSTs with Basic auth succeed without a token</li>
+ * </ul>
  */
-@SpringBootTest(classes = CourierServiceSecurityIntegrationTest.TestApp.class)
+@SpringBootTest(classes = OrderServiceSecurityIntegrationTest.TestApp.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "management.endpoints.web.exposure.include=health,info")
-class CourierServiceSecurityIntegrationTest {
+class OrderServiceSecurityIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,22 +50,23 @@ class CourierServiceSecurityIntegrationTest {
     }
 
     @Test
-    void couriersEndpoint_withoutAuth_returns401WithJsonBody() throws Exception {
-        mockMvc.perform(get("/couriers/1").accept(MediaType.APPLICATION_JSON))
+    void ordersEndpoint_withoutAuth_returns401WithJsonBody() throws Exception {
+        mockMvc.perform(get("/orders/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
-                .andExpect(jsonPath("$.error").value("Unauthorized"));
+                .andExpect(jsonPath("$.error").value("Unauthorized"))
+                .andExpect(jsonPath("$.path").value("/orders/1"));
     }
 
     @Test
-    void couriersEndpoint_withBasicAuth_returns200() throws Exception {
-        mockMvc.perform(get("/couriers/1").with(httpBasic("user", "test-password")))
+    void ordersEndpoint_withBasicAuth_returns200() throws Exception {
+        mockMvc.perform(get("/orders/1").with(httpBasic("user", "test-password")))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void postCouriers_withBasicAuthAndNoCsrfToken_succeeds() throws Exception {
-        mockMvc.perform(post("/couriers")
+    void postOrders_withBasicAuthAndNoCsrfToken_succeeds() throws Exception {
+        mockMvc.perform(post("/orders")
                         .with(httpBasic("user", "test-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -77,16 +83,16 @@ class CourierServiceSecurityIntegrationTest {
             HibernateJpaAutoConfiguration.class,
             FlywayAutoConfiguration.class
     })
-    @Import({FtgoSecurityAutoConfiguration.class, CourierServiceSecurityConfiguration.class})
+    @Import({FtgoSecurityAutoConfiguration.class, OrderServiceSecurityConfiguration.class})
     static class TestApp {
 
         @RestController
-        @RequestMapping("/couriers")
-        static class CouriersController {
+        @RequestMapping("/orders")
+        static class OrdersController {
 
             @GetMapping("/{id}")
             public String get() {
-                return "courier";
+                return "order";
             }
 
             @PostMapping
