@@ -8,6 +8,10 @@
 //   * `allprojects` version coordinate — individual modules override `group`
 //     via `ftgo.java-conventions` (`com.ftgo`); legacy modules continue to
 //     publish under `net.chrisrichardson.ftgo` until migrated.
+//   * JaCoCo + parallel-test configuration applied to every module that
+//     applies the `java` plugin (EM-36). Keeping this here instead of in
+//     `ftgo.testing-conventions` means the legacy `ftgo-*` modules get
+//     coverage too without having to port them to the new convention stack.
 //
 // What does NOT live here:
 //   * Java toolchain / compiler flags          → ftgo.java-conventions
@@ -26,6 +30,11 @@ plugins {
 }
 
 apply plugin: WaitForMySqlPlugin
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = '0.8.12'
+}
 
 allprojects {
     version = '0.1.0-SNAPSHOT'
@@ -37,6 +46,119 @@ subprojects {
         maven {
             url = "${project.rootDir}/build/repo"
         }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Test execution + JaCoCo coverage (EM-36).
+//
+// Applied uniformly to every module that pulls in the `java` plugin, which
+// covers both the legacy `ftgo-*` tree (via the legacy-compatibility shim
+// below) and the new `services:*` / `libs:*` modules (via
+// `ftgo.java-conventions`). Keeping the wiring here — rather than in a
+// convention plugin — guarantees the legacy modules participate in the same
+// test-reporting + coverage pipeline without having to migrate them first.
+//
+//   * `Test` tasks emit JUnit XML + HTML reports and are finalized by
+//     `jacocoTestReport` so coverage runs automatically alongside `test`.
+//   * `maxParallelForks` enables intra-module parallel test execution
+//     (capped at half the available CPUs to leave headroom for Gradle
+//     workers and compile tasks).
+//   * `forkEvery` periodically forks a fresh JVM to mitigate test-pollution
+//     from static state in Spring contexts.
+//   * `jacocoTestReport` is configured to emit XML (for coverage
+//     aggregation services and GitHub Actions) plus HTML (for developers).
+//
+// Aggregation across modules is provided by the `jacocoAggregateReport`
+// task at the bottom of this file.
+// ----------------------------------------------------------------------------
+subprojects { subproject ->
+    subproject.plugins.withId('java') {
+        subproject.apply plugin: 'jacoco'
+
+        subproject.jacoco {
+            toolVersion = '0.8.12'
+        }
+
+        subproject.tasks.withType(Test).configureEach {
+            maxParallelForks = Math.max(1, Runtime.runtime.availableProcessors().intdiv(2))
+            forkEvery = 100
+
+            reports {
+                junitXml.required = true
+                html.required = true
+            }
+        }
+
+        // `jacocoTestReport` is created lazily by JacocoPlugin once both the
+        // `jacoco` and `java` plugins are present. Wire up the finalizer +
+        // report formats inside `afterEvaluate` so the task lookup happens
+        // after all plugin callbacks have fired.
+        subproject.afterEvaluate {
+            def reportTask = subproject.tasks.findByName('jacocoTestReport')
+            if (reportTask != null) {
+                subproject.tasks.withType(Test).configureEach { testTask ->
+                    testTask.finalizedBy(reportTask)
+                }
+                reportTask.configure {
+                    dependsOn subproject.tasks.withType(Test)
+                    reports {
+                        xml.required = true
+                        html.required = true
+                        csv.required = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// `jacocoAggregateReport` — cross-module coverage aggregation.
+//
+// Consumes every migrated subproject's `test.exec` binary report and merges
+// them into a single JaCoCo report at
+// `build/reports/jacoco/jacocoAggregateReport`. This is what the CI pipeline
+// (EM-36) uploads as the canonical coverage artifact; per-module reports
+// remain available for drill-down.
+//
+// Scoped to the new `services:*` and `libs:*` modules — the legacy `ftgo-*`
+// tree still pulls in the retired `io.eventuate` Bintray repo, so including
+// those modules here would fail dependency resolution in CI. They rejoin
+// the aggregate as each one is ported under the microservices layout.
+// ----------------------------------------------------------------------------
+tasks.register('jacocoAggregateReport', JacocoReport) {
+    group = 'verification'
+    description = 'Aggregates JaCoCo coverage reports across all migrated services/ and libs/ modules.'
+
+    def coveredSubprojects = subprojects.findAll {
+        it.plugins.hasPlugin('java') &&
+            (it.path.startsWith(':services:') || it.path.startsWith(':libs:'))
+    }
+
+    // No `dependsOn` on per-module `test` tasks: the aggregate task just
+    // merges whatever `.exec` files already exist, whether they were
+    // produced locally (by running `test` beforehand) or restored as
+    // matrix artifacts by the CI pipeline.
+
+    executionData.setFrom(files(coveredSubprojects.collect {
+        it.fileTree(dir: it.buildDir, includes: ['jacoco/*.exec'])
+    }))
+
+    sourceDirectories.setFrom(files(coveredSubprojects.collect {
+        it.extensions.getByType(SourceSetContainer).named('main').get().allSource.srcDirs
+    }.flatten()))
+
+    classDirectories.setFrom(files(coveredSubprojects.collect {
+        it.extensions.getByType(SourceSetContainer).named('main').get().output
+    }))
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+        xml.outputLocation = layout.buildDirectory.file('reports/jacoco/jacocoAggregateReport/jacocoAggregateReport.xml')
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/jacocoAggregateReport/html')
     }
 }
 
