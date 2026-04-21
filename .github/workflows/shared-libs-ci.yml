@@ -1,0 +1,65 @@
+name: Shared Libraries CI
+
+# Shared build pipeline for every reusable JVM library under libs/.
+# Runs a single fan-out matrix so adding a new library (per CONVENTIONS.md §8)
+# is a one-line change here. Each matrix entry is an isolated Gradle build
+# invocation using the reusable gradle-build workflow so JDK setup and
+# dependency caching stay identical across libraries and services.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/shared-libs-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/shared-libs-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: shared-libs-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.library }}
+    strategy:
+      fail-fast: false
+      matrix:
+        library:
+          - ftgo-common
+          - ftgo-common-jpa
+          - ftgo-test-util
+    uses: ./.github/workflows/gradle-build-reusable.yml
+    with:
+      module-name: ${{ matrix.library }}
+      gradle-projects: ":libs:${{ matrix.library }}"
+      gradle-tasks: "build"
