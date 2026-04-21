@@ -1,0 +1,22 @@
+# Bundled configuration used when the service runs from the fat jar.
+# Keep local-developer-friendly defaults here; override via profile-specific
+# files under config/ for deployed environments.
+
+spring:
+  application:
+    name: example-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/ftgo_example}
+    username: ${DB_USER:ftgo}
+    password: ${DB_PASSWORD:ftgo}
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

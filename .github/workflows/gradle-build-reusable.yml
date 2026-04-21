@@ -1,0 +1,103 @@
+name: Gradle Build (reusable)
+
+# Reusable workflow invoked by per-service and shared-library CI pipelines.
+# Centralizes JDK setup, Gradle dependency caching, and the build/test
+# invocation so every pipeline gets identical baseline behavior. Consumers
+# pass in the Gradle project paths (e.g. ":services:order-service") and the
+# tasks to run (defaults to `build`).
+#
+# See CONVENTIONS.md §1 and docs/build-configuration.md for how the
+# build-logic/ convention plugins wire into per-module builds.
+
+on:
+  workflow_call:
+    inputs:
+      module-name:
+        description: "Human-readable module name used in job summaries and cache keys."
+        required: true
+        type: string
+      gradle-projects:
+        description: "Space-separated list of Gradle project paths to build (e.g. ':services:order-service')."
+        required: true
+        type: string
+      gradle-tasks:
+        description: "Gradle task name(s) to run per project. Defaults to 'build'."
+        required: false
+        type: string
+        default: "build"
+      java-version:
+        description: "JDK major version. Must be >= 17 to satisfy ftgo.java-conventions."
+        required: false
+        type: string
+        default: "17"
+      java-distribution:
+        description: "JDK distribution for actions/setup-java."
+        required: false
+        type: string
+        default: "temurin"
+      extra-gradle-args:
+        description: "Additional arguments passed to ./gradlew (e.g. '--stacktrace')."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ inputs.module-name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ inputs.java-distribution }}
+          java-version: ${{ inputs.java-version }}
+
+      # gradle/actions/setup-gradle provides first-class dependency caching
+      # keyed on wrapper + build-script checksums, plus wrapper validation.
+      # This replaces manual actions/cache wiring and keeps behavior
+      # consistent with the project-wide Gradle version.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+          gradle-home-cache-cleanup: true
+
+      - name: Assemble Gradle task list
+        id: tasks
+        shell: bash
+        run: |
+          set -euo pipefail
+          projects="${{ inputs.gradle-projects }}"
+          tasks_csv="${{ inputs.gradle-tasks }}"
+          task_list=""
+          for proj in $projects; do
+            for t in ${tasks_csv//,/ }; do
+              task_list+=" ${proj}:${t}"
+            done
+          done
+          echo "task_list=${task_list}" >> "${GITHUB_OUTPUT}"
+          echo "Resolved Gradle tasks:${task_list}"
+
+      - name: Run Gradle build
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace ${{ inputs.extra-gradle-args }} ${{ steps.tasks.outputs.task_list }}
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ inputs.module-name }}
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7

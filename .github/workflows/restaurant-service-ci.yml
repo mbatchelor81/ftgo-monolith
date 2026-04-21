@@ -1,0 +1,58 @@
+name: Restaurant Service CI
+
+# Per-service Gradle build pipeline for the Restaurant microservice.
+# Triggers only on changes that could affect the :services:restaurant-service
+# build graph — the service itself, any shared library it depends on, the
+# version catalog, the build-logic convention plugins, or the wrapper.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'services/restaurant-service/**'
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/restaurant-service-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'services/restaurant-service/**'
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/restaurant-service-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: restaurant-service-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/gradle-build-reusable.yml
+    with:
+      module-name: restaurant-service
+      gradle-projects: ":services:restaurant-service"
+      gradle-tasks: "build"

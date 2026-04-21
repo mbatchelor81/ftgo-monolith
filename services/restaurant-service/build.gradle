@@ -1,0 +1,23 @@
+//
+// services/restaurant-service
+// ---------------------------
+// Deployable Restaurant microservice. Applies the canonical FTGO
+// convention plugin stack (see services/consumer-service/build.gradle for
+// the rationale). Business code will land under
+// src/main/java/com/ftgo/restaurant during the EM-3x code extraction work.
+//
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
+
+description = 'FTGO Restaurant microservice'
+
+dependencies {
+    implementation libs.bundles.spring.boot.web
+    implementation libs.bundles.spring.boot.data.jpa
+
+    testImplementation libs.spring.boot.starter.test
+}

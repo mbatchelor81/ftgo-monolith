@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ftgo-dev
+namePrefix: ""
+
+resources:
+  - ../../base
+
+commonAnnotations:
+  ftgo.io/environment: dev
+
+commonLabels:
+  environment: dev
+
+images:
+  - name: ftgo/consumer-service
+    newTag: dev
+  - name: ftgo/order-service
+    newTag: dev
+  - name: ftgo/courier-service
+    newTag: dev
+  - name: ftgo/restaurant-service
+    newTag: dev
+
+replicas:
+  - name: consumer-service
+    count: 1
+  - name: order-service
+    count: 1
+  - name: courier-service
+    count: 1
+  - name: restaurant-service
+    count: 1
+
+patches:
+  - path: patches/resources-dev.yaml
+    target:
+      kind: Deployment
+  - path: patches/hpa-dev.yaml
+    target:
+      kind: HorizontalPodAutoscaler
