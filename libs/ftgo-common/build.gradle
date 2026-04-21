@@ -1,12 +1,14 @@
 //
 // libs/ftgo-common
 // ----------------
-// Shared FTGO value objects (Money, PersonName, Address, …). Consumed by
-// every service and so must stay strictly Spring-agnostic at the public
-// API level — do NOT add a Spring Boot starter here.
+// Shared FTGO value objects (Money, PersonName, Address, …). Source was
+// migrated from the legacy root-level `ftgo-common/` module under EM-32.
 //
-// Migration tracked in EM-32; until then the live implementation still
-// lives at `/ftgo-common` and this directory is scaffolding only.
+// The public API uses `javax.persistence.@Embeddable` (the original
+// codebase is on Spring Boot 2.x). We stay on the legacy JPA starter
+// here rather than apply `ftgo.spring-boot-conventions`, which would
+// pull the Spring Boot 3.x BOM and flip `javax` → `jakarta` across the
+// classpath. Jakarta migration is tracked separately.
 //
 
 plugins {
@@ -15,8 +17,25 @@ plugins {
     id 'ftgo.publishing-conventions'
 }
 
-description = 'FTGO shared value objects (Money, PersonName, Address)'
+version = '1.0.0'
+description = 'FTGO shared value objects (Money, PersonName, Address) + Jackson serialization'
 
 dependencies {
+    // Legacy Spring Boot 2.x JPA starter — required for the javax.persistence
+    // annotations on Money/Address/PersonName until they migrate to jakarta.
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+
+    // Jackson core/databind/jsr310 come from the shared version catalog bundle.
     api libs.bundles.jackson
+
+    // Apache Commons Lang — used for EqualsBuilder / HashCodeBuilder / ToStringBuilder.
+    api 'commons-lang:commons-lang:2.6'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+
+    // JAXB runtime classes are no longer bundled with the JDK (>= 11).
+    runtimeOnly 'javax.xml.bind:jaxb-api:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-core:2.2.11'
+    runtimeOnly 'com.sun.xml.bind:jaxb-impl:2.2.11'
+    runtimeOnly 'javax.activation:activation:1.1.1'
 }
