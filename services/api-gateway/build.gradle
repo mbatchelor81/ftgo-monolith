@@ -1,0 +1,43 @@
+//
+// services/api-gateway
+// --------------------
+// Edge proxy (Spring Cloud Gateway) that terminates TLS, authenticates
+// requests (JWT), enforces Redis-backed rate limits, and routes traffic to
+// the downstream FTGO microservices:
+//
+//   /api/consumers/**    -> :services:consumer-service
+//   /api/orders/**       -> :services:order-service
+//   /api/restaurants/**  -> :services:restaurant-service
+//   /api/couriers/**     -> :services:courier-service
+//
+// Applies the canonical FTGO convention plugin stack:
+//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions      → Jib container image build
+//
+// Additionally imports the Spring Cloud BOM so the gateway, circuit breaker,
+// and reactive Redis starters resolve consistent transitive versions.
+//
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
+
+description = 'FTGO API Gateway (Spring Cloud Gateway)'
+
+def springCloudVersion = libs.versions.spring.cloud.get()
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+dependencies {
+    implementation libs.bundles.spring.cloud.gateway
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation 'io.projectreactor:reactor-test'
+}

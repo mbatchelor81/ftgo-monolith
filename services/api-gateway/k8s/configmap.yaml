@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  labels:
+    app: api-gateway
+    bounded-context: platform
+    tier: edge
+data:
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  JAVA_OPTS: "-Xms256m -Xmx512m"
+  # Downstream service URIs (in-cluster DNS). Overridden per environment by
+  # the Kustomize overlays under deployment/kustomize/.
+  FTGO_CONSUMER_SERVICE_URI: "http://consumer-service:8080"
+  FTGO_ORDER_SERVICE_URI: "http://order-service:8080"
+  FTGO_RESTAURANT_SERVICE_URI: "http://restaurant-service:8080"
+  FTGO_COURIER_SERVICE_URI: "http://courier-service:8080"
+  # Redis backing the gateway's RequestRateLimiter.
+  REDIS_HOST: "ftgo-redis"
+  REDIS_PORT: "6379"
+  # Allowed CORS origins — replace per environment overlay.
+  FTGO_CORS_ALLOWED_ORIGINS: "https://app.ftgo.example.com"
+  # TLS is terminated at the Ingress by default; flip these to enable
+  # TLS on the gateway pod itself.
+  SERVER_SSL_ENABLED: "false"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus,gateway"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+  MANAGEMENT_HEALTH_READINESSSTATE_ENABLED: "true"
+  MANAGEMENT_HEALTH_LIVENESSSTATE_ENABLED: "true"

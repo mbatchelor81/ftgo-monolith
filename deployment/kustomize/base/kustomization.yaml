@@ -9,6 +9,7 @@ resources:
   - ../../../services/order-service/k8s
   - ../../../services/courier-service/k8s
   - ../../../services/restaurant-service/k8s
+  - ../../../services/api-gateway/k8s
 
 commonLabels:
   app.kubernetes.io/part-of: ftgo

@@ -1,0 +1,155 @@
+# Bundled configuration for the API Gateway (loaded from the fat jar).
+# Deployed environments override these defaults via
+# services/api-gateway/config/application.yml and Kubernetes ConfigMaps.
+
+spring:
+  application:
+    name: api-gateway
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Override with a real identity provider URL in each environment.
+          # Either `issuer-uri` or `jwk-set-uri` must be set for JWT validation
+          # to activate at runtime.
+          issuer-uri: ${FTGO_JWT_ISSUER_URI:}
+          jwk-set-uri: ${FTGO_JWT_JWK_SET_URI:}
+
+  cloud:
+    gateway:
+      default-filters:
+        # Surface the correlation ID on every downstream request.
+        - name: PreserveHostHeader
+      routes:
+        - id: consumer-service
+          uri: ${FTGO_CONSUMER_SERVICE_URI:http://consumer-service:8080}
+          predicates:
+            - Path=/api/consumers/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: consumerServiceCircuitBreaker
+                fallbackUri: forward:/fallback/consumer
+
+        - id: order-service
+          uri: ${FTGO_ORDER_SERVICE_URI:http://order-service:8080}
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: orderServiceCircuitBreaker
+                fallbackUri: forward:/fallback/order
+
+        - id: restaurant-service
+          uri: ${FTGO_RESTAURANT_SERVICE_URI:http://restaurant-service:8080}
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: restaurantServiceCircuitBreaker
+                fallbackUri: forward:/fallback/restaurant
+
+        - id: courier-service
+          uri: ${FTGO_COURIER_SERVICE_URI:http://courier-service:8080}
+          predicates:
+            - Path=/api/couriers/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+            - name: CircuitBreaker
+              args:
+                name: courierServiceCircuitBreaker
+                fallbackUri: forward:/fallback/courier
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  # SSL/TLS termination. Enable by providing a keystore via env/ConfigMap or
+  # terminate TLS at the Kubernetes Ingress and leave `ssl.enabled` false.
+  ssl:
+    enabled: ${SERVER_SSL_ENABLED:false}
+    key-store: ${SERVER_SSL_KEY_STORE:}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD:}
+    key-store-type: ${SERVER_SSL_KEY_STORE_TYPE:PKCS12}
+    key-alias: ${SERVER_SSL_KEY_ALIAS:ftgo-gateway}
+
+ftgo:
+  gateway:
+    cors:
+      allowed-origins: ${FTGO_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+      max-age-seconds: 3600
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        minimumNumberOfCalls: 10
+    instances:
+      consumerServiceCircuitBreaker:
+        baseConfig: default
+      orderServiceCircuitBreaker:
+        baseConfig: default
+      restaurantServiceCircuitBreaker:
+        baseConfig: default
+      courierServiceCircuitBreaker:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: api-gateway
+
+logging:
+  level:
+    root: INFO
+    net.chrisrichardson.ftgo.apigateway: INFO
+    org.springframework.cloud.gateway: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
