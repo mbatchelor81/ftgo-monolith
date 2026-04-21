@@ -5,6 +5,10 @@ spring:
       password: test-password
       roles: USER
 
+# JWT is opt-in per test via @TestPropertySource so these tests exercise the
+# HTTP Basic fallback path (registering a JwtDecoder here would disable
+# Spring Boot's default in-memory UserDetailsService).
+
 management:
   endpoints:
     web:

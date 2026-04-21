@@ -27,6 +27,10 @@ dependencies {
     api libs.spring.boot.starter.security
     api libs.spring.boot.starter.web
     api libs.spring.boot.starter.actuator
+    // Provides the Nimbus JOSE + JWT encoder/decoder used by JwtTokenService
+    // and registers Spring Security's JwtAuthenticationProvider so services
+    // can act as OAuth2 Resource Servers (EM-40).
+    api libs.spring.boot.starter.oauth2.resource.server
 
     testImplementation libs.bundles.security.testing
 }
