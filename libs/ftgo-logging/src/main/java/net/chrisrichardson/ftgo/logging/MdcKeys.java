@@ -21,6 +21,19 @@ public final class MdcKeys {
     /** Authenticated user identifier, populated by security filters. */
     public static final String USER_ID = "userId";
 
+    /**
+     * Distributed-tracing trace identifier. Populated automatically by
+     * Micrometer Tracing (Brave bridge); listed here so downstream code
+     * can reference the key without string literals.
+     */
+    public static final String TRACE_ID = "traceId";
+
+    /**
+     * Distributed-tracing span identifier. Populated automatically by
+     * Micrometer Tracing (Brave bridge).
+     */
+    public static final String SPAN_ID = "spanId";
+
     private MdcKeys() {
         // Utility class.
     }
