@@ -269,7 +269,7 @@ jobs:
         run: |
           set -euo pipefail
           for i in $(seq 1 30); do
-            if mysqladmin ping -h 127.0.0.1 -P 3306 -uftgo -pftgo --silent 2>/dev/null; then
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot --silent 2>/dev/null; then
               echo "MySQL is ready"
               exit 0
             fi
@@ -373,6 +373,12 @@ jobs:
                  || curl -fsS http://127.0.0.1:8081/actuator/health >/dev/null 2>&1; then
                 echo "Stack is healthy"
                 break
+              fi
+              if [ "$i" -eq 60 ]; then
+                echo "Stack did not become healthy in time" >&2
+                docker compose ps
+                docker compose logs --tail=200
+                exit 1
               fi
               echo "Waiting for stack... ($i/60)"
               sleep 5
