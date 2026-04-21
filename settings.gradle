@@ -40,7 +40,9 @@ rootProject.name = 'ftgo-monolith'
 // See docs/adr/0001-repository-structure.md and CONVENTIONS.md.
 // ----------------------------------------------------------------------------
 
-include "common-swagger"
+// `common-swagger` removed in EM-45 (Springfox 2.x is deprecated and does
+// not support Spring Boot 3 / Jakarta EE). Its replacement is the
+// `libs:ftgo-openapi` library below, which wires up SpringDoc OpenAPI 3.
 
 include "ftgo-flyway"
 
@@ -90,6 +92,7 @@ include 'libs:ftgo-common'
 include 'libs:ftgo-common-jpa'
 include 'libs:ftgo-domain'
 include 'libs:ftgo-resilience'
+include 'libs:ftgo-openapi'
 include 'libs:ftgo-test-util'
 include 'libs:ftgo-logging'
 include 'libs:ftgo-security'

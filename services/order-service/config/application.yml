@@ -206,3 +206,19 @@ logging:
     com.ftgo.order: INFO
     net.chrisrichardson.ftgo.resilience: INFO
     io.github.resilience4j: INFO
+# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
+ftgo:
+  openapi:
+    title: "FTGO Order Service API"
+    description: >
+      Manages the order lifecycle — create, revise, cancel, accept, prepare,
+      pick up, and deliver. Owns the order state machine and coordinates
+      with the consumer, restaurant, and courier services.
+    version: "1.0.0"
+    contact:
+      name: "FTGO Order Team"
+      email: "order-team@ftgo.example.com"
+      url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/order-service"
+# SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
+# at /v3/api-docs by default — no extra configuration needed here.

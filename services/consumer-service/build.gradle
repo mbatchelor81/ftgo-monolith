@@ -34,6 +34,10 @@ dependencies {
     // EM-44: resilience (circuit breakers, retries, bulkheads), K8s-native
     // service discovery helpers, and shared health indicators.
     implementation project(':libs:ftgo-resilience')
+    // Shared SpringDoc OpenAPI 3 configuration (EM-45).
+    // Brings in `springdoc-openapi-starter-webmvc-ui` transitively so Swagger
+    // UI is available at /swagger-ui.html with no further wiring.
+    implementation project(':libs:ftgo-openapi')
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.bundles.security.testing
 }
