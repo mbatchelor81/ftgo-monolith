@@ -64,12 +64,13 @@ data:
       </parse>
     </filter>
 
-    # Only keep FTGO namespaces. Edit this list per environment.
+    # Only keep FTGO namespaces (see platform/shared-infrastructure/k8s/namespaces/namespaces.yaml).
+    # `logging` is included so the EFK stack's own logs are queryable in Kibana.
     <filter kubernetes.**>
       @type grep
       <regexp>
         key $.kubernetes.namespace_name
-        pattern /^(default|ftgo|staging|production)$/
+        pattern /^(default|ftgo-dev|ftgo-staging|ftgo-prod|logging)$/
       </regexp>
     </filter>
 
