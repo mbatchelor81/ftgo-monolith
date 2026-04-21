@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Courier Service logging.
+
+    Delegates all configuration to ftgo-logging's shared `logback-ftgo.xml`
+    (JSON + async + correlation-ID MDC). Service-specific logger
+    overrides may be added below the <include> tag if needed.
+-->
+<configuration>
+    <include resource="logback-ftgo.xml"/>
+</configuration>

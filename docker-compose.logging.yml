@@ -1,0 +1,73 @@
+version: '3.8'
+
+# Local-development EFK stack for the FTGO microservices (EM-43).
+#
+# Compose overlay — pair with the root docker-compose.yml:
+#
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.logging.yml \
+#     up
+#
+# Fluentd tails Docker's json-file logs for every container on the same
+# daemon and ships structured JSON records (emitted by ftgo-logging) into
+# Elasticsearch. Kibana is exposed on http://localhost:5601.
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: ftgo-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=ftgo-logs
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: ftgo-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+    ports:
+      - "5601:5601"
+
+  fluentd:
+    image: fluent/fluentd:v1.16-debian-1
+    container_name: ftgo-fluentd
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    user: root
+    environment:
+      - FLUENTD_CONF=fluent.conf
+    volumes:
+      - ./deployment/fluentd/local:/fluentd/etc:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    command: >
+      sh -c "fluent-gem install fluent-plugin-elasticsearch --no-document &&
+             fluentd -c /fluentd/etc/fluent.conf -v"
+
+volumes:
+  elasticsearch-data:
