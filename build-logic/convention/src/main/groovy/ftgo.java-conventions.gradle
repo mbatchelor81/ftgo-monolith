@@ -7,12 +7,15 @@
 // What it configures:
 //   * Java toolchain pinned to the version declared in libs.versions.toml
 //   * UTF-8 source encoding and -parameters compiler flag
-//   * -Xlint:all -Werror for new code (opt-out per module via
-//     `tasks.withType(JavaCompile) { options.compilerArgs -= '-Werror' }`)
 //   * Standard repositories (Maven Central) — no jcenter, no Spring milestones
+//   * Sources jar artifact
+//   * Project group = com.ftgo
 //
-// Does NOT configure testing (see ftgo.testing-conventions) or Spring Boot
-// (see ftgo.spring-boot-conventions).
+// Does NOT configure testing (see ftgo.testing-conventions), Spring Boot
+// (see ftgo.spring-boot-conventions), or lint hardening. `-Xlint:all
+// -Werror` was deliberately left off: several consumers still depend on
+// Spring Boot 2.x starters (javax.*) that produce deprecation warnings
+// the migration has not yet addressed.
 //
 
 plugins {
