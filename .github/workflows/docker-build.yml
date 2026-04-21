@@ -57,13 +57,85 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The services/*/build.gradle modules are scaffolds during the
+      # strangler-fig migration (EM-30). Until a module wires in the Spring
+      # Boot plugin, the :services:<name>:bootJar task does not exist and the
+      # image has no payload to package. We skip every downstream step for
+      # that matrix entry instead of failing the matrix so the workflow
+      # remains green as each service gets wired up incrementally.
+      - name: Detect Spring Boot app (bootJar availability)
+        id: detect
+        run: |
+          set -euo pipefail
+          MODULE_PATH="services/${{ matrix.service }}"
+          GRADLE_FILE="${MODULE_PATH}/build.gradle"
+          HAS_BOOTJAR="false"
+          if [[ -f "${GRADLE_FILE}" ]] \
+             && grep -qE "(apply plugin:\s*['\"]org\.springframework\.boot['\"]|id\s+['\"]org\.springframework\.boot['\"])" "${GRADLE_FILE}"; then
+            HAS_BOOTJAR="true"
+          fi
+          # Also detect a @SpringBootApplication entrypoint as a secondary
+          # signal in case the plugin is applied via conventions/buildSrc.
+          if [[ "${HAS_BOOTJAR}" != "true" ]] \
+             && grep -rlqE "@SpringBootApplication" "${MODULE_PATH}/src/main" 2>/dev/null; then
+            HAS_BOOTJAR="true"
+          fi
+          echo "has_bootjar=${HAS_BOOTJAR}" >> "${GITHUB_OUTPUT}"
+          if [[ "${HAS_BOOTJAR}" == "true" ]]; then
+            echo "Spring Boot app detected for ${{ matrix.service }}; will build image."
+          else
+            echo "${{ matrix.service }} is still a scaffold (no Spring Boot plugin / @SpringBootApplication). Skipping image build."
+          fi
+
+      - name: Skip summary (scaffold)
+        if: steps.detect.outputs.has_bootjar != 'true'
+        run: |
+          {
+            echo "### ${{ matrix.service }} — Docker build skipped"
+            echo ""
+            echo "\`services/${{ matrix.service }}\` is a scaffold during the strangler-fig migration. The Docker image build is gated on either the \`org.springframework.boot\` plugin being applied in \`build.gradle\` or a \`@SpringBootApplication\` entrypoint under \`src/main\`. Wire in Spring Boot to enable this matrix entry."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Set up JDK 8
+        if: steps.detect.outputs.has_bootjar == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Cache Gradle caches
+        if: steps.detect.outputs.has_bootjar == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ matrix.service }}-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-${{ matrix.service }}-
+            gradle-${{ runner.os }}-
+
+      - name: Build bootJar
+        if: steps.detect.outputs.has_bootjar == 'true'
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon ":services:${{ matrix.service }}:bootJar" -x test
+          # Normalize the output filename so the Dockerfile's JAR_PATH default
+          # (app.jar) works without having to know the exact Gradle jar name.
+          JAR="$(ls -1 services/${{ matrix.service }}/build/libs/*.jar | grep -v -E '\-plain\.jar$' | head -n1)"
+          cp "${JAR}" "services/${{ matrix.service }}/build/libs/app.jar"
+
       - name: Set up QEMU
+        if: steps.detect.outputs.has_bootjar == 'true'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: steps.detect.outputs.has_bootjar == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Compute build metadata
+        if: steps.detect.outputs.has_bootjar == 'true'
         id: meta
         run: |
           set -euo pipefail
@@ -80,6 +152,7 @@ jobs:
           echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
 
       - name: Docker metadata (tags & labels)
+        if: steps.detect.outputs.has_bootjar == 'true'
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
@@ -102,7 +175,7 @@ jobs:
             org.opencontainers.image.licenses=Apache-2.0
 
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
+        if: steps.detect.outputs.has_bootjar == 'true' && github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -110,6 +183,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build image (load for scanning)
+        if: steps.detect.outputs.has_bootjar == 'true'
         id: build_local
         uses: docker/build-push-action@v5
         with:
@@ -122,10 +196,12 @@ jobs:
             SERVICE_VERSION=${{ steps.meta.outputs.version }}
             GIT_SHA=${{ steps.meta.outputs.git_sha_short }}
             BUILD_DATE=${{ steps.meta.outputs.build_date }}
+            JAR_PATH=services/${{ matrix.service }}/build/libs/app.jar
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,scope=${{ matrix.service }},mode=max
 
       - name: Verify image size < 200MB
+        if: steps.detect.outputs.has_bootjar == 'true'
         run: |
           set -euo pipefail
           SIZE_BYTES="$(docker image inspect ftgo-${{ matrix.service }}:scan --format '{{.Size}}')"
@@ -137,6 +213,7 @@ jobs:
           fi
 
       - name: Install Trivy
+        if: steps.detect.outputs.has_bootjar == 'true'
         run: |
           set -euo pipefail
           curl -sSfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
@@ -144,6 +221,7 @@ jobs:
           trivy --version
 
       - name: Scan image with Trivy (SARIF for Security tab)
+        if: steps.detect.outputs.has_bootjar == 'true'
         run: |
           trivy image \
             --format sarif \
@@ -154,13 +232,14 @@ jobs:
             ftgo-${{ matrix.service }}:scan
 
       - name: Upload Trivy results to GitHub Security tab
-        if: always()
+        if: steps.detect.outputs.has_bootjar == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-${{ matrix.service }}.sarif
           category: trivy-${{ matrix.service }}
 
       - name: Fail on CRITICAL vulnerabilities
+        if: steps.detect.outputs.has_bootjar == 'true'
         run: |
           trivy image \
             --format table \
@@ -170,7 +249,7 @@ jobs:
             ftgo-${{ matrix.service }}:scan
 
       - name: Push image
-        if: github.event_name != 'pull_request'
+        if: steps.detect.outputs.has_bootjar == 'true' && github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -184,6 +263,7 @@ jobs:
             SERVICE_VERSION=${{ steps.meta.outputs.version }}
             GIT_SHA=${{ steps.meta.outputs.git_sha_short }}
             BUILD_DATE=${{ steps.meta.outputs.build_date }}
+            JAR_PATH=services/${{ matrix.service }}/build/libs/app.jar
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,scope=${{ matrix.service }},mode=max
 
@@ -201,7 +281,7 @@ jobs:
           - restaurant-service
           - courier-service
     steps:
-      - name: Delete untagged versions older than 30 days
+      - name: Delete untagged versions older than the 10 most recent
         uses: actions/delete-package-versions@v5
         with:
           package-name: ftgo-${{ matrix.service }}

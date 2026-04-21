@@ -1,7 +1,8 @@
 # FTGO Container Images
 
 This document describes how FTGO microservice container images are built,
-tagged, scanned, and distributed.
+tagged, scanned, and distributed during the strangler-fig migration from
+the monolith to per-service deployments.
 
 ## Registry
 
@@ -27,27 +28,37 @@ GHCR was chosen because:
 
 Each service owns a Dockerfile at
 `services/<service>/docker/Dockerfile`. The canonical shape lives at
-[`templates/service-template/docker/Dockerfile`](../templates/service-template/docker/Dockerfile)
-and follows a **two-stage** pattern:
+[`templates/service-template/docker/Dockerfile`](../templates/service-template/docker/Dockerfile).
 
-1. `builder` — `eclipse-temurin:8-jdk-alpine` running
-   `./gradlew :services:<service>:bootJar -x test`.
-2. `runtime` — `eclipse-temurin:8-jre-alpine` with a non-root `ftgo` user,
-   `tini` as PID 1, a curl-based `HEALTHCHECK` against
-   `/actuator/health`, and the fat jar copied from the builder.
+Images use a **single runtime stage** (`eclipse-temurin:8-jre-alpine`)
+that `COPY`s a pre-built Spring Boot fat jar from the build context:
 
-The build context **must** be the repository root because Gradle needs
-access to `settings.gradle`, `buildSrc/`, and the shared `libs/` and
-`ftgo-*` modules. Every image is expected to stay under **200 MB**.
+- Non-root `ftgo` user.
+- `tini` as PID 1 for correct signal propagation.
+- `curl`-based `HEALTHCHECK` against `/actuator/health`.
+- Standard OCI labels (`title`, `description`, `source`, `version`,
+  `revision`, `created`, `licenses`).
+
+Producing the fat jar is deliberately **not** done inside the container.
+The repo's Gradle wrapper is pinned to an older distribution whose
+download requires TLS cipher suites that JDK 8 in
+`eclipse-temurin:8-jdk-alpine` no longer negotiates, and running a full
+Gradle build inside the image would force us to pull the entire repo
+tree in just to run one task. Instead, the jar is produced by the CI
+workflow (or the developer's host JDK) and only packaged here.
+
+The build context **must** be the repository root so the `JAR_PATH`
+build arg resolves. Every image is expected to stay under **200 MB**.
 
 ## Build arguments
 
-| Arg              | Default             | Purpose                                   |
-|------------------|---------------------|-------------------------------------------|
-| `SERVICE_NAME`   | `<service>`         | Gradle module under `services/` to build. |
-| `SERVICE_VERSION`| `0.0.0-SNAPSHOT`    | Stamped into the `version` OCI label.     |
-| `GIT_SHA`        | `unknown`           | Stamped into the `revision` OCI label.    |
-| `BUILD_DATE`     | `unknown`           | Stamped into the `created` OCI label.     |
+| Arg              | Default                                                    | Purpose                                   |
+|------------------|------------------------------------------------------------|-------------------------------------------|
+| `SERVICE_NAME`   | `<service>`                                                | Used in labels and env vars.              |
+| `SERVICE_VERSION`| `0.0.0-SNAPSHOT`                                           | Stamped into the `version` OCI label.     |
+| `GIT_SHA`        | `unknown`                                                  | Stamped into the `revision` OCI label.    |
+| `BUILD_DATE`     | `unknown`                                                  | Stamped into the `created` OCI label.     |
+| `JAR_PATH`       | `services/<service>/build/libs/app.jar`                    | Relative path (from repo root) to the pre-built fat jar. |
 
 ## Tagging strategy
 
@@ -70,6 +81,17 @@ The `<version>-<short-sha>` tag is the authoritative "this exact bits"
 pointer; human-readable tags (`latest`, branch names) are moving
 pointers.
 
+## Scaffold gating (strangler-fig)
+
+Per-service matrix entries are **gated** on the presence of a real
+Spring Boot app. Before any Docker work runs, the workflow inspects
+`services/<service>/build.gradle` for `org.springframework.boot` and
+falls back to searching `src/main` for `@SpringBootApplication`. When
+neither signal is present, every downstream step (Gradle build, image
+build, scan, push) is skipped and a summary is appended to the GitHub
+Actions run. This keeps the workflow green while the scaffolds from
+EM-30 are incrementally wired up in later tickets.
+
 ## Vulnerability scanning
 
 Every build is scanned with [Trivy](https://github.com/aquasecurity/trivy)
@@ -86,7 +108,7 @@ vulnerable image never reaches the registry.
 ## Image size guardrail
 
 The workflow inspects each built image with `docker image inspect` and
-fails the job if the compressed layer size exceeds **200 MB**. If you
+fails the job if the uncompressed size exceeds **200 MB**. If you
 change the base image or add runtime dependencies, verify the budget is
 still met.
 
@@ -99,7 +121,15 @@ Packages UI if a CVE forces a takedown.
 
 ## Local development
 
-- **Source-build loop** (no registry):
+Both flows assume you've already produced the fat jar on your host JDK:
+
+```bash
+./gradlew :services:consumer-service:bootJar -x test
+cp services/consumer-service/build/libs/*.jar \
+   services/consumer-service/build/libs/app.jar
+```
+
+- **Source-build loop** (builds images locally, no registry):
 
   ```bash
   docker compose -f docker-compose.dev.yml up --build
@@ -114,13 +144,13 @@ Packages UI if a CVE forces a takedown.
 Host ports are offset to avoid collisions with the legacy
 `ftgo-application` service on 8081:
 
-| Service            | Host port |
-|--------------------|-----------|
-| `ftgo-application` | `8081`    |
-| `consumer-service` | `8082`    |
-| `order-service`    | `8083`    |
-| `restaurant-service`| `8084`   |
-| `courier-service`  | `8085`    |
+| Service             | Host port |
+|---------------------|-----------|
+| `ftgo-application`  | `8081`    |
+| `consumer-service`  | `8082`    |
+| `order-service`     | `8083`    |
+| `restaurant-service`| `8084`    |
+| `courier-service`   | `8085`    |
 
 ## Triggering a build manually
 

@@ -21,7 +21,11 @@ x-service-defaults: &service-defaults
     SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
     EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
-    JAVA_OPTS: "-Xmx256m -XX:MaxRAMPercentage=75.0"
+    # Keep the image defaults intact (-XX:MaxRAMPercentage=75.0 +
+    # -Djava.security.egd=file:/dev/./urandom) so the heap scales with the
+    # container's memory limit. Override JAVA_OPTS per service if you need
+    # to tighten limits for a specific compose run.
+    JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
     SPRING_SLEUTH_ENABLED: "true"
     SPRING_SLEUTH_SAMPLER_PROBABILITY: "1"
     SPRING_ZIPKIN_BASE_URL: http://zipkin:9411/

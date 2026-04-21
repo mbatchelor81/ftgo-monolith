@@ -21,7 +21,11 @@ x-service-defaults: &service-defaults
     SPRING_DATASOURCE_USERNAME: mysqluser
     SPRING_DATASOURCE_PASSWORD: mysqlpw
     SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
-    JAVA_OPTS: "-Xmx256m -XX:MaxRAMPercentage=75.0"
+    # Keep the image defaults intact (-XX:MaxRAMPercentage=75.0 +
+    # -Djava.security.egd=file:/dev/./urandom) so the heap scales with the
+    # container's memory limit. Override JAVA_OPTS per service if you need
+    # to tighten limits for a specific compose run.
+    JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
     SPRING_PROFILES_ACTIVE: dev
 
 services:

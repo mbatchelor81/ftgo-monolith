@@ -1,56 +1,19 @@
 # syntax=docker/dockerfile:1.6
 #
-# Dockerfile for the FTGO Restaurant microservice.
-#
-# Build context MUST be the repository root so Gradle can resolve shared
-# modules.
-#
-#   docker build \
-#     --build-arg SERVICE_VERSION=0.0.1-SNAPSHOT \
-#     --build-arg GIT_SHA=$(git rev-parse --short HEAD) \
-#     -f services/restaurant-service/docker/Dockerfile \
-#     -t ghcr.io/mbatchelor81/ftgo-restaurant-service:0.0.1-SNAPSHOT .
-#
-# See templates/service-template/docker/Dockerfile for the canonical form.
+# Dockerfile for the restaurant-service microservice. See
+# templates/service-template/docker/Dockerfile for the canonical reference and
+# rationale.
 
-###############################################################################
-# Stage 1: build the Spring Boot fat jar with Gradle.
-###############################################################################
-FROM eclipse-temurin:8-jdk-alpine AS builder
-
-ARG SERVICE_NAME=restaurant-service
-ARG GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
-ENV GRADLE_OPTS=${GRADLE_OPTS}
-
-# gradlew uses `#!/usr/bin/env bash`, which alpine lacks by default.
-RUN apk --no-cache add bash
-
-WORKDIR /workspace
-
-COPY gradlew gradlew
-COPY gradle gradle
-COPY settings.gradle build.gradle gradle.properties ./
-COPY buildSrc buildSrc
-
-RUN chmod +x gradlew && ./gradlew --version
-
-COPY . .
-
-RUN ./gradlew --no-daemon ":services:${SERVICE_NAME}:bootJar" -x test \
-    && cp services/${SERVICE_NAME}/build/libs/*.jar /workspace/app.jar
-
-###############################################################################
-# Stage 2: minimal JRE runtime image.
-###############################################################################
 FROM eclipse-temurin:8-jre-alpine AS runtime
 
 ARG SERVICE_NAME=restaurant-service
 ARG SERVICE_VERSION=0.0.0-SNAPSHOT
 ARG GIT_SHA=unknown
 ARG BUILD_DATE=unknown
+ARG JAR_PATH=services/restaurant-service/build/libs/app.jar
 
 LABEL org.opencontainers.image.title="ftgo-${SERVICE_NAME}" \
-      org.opencontainers.image.description="FTGO Restaurant microservice" \
+      org.opencontainers.image.description="FTGO ${SERVICE_NAME} microservice" \
       org.opencontainers.image.source="https://github.com/mbatchelor81/ftgo-monolith" \
       org.opencontainers.image.version="${SERVICE_VERSION}" \
       org.opencontainers.image.revision="${GIT_SHA}" \
@@ -63,7 +26,7 @@ RUN apk --no-cache add curl tini \
 
 WORKDIR /app
 
-COPY --from=builder --chown=ftgo:ftgo /workspace/app.jar /app/app.jar
+COPY --chown=ftgo:ftgo ${JAR_PATH} /app/app.jar
 
 ENV SERVICE_NAME=${SERVICE_NAME} \
     SERVICE_VERSION=${SERVICE_VERSION} \
