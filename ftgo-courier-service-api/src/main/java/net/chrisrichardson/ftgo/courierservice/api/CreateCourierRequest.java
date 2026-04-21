@@ -3,8 +3,17 @@ package net.chrisrichardson.ftgo.courierservice.api;
 import net.chrisrichardson.ftgo.common.Address;
 import net.chrisrichardson.ftgo.common.PersonName;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 public class CreateCourierRequest {
+
+  @NotNull(message = "name is required")
+  @Valid
   private PersonName name;
+
+  @NotNull(message = "address is required")
+  @Valid
   private Address address;
 
   public CreateCourierRequest() {
