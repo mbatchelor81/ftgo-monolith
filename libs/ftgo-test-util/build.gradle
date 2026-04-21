@@ -1,0 +1,7 @@
+// Placeholder build for the future shared `ftgo-test-util` library.
+// The live implementation currently lives in `/ftgo-test-util` at the repo
+// root and will be migrated here as the test infrastructure is consolidated.
+
+apply plugin: 'io.spring.dependency-management'
+
+description = 'FTGO shared test utilities - scaffold'

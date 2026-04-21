@@ -1,0 +1,16 @@
+// Placeholder build for the future standalone Restaurant microservice.
+//
+// The actual Restaurant business logic currently lives in the legacy
+// `ftgo-restaurant-service` module at the repository root. As code is
+// extracted during the microservices migration, move it under
+// `src/main/java/com/ftgo/restaurant` and wire up real dependencies here.
+//
+// See templates/service-template/build.gradle for the target shape.
+
+apply plugin: 'io.spring.dependency-management'
+
+description = 'FTGO Restaurant microservice (scaffold - code extraction in progress)'
+
+dependencies {
+    // Intentionally minimal while the service is a scaffold.
+}
