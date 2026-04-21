@@ -70,15 +70,15 @@ public final class OrderBuilder {
     }
 
     public OrderFixture build() {
-        if (lineItems.isEmpty()) {
-            lineItems.add(new LineItemFixture("vindaloo", "Chicken Vindaloo", new Money("12.50"), 1));
-        }
-        return new OrderFixture(id, consumerId, restaurantId, state, List.copyOf(lineItems), computeTotal());
+        List<LineItemFixture> effectiveItems = lineItems.isEmpty()
+                ? List.of(new LineItemFixture("vindaloo", "Chicken Vindaloo", new Money("12.50"), 1))
+                : List.copyOf(lineItems);
+        return new OrderFixture(id, consumerId, restaurantId, state, effectiveItems, computeTotal(effectiveItems));
     }
 
-    private Money computeTotal() {
+    private Money computeTotal(List<LineItemFixture> items) {
         BigDecimal total = BigDecimal.ZERO;
-        for (LineItemFixture item : lineItems) {
+        for (LineItemFixture item : items) {
             total = total.add(new BigDecimal(item.price().asString()).multiply(BigDecimal.valueOf(item.quantity())));
         }
         return new Money(total);

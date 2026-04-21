@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
  * FTGO contract-test <strong>base class</strong> template.
@@ -90,7 +91,7 @@ public abstract class ContractTestTemplate {
     @BeforeEach
     void setUpRestAssured() {
         RestAssuredMockMvc.standaloneSetup(
-                RestAssuredMockMvc.standaloneSetup(ordersController)
+                MockMvcBuilders.standaloneSetup(ordersController)
                         .setMessageConverters(jacksonConverter));
     }
 
