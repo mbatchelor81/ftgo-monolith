@@ -1,9 +1,16 @@
 //
 // libs/ftgo-common-jpa
 // --------------------
-// Shared JPA helpers layered on top of `libs/ftgo-common`. Exposes
-// spring-boot-starter-data-jpa as an `api` dependency so downstream
-// services see the same JPA types without re-declaring the starter.
+// Shared JPA helpers layered on top of `libs/ftgo-common`. Ships the
+// `META-INF/orm.xml` mapping descriptor that makes the framework-light
+// value objects in `ftgo-common` (Money, Address) usable as JPA
+// `@Embeddable` attributes without annotations.
+//
+// Exposes `spring-boot-starter-data-jpa` as an `api` dependency so
+// downstream services see the same JPA types without re-declaring the
+// starter. Uses `$springBootVersion` from `gradle.properties` so the
+// javax.persistence imports in the legacy domain entities continue to
+// resolve against Spring Boot 2.x during the migration.
 //
 // Migration tracked in EM-31.
 //
@@ -14,9 +21,10 @@ plugins {
     id 'ftgo.publishing-conventions'
 }
 
-description = 'FTGO shared JPA helpers'
+version = '1.0.0'
+description = 'FTGO shared JPA helpers (orm.xml mappings for common value objects)'
 
 dependencies {
     api project(':libs:ftgo-common')
-    api libs.spring.boot.starter.data.jpa
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
 }

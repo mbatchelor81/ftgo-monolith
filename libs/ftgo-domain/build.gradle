@@ -1,0 +1,27 @@
+//
+// libs/ftgo-domain
+// ----------------
+// Shared domain model: JPA @Entity classes, Spring Data repositories, and
+// supporting value objects used by the Order, Consumer, Restaurant, and
+// Courier services. Preserves the original `net.chrisrichardson.ftgo.*`
+// package namespace from the legacy `ftgo-domain/` module.
+//
+// See ENTITY_OWNERSHIP.md in this module for the entity-to-service
+// ownership map that guides the per-service database split.
+//
+// Migration tracked in EM-31.
+//
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = '1.0.0'
+description = 'FTGO shared JPA entities and repositories'
+
+dependencies {
+    api project(':libs:ftgo-common')
+    api project(':libs:ftgo-common-jpa')
+}
