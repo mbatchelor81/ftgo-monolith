@@ -1,0 +1,139 @@
+#
+# FTGO Gradle Version Catalog
+# ---------------------------
+# Centralized dependency and plugin versions consumed by:
+#   * Convention plugins in `build-logic/`
+#   * Every `services/*`, `libs/*`, and `platform/*` module
+#
+# Conventions:
+#   * Bump versions here — never inside an individual `build.gradle`.
+#   * Group related libraries into `bundles` so services can opt in with a
+#     single line (e.g. `implementation libs.bundles.spring.boot.web`).
+#   * Plugin IDs are declared in `[plugins]` so Gradle's Settings plugin
+#     management can apply them by alias in `build-logic/`.
+#
+# Documentation: docs/build-configuration.md
+#
+
+[versions]
+# Language / platform
+java = "17"
+
+# Frameworks
+spring-boot = "3.2.5"
+spring-dependency-management = "1.1.4"
+spring-cloud = "2023.0.1"
+
+# Observability
+micrometer = "1.12.5"
+
+# Persistence / migrations
+flyway = "10.10.0"
+mysql = "8.3.0"
+postgresql = "42.7.3"
+
+# API documentation
+springdoc = "2.5.0"
+
+# Serialization
+jackson = "2.17.0"
+
+# Testing
+junit = "5.10.2"
+rest-assured = "5.4.0"
+mockito = "5.11.0"
+assertj = "3.25.3"
+
+# Tooling plugins
+jib = "3.4.2"
+docker-compose-plugin = "0.17.6"
+ben-manes-versions = "0.51.0"
+
+[libraries]
+# --- Spring Boot starters -------------------------------------------------
+spring-boot-starter-web              = { module = "org.springframework.boot:spring-boot-starter-web",              version.ref = "spring-boot" }
+spring-boot-starter-webflux          = { module = "org.springframework.boot:spring-boot-starter-webflux",          version.ref = "spring-boot" }
+spring-boot-starter-actuator         = { module = "org.springframework.boot:spring-boot-starter-actuator",         version.ref = "spring-boot" }
+spring-boot-starter-data-jpa         = { module = "org.springframework.boot:spring-boot-starter-data-jpa",         version.ref = "spring-boot" }
+spring-boot-starter-validation       = { module = "org.springframework.boot:spring-boot-starter-validation",       version.ref = "spring-boot" }
+spring-boot-starter-test             = { module = "org.springframework.boot:spring-boot-starter-test",             version.ref = "spring-boot" }
+
+# --- Observability --------------------------------------------------------
+micrometer-registry-prometheus       = { module = "io.micrometer:micrometer-registry-prometheus",                  version.ref = "micrometer" }
+
+# --- Persistence ----------------------------------------------------------
+flyway-core                          = { module = "org.flywaydb:flyway-core",                                      version.ref = "flyway" }
+flyway-mysql                         = { module = "org.flywaydb:flyway-mysql",                                     version.ref = "flyway" }
+mysql-connector                      = { module = "com.mysql:mysql-connector-j",                                   version.ref = "mysql" }
+postgresql                           = { module = "org.postgresql:postgresql",                                     version.ref = "postgresql" }
+
+# --- API documentation (OpenAPI 3.0 / SpringDoc) --------------------------
+# SpringDoc replaces the deprecated Springfox Swagger 2.x toolchain.
+# `starter-webmvc-ui` bundles the OpenAPI 3 spec generator plus Swagger UI,
+# exposed by default at `/v3/api-docs` and `/swagger-ui.html`.
+springdoc-openapi-starter-webmvc-ui  = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui",             version.ref = "springdoc" }
+
+# --- Serialization --------------------------------------------------------
+jackson-core                         = { module = "com.fasterxml.jackson.core:jackson-core",                       version.ref = "jackson" }
+jackson-databind                     = { module = "com.fasterxml.jackson.core:jackson-databind",                   version.ref = "jackson" }
+jackson-datatype-jsr310              = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",        version.ref = "jackson" }
+
+# --- Testing --------------------------------------------------------------
+junit-jupiter                        = { module = "org.junit.jupiter:junit-jupiter",                               version.ref = "junit" }
+junit-jupiter-api                    = { module = "org.junit.jupiter:junit-jupiter-api",                           version.ref = "junit" }
+junit-jupiter-engine                 = { module = "org.junit.jupiter:junit-jupiter-engine",                        version.ref = "junit" }
+junit-jupiter-params                 = { module = "org.junit.jupiter:junit-jupiter-params",                        version.ref = "junit" }
+junit-platform-launcher              = { module = "org.junit.platform:junit-platform-launcher" }
+mockito-core                         = { module = "org.mockito:mockito-core",                                      version.ref = "mockito" }
+mockito-junit-jupiter                = { module = "org.mockito:mockito-junit-jupiter",                             version.ref = "mockito" }
+assertj-core                         = { module = "org.assertj:assertj-core",                                      version.ref = "assertj" }
+rest-assured                         = { module = "io.rest-assured:rest-assured",                                  version.ref = "rest-assured" }
+rest-assured-spring-mock-mvc         = { module = "io.rest-assured:spring-mock-mvc",                               version.ref = "rest-assured" }
+rest-assured-json-path               = { module = "io.rest-assured:json-path",                                     version.ref = "rest-assured" }
+
+# --- Gradle plugin artifacts (used by build-logic convention plugins) -----
+spring-boot-gradle-plugin            = { module = "org.springframework.boot:spring-boot-gradle-plugin",            version.ref = "spring-boot" }
+spring-dependency-management-plugin  = { module = "io.spring.gradle:dependency-management-plugin",                 version.ref = "spring-dependency-management" }
+jib-gradle-plugin                    = { module = "com.google.cloud.tools:jib-gradle-plugin",                      version.ref = "jib" }
+
+[bundles]
+spring-boot-web = [
+  "spring-boot-starter-web",
+  "spring-boot-starter-actuator",
+  "spring-boot-starter-validation",
+  "micrometer-registry-prometheus",
+]
+
+spring-boot-data-jpa = [
+  "spring-boot-starter-data-jpa",
+  "flyway-core",
+  "flyway-mysql",
+]
+
+jackson = [
+  "jackson-core",
+  "jackson-databind",
+  "jackson-datatype-jsr310",
+]
+
+junit-jupiter = [
+  "junit-jupiter",
+  "junit-jupiter-params",
+]
+
+rest-assured = [
+  "rest-assured",
+  "rest-assured-spring-mock-mvc",
+  "rest-assured-json-path",
+]
+
+mockito = [
+  "mockito-core",
+  "mockito-junit-jupiter",
+]
+
+[plugins]
+spring-boot                = { id = "org.springframework.boot",          version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+jib                        = { id = "com.google.cloud.tools.jib",        version.ref = "jib" }
+ben-manes-versions         = { id = "com.github.ben-manes.versions",     version.ref = "ben-manes-versions" }

@@ -1,58 +1,41 @@
-
-// Temporarily commenting out docker-compose plugin to allow basic building
-// buildscript {
-//     repositories {
-//         mavenCentral()
-//         jcenter()
-//     }
-//     dependencies {
-//         classpath "com.avast.gradle:gradle-docker-compose-plugin:0.14.13"
-//     }
-// }
-
-// apply plugin: 'docker-compose'
-apply plugin:'io.spring.dependency-management'
+//
+// Legacy ftgo-order-service build script.
+//
+// The pre-migration Spring Boot plugin (2.0.3) and the old
+// `io.spring.dependency-management` (1.0.3) cannot run under Gradle 8, so
+// they have been removed. The `IntegrationTestsPlugin` was rewritten in
+// `buildSrc/` to keep applying here until `services/order-service` takes
+// over. See docs/build-configuration.md.
+//
 
 apply plugin: IntegrationTestsPlugin
-
-// Temporarily commenting out docker-compose configuration
-// dockerCompose {
-//
-//     startedServices = [ 'not-used']
-//
-//     integrationTests {
-//         if (System.getenv("FTGO_DOCKER_COMPOSE_FILES") != null)
-//             useComposeFiles = System.getenv("FTGO_DOCKER_COMPOSE_FILES").split(",").collect { "../" + it }
-//
-//         startedServices = [ 'mysql']
-//         stopContainers = false
-//     }
-// }
-//
-// integrationTest.dependsOn(integrationTestsComposeUp)
 
 dependencies {
 
 
-    compile project(":common-swagger")
-    compile project(":ftgo-domain")
+    api project(":ftgo-domain")
 
-    compile project(":ftgo-consumer-service-api")
-    compile project(":ftgo-restaurant-service-api")
-    compile project(":ftgo-order-service-api")
-    compile project(":ftgo-consumer-service")
+    api project(":ftgo-consumer-service-api")
+    api project(":ftgo-restaurant-service-api")
+    api project(":ftgo-order-service-api")
+    api project(":ftgo-consumer-service")
 
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
-    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-    compile 'javax.el:javax.el-api:2.2.5'
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+    api "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+    api "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
+    api "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    // OpenAPI 3 annotations (EM-45). Pure annotation jar — compile-time only
+    // references, safe on the legacy Spring Boot 2 / Java 1.8 baseline.
+    api 'io.swagger.core.v3:swagger-annotations:2.2.21'
 
-    testCompile 'io.rest-assured:rest-assured:3.0.6'
-    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
-    testCompile "io.rest-assured:json-path:3.0.6"
+    api 'javax.el:javax.el-api:2.2.5'
 
-    testCompile project(":ftgo-test-util")
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+
+    testImplementation 'io.rest-assured:rest-assured:3.0.6'
+    testImplementation 'io.rest-assured:spring-mock-mvc:3.0.6'
+    testImplementation "io.rest-assured:json-path:3.0.6"
+
+    testImplementation project(":ftgo-test-util")
 }

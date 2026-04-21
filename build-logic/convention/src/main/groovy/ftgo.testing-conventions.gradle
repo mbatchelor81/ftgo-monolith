@@ -1,0 +1,39 @@
+//
+// ftgo.testing-conventions
+// -------------------------
+// Standard test setup: JUnit 5 Jupiter + Rest-Assured + AssertJ + Mockito.
+//
+// Applied by every module that has a `src/test/` (services, libs, and
+// platform components). Services additionally get Spring Boot's test
+// starter via `ftgo.spring-boot-conventions` — this convention stays
+// framework-agnostic so plain libraries can depend on it too.
+//
+
+plugins {
+    id 'java'
+}
+
+def catalog = extensions.getByType(VersionCatalogsExtension).named('libs')
+
+dependencies {
+    testImplementation catalog.findBundle('junit-jupiter').get()
+    testImplementation catalog.findBundle('mockito').get()
+    testImplementation catalog.findLibrary('assertj-core').get()
+    testImplementation catalog.findBundle('rest-assured').get()
+
+    testRuntimeOnly catalog.findLibrary('junit-jupiter-engine').get()
+    testRuntimeOnly catalog.findLibrary('junit-platform-launcher').get()
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+        showStandardStreams = false
+    }
+
+    systemProperty 'file.encoding', 'UTF-8'
+    systemProperty 'user.timezone', 'UTC'
+}

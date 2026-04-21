@@ -1,0 +1,21 @@
+//
+// libs/ftgo-test-util
+// -------------------
+// Shared test infrastructure: base classes, fixtures, and Rest-Assured
+// helpers. Expressed as an `api` on JUnit 5 + Rest-Assured so consuming
+// modules don't have to re-declare them.
+//
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+description = 'FTGO shared test utilities'
+
+dependencies {
+    api libs.junit.jupiter.api
+    api libs.bundles.rest.assured
+    api libs.assertj.core
+}

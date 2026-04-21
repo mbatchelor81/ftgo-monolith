@@ -1,0 +1,31 @@
+// ----------------------------------------------------------------------------
+// ftgo-openapi shared library
+// ---------------------------
+// Provides the FTGO-wide SpringDoc OpenAPI 3.0 auto-configuration. Every
+// deployable FTGO microservice applies this library (via
+// `implementation project(':libs:ftgo-openapi')`) so Swagger UI, the
+// `/v3/api-docs` endpoint, and consistent API metadata come "for free".
+//
+// Replaces the deprecated Springfox-based `common-swagger` module (EM-45).
+// See docs/rest-api-standards.md for the conventions this library enforces.
+// ----------------------------------------------------------------------------
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = '1.0.0'
+description = 'FTGO shared SpringDoc OpenAPI 3.0 configuration and REST API conventions'
+
+dependencies {
+    // Expose the SpringDoc starter transitively so consumers just depend on
+    // this one library to get Swagger UI + `/v3/api-docs` wired up.
+    // SpringDoc itself brings in spring-boot-autoconfigure and spring-webmvc
+    // transitively; consumers that need `spring-boot-starter-web` already
+    // declare it themselves via `libs.bundles.spring.boot.web`.
+    api libs.springdoc.openapi.starter.webmvc.ui
+
+    testImplementation libs.spring.boot.starter.test
+}

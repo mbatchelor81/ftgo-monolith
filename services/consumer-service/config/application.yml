@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: consumer-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/ftgo_consumer}
+    username: ${DB_USER:ftgo}
+    password: ${DB_PASSWORD:ftgo}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: consumer-service
+      bounded-context: consumer
+
+logging:
+  level:
+    root: INFO
+    com.ftgo.consumer: INFO
+
+# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
+ftgo:
+  openapi:
+    title: "FTGO Consumer Service API"
+    description: >
+      Manages consumer registration, profile lookup, and per-consumer order
+      validation rules. See the FTGO REST API standards for shared
+      conventions (URL naming, status codes, pagination, dates).
+    version: "1.0.0"
+    contact:
+      name: "FTGO Consumer Team"
+      email: "consumer-team@ftgo.example.com"
+      url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/consumer-service"
+
+# SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
+# at /v3/api-docs by default — no extra configuration needed here.
