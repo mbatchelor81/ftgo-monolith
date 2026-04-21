@@ -27,3 +27,9 @@ data:
   MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
   MANAGEMENT_HEALTH_READINESSSTATE_ENABLED: "true"
   MANAGEMENT_HEALTH_LIVENESSSTATE_ENABLED: "true"
+  # Distributed tracing (EM-42). Gateway originates trace IDs and
+  # propagates them to every downstream service via W3C + B3 headers;
+  # spans ship to the in-cluster Zipkin collector deployed from
+  # platform/observability/k8s/zipkin.yaml. Sample probability default
+  # comes from the Spring profile (1.0 dev, 0.1 prod).
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: "http://zipkin:9411/api/v2/spans"

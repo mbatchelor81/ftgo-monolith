@@ -26,6 +26,18 @@ spring-cloud = "2023.0.1"
 
 # Observability
 micrometer = "1.13.6"
+# Micrometer Tracing replaces the deprecated Spring Cloud Sleuth (EM-42).
+# The 1.3.x line is the release train paired with Micrometer 1.13.x (see
+# `micrometer` above). Spring Boot 3.2.5 ships Micrometer 1.12 / Tracing
+# 1.2, but this repo has already overridden Micrometer to 1.13.6, so the
+# Brave bridge must follow to 1.3.x to avoid a cross-generation mismatch
+# between `micrometer-observation:1.13.x` and
+# `micrometer-tracing-bridge-brave:1.2.x`.
+micrometer-tracing = "1.3.5"
+# Zipkin reporter (v2) used by the Brave bridge to POST spans to a
+# Zipkin-compatible collector. 2.17.1 matches the version managed by the
+# Spring Boot 3.2.5 BOM.
+zipkin-reporter = "2.17.1"
 logstash-logback-encoder = "7.4"
 
 # Resilience
@@ -64,6 +76,10 @@ spring-boot-starter-data-redis-reactive = { module = "org.springframework.boot:s
 spring-boot-starter-validation       = { module = "org.springframework.boot:spring-boot-starter-validation",       version.ref = "spring-boot" }
 spring-boot-starter-security         = { module = "org.springframework.boot:spring-boot-starter-security",         version.ref = "spring-boot" }
 spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "spring-boot" }
+# AOP is pulled in so `@Observed` methods on Spring beans are intercepted by
+# Micrometer Observation's `ObservedAspect`. Services opt in via the shared
+# tracing bundle (see `tracing` below).
+spring-boot-starter-aop              = { module = "org.springframework.boot:spring-boot-starter-aop",              version.ref = "spring-boot" }
 spring-boot-starter-test             = { module = "org.springframework.boot:spring-boot-starter-test",             version.ref = "spring-boot" }
 spring-security-test                 = { module = "org.springframework.security:spring-security-test",             version.ref = "spring-security" }
 
@@ -79,6 +95,18 @@ spring-cloud-starter-circuitbreaker-reactor-resilience4j = { module = "org.sprin
 # registry scraped by the Prometheus server.
 micrometer-core                      = { module = "io.micrometer:micrometer-core",                                 version.ref = "micrometer" }
 micrometer-registry-prometheus       = { module = "io.micrometer:micrometer-registry-prometheus",                  version.ref = "micrometer" }
+
+# Distributed tracing (EM-42). `micrometer-observation` powers the
+# `@Observed` annotation and the `ObservationRegistry`; the Brave bridge
+# wires Micrometer Observation to Brave spans, and `zipkin-reporter-brave`
+# ships those spans to Zipkin / Jaeger-zipkin-compatible collectors.
+# Versions align with the Spring Boot 3.2.x BOM so auto-configuration
+# finds the classes it expects.
+micrometer-observation               = { module = "io.micrometer:micrometer-observation",                          version.ref = "micrometer" }
+micrometer-tracing                   = { module = "io.micrometer:micrometer-tracing",                              version.ref = "micrometer-tracing" }
+micrometer-tracing-bridge-brave      = { module = "io.micrometer:micrometer-tracing-bridge-brave",                 version.ref = "micrometer-tracing" }
+zipkin-reporter-brave                = { module = "io.zipkin.reporter2:zipkin-reporter-brave",                     version.ref = "zipkin-reporter" }
+
 logstash-logback-encoder             = { module = "net.logstash.logback:logstash-logback-encoder",                 version.ref = "logstash-logback-encoder" }
 
 # --- Resilience (Resilience4j) --------------------------------------------
@@ -144,6 +172,21 @@ observability = [
   "micrometer-registry-prometheus",
 ]
 
+# Distributed tracing stack (EM-42). Applied alongside the `observability`
+# bundle by `ftgo.observability-conventions` so every FTGO microservice
+# emits W3C Trace Context + B3 headers and reports spans to Zipkin out of
+# the box. `spring-boot-starter-aop` activates `ObservedAspect` so
+# `@Observed`-annotated methods produce custom spans. Replaces the
+# deprecated Spring Cloud Sleuth / spring-cloud-starter-zipkin deps that
+# were never actually on the classpath.
+tracing = [
+  "spring-boot-starter-aop",
+  "micrometer-observation",
+  "micrometer-tracing",
+  "micrometer-tracing-bridge-brave",
+  "zipkin-reporter-brave",
+]
+
 # Reactive stack for the API Gateway (Spring Cloud Gateway, JWT, Redis
 # rate limiting, Resilience4j circuit breakers). Paired with the Spring
 # Cloud BOM imported in services/api-gateway/build.gradle.
@@ -154,6 +197,12 @@ spring-cloud-gateway = [
   "spring-boot-starter-data-redis-reactive",
   "spring-cloud-starter-circuitbreaker-reactor-resilience4j",
   "micrometer-registry-prometheus",
+  # Tracing on the gateway so trace/span IDs survive edge->service hops
+  # and spans propagate through every downstream call (EM-42).
+  "micrometer-observation",
+  "micrometer-tracing",
+  "micrometer-tracing-bridge-brave",
+  "zipkin-reporter-brave",
 ]
 
 spring-boot-data-jpa = [
