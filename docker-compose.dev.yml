@@ -1,13 +1,15 @@
 version: '3.8'
 
-# Production-like local compose for the FTGO microservices.
+# Local development compose file for the FTGO microservices.
 #
-# Pulls prebuilt images from GHCR (pushed by .github/workflows/docker-build.yml).
-# Override the tag with the FTGO_IMAGE_TAG env var:
+# Builds every service image from source via its per-service Dockerfile so
+# developers can iterate without pushing to the registry. For production-like
+# smoke tests using registry images, see docker-compose.yml.
 #
-#   FTGO_IMAGE_TAG=feat-microservices-migration docker compose up
+#   docker compose -f docker-compose.dev.yml up --build
 #
-# For a source-build loop (no registry), use docker-compose.dev.yml instead.
+# Each service listens on 8080 inside the container; host ports are offset so
+# they don't collide.
 
 x-service-defaults: &service-defaults
   restart: unless-stopped
@@ -19,12 +21,8 @@ x-service-defaults: &service-defaults
     SPRING_DATASOURCE_USERNAME: mysqluser
     SPRING_DATASOURCE_PASSWORD: mysqlpw
     SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
-    EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
     JAVA_OPTS: "-Xmx256m -XX:MaxRAMPercentage=75.0"
-    SPRING_SLEUTH_ENABLED: "true"
-    SPRING_SLEUTH_SAMPLER_PROBABILITY: "1"
-    SPRING_ZIPKIN_BASE_URL: http://zipkin:9411/
+    SPRING_PROFILES_ACTIVE: dev
 
 services:
   mysql:
@@ -41,20 +39,15 @@ services:
       timeout: 3s
       retries: 20
 
-  ftgo-application:
-    build: ./ftgo-application
-    image: ${FTGO_APPLICATION_IMAGE:-ftgo-application:local}
-    ports:
-      - "8081:8080"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    environment:
-      <<: *service-env
-
   consumer-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-consumer-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/consumer-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: consumer-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-consumer-service:dev
     ports:
       - "8082:8080"
     environment:
@@ -63,7 +56,13 @@ services:
 
   order-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-order-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/order-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: order-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-order-service:dev
     ports:
       - "8083:8080"
     environment:
@@ -72,7 +71,13 @@ services:
 
   restaurant-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-restaurant-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/restaurant-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: restaurant-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-restaurant-service:dev
     ports:
       - "8084:8080"
     environment:
@@ -81,7 +86,13 @@ services:
 
   courier-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-courier-service:${FTGO_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: services/courier-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: courier-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-courier-service:dev
     ports:
       - "8085:8080"
     environment:

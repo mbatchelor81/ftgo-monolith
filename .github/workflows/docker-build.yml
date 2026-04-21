@@ -1,0 +1,203 @@
+name: Docker Build & Publish
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'services/**'
+      - 'libs/**'
+      - 'ftgo-**/**'
+      - 'templates/service-template/**'
+      - 'buildSrc/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/docker-build.yml'
+  workflow_dispatch:
+
+# Cancel in-flight runs when a new commit lands on the same ref.
+concurrency:
+  group: docker-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}/ftgo
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  build:
+    name: Build & scan ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - consumer-service
+          - order-service
+          - restaurant-service
+          - courier-service
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute build metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          GIT_SHA_SHORT="$(git rev-parse --short HEAD)"
+          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="$(grep -E '^version\s*=' gradle.properties | head -n1 | cut -d= -f2 | tr -d ' ' || true)"
+            VERSION="${VERSION:-0.0.0-SNAPSHOT}"
+          fi
+          echo "git_sha_short=${GIT_SHA_SHORT}" >> "${GITHUB_OUTPUT}"
+          echo "build_date=${BUILD_DATE}" >> "${GITHUB_OUTPUT}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Docker metadata (tags & labels)
+        id: docker_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.git_sha_short }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+          labels: |
+            org.opencontainers.image.title=ftgo-${{ matrix.service }}
+            org.opencontainers.image.description=FTGO ${{ matrix.service }} microservice
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.build_date }}
+            org.opencontainers.image.licenses=Apache-2.0
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image (load for scanning)
+        id: build_local
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/docker/Dockerfile
+          load: true
+          tags: ftgo-${{ matrix.service }}:scan
+          build-args: |
+            SERVICE_NAME=${{ matrix.service }}
+            SERVICE_VERSION=${{ steps.meta.outputs.version }}
+            GIT_SHA=${{ steps.meta.outputs.git_sha_short }}
+            BUILD_DATE=${{ steps.meta.outputs.build_date }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,scope=${{ matrix.service }},mode=max
+
+      - name: Verify image size < 200MB
+        run: |
+          set -euo pipefail
+          SIZE_BYTES="$(docker image inspect ftgo-${{ matrix.service }}:scan --format '{{.Size}}')"
+          SIZE_MB=$(( SIZE_BYTES / 1024 / 1024 ))
+          echo "Image size: ${SIZE_MB}MB"
+          if (( SIZE_MB > 200 )); then
+            echo "::error::Image ftgo-${{ matrix.service }} is ${SIZE_MB}MB, exceeds 200MB budget"
+            exit 1
+          fi
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ftgo-${{ matrix.service }}:scan
+          format: sarif
+          output: trivy-${{ matrix.service }}.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Upload Trivy results to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.service }}.sarif
+          category: trivy-${{ matrix.service }}
+
+      - name: Fail on CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ftgo-${{ matrix.service }}:scan
+          format: table
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/docker/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          build-args: |
+            SERVICE_NAME=${{ matrix.service }}
+            SERVICE_VERSION=${{ steps.meta.outputs.version }}
+            GIT_SHA=${{ steps.meta.outputs.git_sha_short }}
+            BUILD_DATE=${{ steps.meta.outputs.build_date }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,scope=${{ matrix.service }},mode=max
+
+  cleanup:
+    name: Prune old untagged images
+    needs: build
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - consumer-service
+          - order-service
+          - restaurant-service
+          - courier-service
+    steps:
+      - name: Delete untagged versions older than 30 days
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ftgo-${{ matrix.service }}
+          package-type: container
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: true
