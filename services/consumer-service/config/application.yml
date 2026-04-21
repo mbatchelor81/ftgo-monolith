@@ -206,21 +206,42 @@ ftgo:
       email: "consumer-team@ftgo.example.com"
       url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/consumer-service"
 
+# ------------------------------------------------------------------
+# Logging (EM-49). Profile-aware appenders live in logback-ftgo.xml
+# (shared from libs:ftgo-logging). This block only tunes Spring Boot's
+# logger registry — output format/rotation is chosen by profile in XML.
+#
+# Defaults apply to local dev; the `dev`, `staging`, and `prod` profile
+# documents further down raise framework loggers per EM-49 acceptance
+# criteria (Local: DEBUG/INFO, Dev+Staging: INFO/WARN, Prod: INFO/ERROR).
+# ------------------------------------------------------------------
 logging:
   level:
     root: INFO
-    com.ftgo.consumer: INFO
+    com.ftgo.consumer: DEBUG
+    net.chrisrichardson.ftgo: DEBUG
     net.chrisrichardson.ftgo.resilience: INFO
     io.github.resilience4j: INFO
+    org.springframework: INFO
+    org.hibernate: INFO
 # SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
 # at /v3/api-docs by default — no extra configuration needed here.
 
+---
+# Dev / Staging profile overrides. INFO on application code, WARN on
+# framework noise.
+spring:
+  config:
+    activate:
+      on-profile: dev | staging
 logging:
   level:
     root: INFO
     com.ftgo.consumer: INFO
-    net.chrisrichardson.ftgo.resilience: INFO
-    io.github.resilience4j: INFO
+    net.chrisrichardson.ftgo: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    com.zaxxer.hikari: WARN
 
 ---
 # Production profile overrides. Spring Boot loads this additional document
@@ -228,6 +249,8 @@ logging:
 # high-throughput service is non-trivial, so we sample 10% of requests per
 # the EM-42 acceptance criteria; operators can tune
 # MANAGEMENT_TRACING_SAMPLING_PROBABILITY per-deployment without a rebuild.
+# Framework loggers drop to ERROR so the Elasticsearch ingestion bill stays
+# predictable (EM-49).
 spring:
   config:
     activate:
@@ -236,3 +259,12 @@ management:
   tracing:
     sampling:
       probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
+logging:
+  level:
+    root: INFO
+    com.ftgo.consumer: INFO
+    net.chrisrichardson.ftgo: INFO
+    org.springframework: ERROR
+    org.hibernate: ERROR
+    org.hibernate.SQL: ERROR
+    com.zaxxer.hikari: ERROR
