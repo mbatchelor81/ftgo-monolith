@@ -1,0 +1,22 @@
+//
+// libs/ftgo-common-jpa
+// --------------------
+// Shared JPA helpers layered on top of `libs/ftgo-common`. Exposes
+// spring-boot-starter-data-jpa as an `api` dependency so downstream
+// services see the same JPA types without re-declaring the starter.
+//
+// Migration tracked in EM-31.
+//
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+description = 'FTGO shared JPA helpers'
+
+dependencies {
+    api project(':libs:ftgo-common')
+    api libs.spring.boot.starter.data.jpa
+}

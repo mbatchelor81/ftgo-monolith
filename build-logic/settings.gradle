@@ -1,0 +1,27 @@
+//
+// Included "build-logic" composite build.
+//
+// Hosts FTGO's precompiled Gradle convention plugins (`ftgo.*`). Keeping them
+// in a separate build (rather than `buildSrc/`) lets consumer modules apply
+// them by plugin ID and, more importantly, lets us share the same version
+// catalog (`gradle/libs.versions.toml`) with the convention plugins
+// themselves.
+//
+// See docs/build-configuration.md for how services consume these plugins.
+//
+
+rootProject.name = 'build-logic'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    versionCatalogs {
+        libs {
+            from(files('../gradle/libs.versions.toml'))
+        }
+    }
+}
+
+include 'convention'
