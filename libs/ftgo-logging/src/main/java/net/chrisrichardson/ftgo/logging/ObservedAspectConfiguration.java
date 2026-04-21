@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
  * configuration because both {@link ObservationRegistry} and
  * {@link ObservedAspect} will be absent from their classpath.
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnClass({ObservedAspect.class, ObservationRegistry.class})
 @ConditionalOnBean(ObservationRegistry.class)
 public class ObservedAspectConfiguration {

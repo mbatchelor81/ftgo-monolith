@@ -27,9 +27,13 @@ spring-cloud = "2023.0.1"
 # Observability
 micrometer = "1.13.6"
 # Micrometer Tracing replaces the deprecated Spring Cloud Sleuth (EM-42).
-# 1.2.5 matches the version shipped by the Spring Boot 3.2.5 BOM so the
-# Brave bridge and Spring Boot's auto-configuration stay in lockstep.
-micrometer-tracing = "1.2.5"
+# The 1.3.x line is the release train paired with Micrometer 1.13.x (see
+# `micrometer` above). Spring Boot 3.2.5 ships Micrometer 1.12 / Tracing
+# 1.2, but this repo has already overridden Micrometer to 1.13.6, so the
+# Brave bridge must follow to 1.3.x to avoid a cross-generation mismatch
+# between `micrometer-observation:1.13.x` and
+# `micrometer-tracing-bridge-brave:1.2.x`.
+micrometer-tracing = "1.3.5"
 # Zipkin reporter (v2) used by the Brave bridge to POST spans to a
 # Zipkin-compatible collector. 2.17.1 matches the version managed by the
 # Spring Boot 3.2.5 BOM.
