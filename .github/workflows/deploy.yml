@@ -143,9 +143,10 @@ jobs:
   # ---------------------------------------------------------------------------
   deploy-staging:
     name: Deploy to staging
-    needs: deploy-dev
+    needs: [validate, deploy-dev]
     if: >-
       always() &&
+      needs.validate.result == 'success' &&
       (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped') &&
       (github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'staging'))
@@ -204,9 +205,10 @@ jobs:
   # ---------------------------------------------------------------------------
   deploy-prod:
     name: Deploy to prod
-    needs: deploy-staging
+    needs: [validate, deploy-staging]
     if: >-
       always() &&
+      needs.validate.result == 'success' &&
       (needs.deploy-staging.result == 'success' || needs.deploy-staging.result == 'skipped') &&
       (github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'prod'))
