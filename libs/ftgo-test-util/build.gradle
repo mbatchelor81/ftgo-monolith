@@ -1,7 +1,21 @@
-// Placeholder build for the future shared `ftgo-test-util` library.
-// The live implementation currently lives in `/ftgo-test-util` at the repo
-// root and will be migrated here as the test infrastructure is consolidated.
+//
+// libs/ftgo-test-util
+// -------------------
+// Shared test infrastructure: base classes, fixtures, and Rest-Assured
+// helpers. Expressed as an `api` on JUnit 5 + Rest-Assured so consuming
+// modules don't have to re-declare them.
+//
 
-apply plugin: 'io.spring.dependency-management'
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
 
-description = 'FTGO shared test utilities - scaffold'
+description = 'FTGO shared test utilities'
+
+dependencies {
+    api libs.junit.jupiter.api
+    api libs.bundles.rest.assured
+    api libs.assertj.core
+}

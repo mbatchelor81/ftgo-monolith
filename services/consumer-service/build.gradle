@@ -1,17 +1,30 @@
-// Placeholder build for the future standalone Consumer microservice.
 //
-// The actual Consumer business logic currently lives in the legacy
-// `ftgo-consumer-service` module at the repository root. As code is extracted
-// during the microservices migration, move it under `src/main/java/com/ftgo/consumer`
-// and wire up real dependencies here.
+// services/consumer-service
+// --------------------------
+// Deployable Consumer microservice.
 //
-// See templates/service-template/build.gradle for the target shape.
+// Applies the standard FTGO service convention plugin stack:
+//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions      → Jib container image build
+//
+// Business code lives under src/main/java/com/ftgo/consumer (see
+// CONVENTIONS.md §3). Until EM-3x extracts that code from the legacy
+// `ftgo-consumer-service` module, only the Spring Boot baseline is wired up
+// here so the scaffold compiles cleanly.
+//
 
-apply plugin: 'io.spring.dependency-management'
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
 
-description = 'FTGO Consumer microservice (scaffold - code extraction in progress)'
+description = 'FTGO Consumer microservice'
 
 dependencies {
-    // Intentionally minimal while the service is a scaffold. Add Spring Boot
-    // starters and shared libs when the first bounded-context code lands here.
+    implementation libs.bundles.spring.boot.web
+    implementation libs.bundles.spring.boot.data.jpa
+
+    testImplementation libs.spring.boot.starter.test
 }

@@ -1,16 +1,19 @@
 package com.ftgo.order;
 
-/**
- * Placeholder entry point for the future standalone Order microservice.
- *
- * Code will be migrated here from the legacy {@code ftgo-order-service}
- * module as the microservices decomposition progresses. When that happens,
- * convert this class to a {@code @SpringBootApplication} and wire up the real
- * domain, web, and config packages under {@code com.ftgo.order}.
- */
-public final class OrderServiceApplication {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    private OrderServiceApplication() {
-        // Scaffold class; no instantiation.
+/**
+ * Entry point for the standalone Order microservice.
+ *
+ * The domain, web, and config packages under {@code com.ftgo.order} are
+ * populated as code is extracted from the legacy {@code ftgo-order-service}
+ * module during the EM-3x migration work.
+ */
+@SpringBootApplication
+public class OrderServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(OrderServiceApplication.class, args);
     }
 }
