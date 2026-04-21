@@ -22,11 +22,11 @@
 | 3 | EM-41 | Upgrade Micrometer/Prometheus Metrics and Add Service-Level Dashboards | Phase 4 | 55145a0de8034f23a45d5549ee5ee87d | completed | [PR #89](https://github.com/mbatchelor81/ftgo-monolith/pull/89) | ✅ squashed | libs.versions.toml (upgraded micrometer 1.12.5→1.13.6, kept logstash-logback-encoder) |
 | 3 | EM-44 | Configure Health Checks, Service Discovery, and Resilience Patterns | Phase 4 | 7a17f740d5c44d4187fe606cdebafb37 | completed | [PR #91](https://github.com/mbatchelor81/ftgo-monolith/pull/91) | ✅ squashed | 10 files: libs.versions.toml, 4× service build.gradle, 4× service application.yml, settings.gradle (combined all prior deps+resilience) |
 | 3 | EM-45 | Define REST API Standards and Migrate from Springfox to SpringDoc OpenAPI 3 | Phase 5 | 755e5929c0ad476c90b47fd560ac8edb | completed | [PR #92](https://github.com/mbatchelor81/ftgo-monolith/pull/92) | ✅ squashed | 8 files: 4× service build.gradle, 3× service application.yml, settings.gradle (combined all prior deps+openapi) |
-| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | — | — | — | — | — |
-| 4 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | — | — | — | — | — |
-| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | — | — | — | — | — |
-| 4 | EM-42 | Implement Distributed Tracing with Spring Cloud Sleuth and Zipkin/Jaeger | Phase 4 | — | — | — | — | — |
-| 4 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | — | — | — | — | — |
+| 4 | EM-29 | Define Per-Service Database Schema Migration Strategy | Phase 1 | 9a31072e0ff5434eae2ce58d3900a013 | completed | [PR #93](https://github.com/mbatchelor81/ftgo-monolith/pull/93) | ✅ squashed | none |
+| 4 | EM-36 | Configure Automated Testing Pipeline (Unit, Integration, E2E) | Phase 2 | ab7101177dbf4640bf9ca47535aa66ed | completed | [PR #96](https://github.com/mbatchelor81/ftgo-monolith/pull/96) | ✅ squashed | none (service application.yml auto-merged) |
+| 4 | EM-40 | Implement JWT-Based Authentication with Token Management | Phase 3 | 769d8ad108f54214bcbdf4f8e5538758 | completed | [PR #97](https://github.com/mbatchelor81/ftgo-monolith/pull/97) | ✅ squashed | none (libs.versions.toml auto-merged) |
+| 4 | EM-42 | Implement Distributed Tracing with Micrometer Tracing and Zipkin | Phase 4 | 401d5424364a4a14adb026e3c943f734 | completed | [PR #94](https://github.com/mbatchelor81/ftgo-monolith/pull/94) | ✅ squashed | none |
+| 4 | EM-47 | Create Code Review Guidelines and Static Analysis Quality Gates | Phase 5 | d889a895264148c6b6ec9b6663b8f479 | completed | [PR #95](https://github.com/mbatchelor81/ftgo-monolith/pull/95) | ✅ squashed | none (libs.versions.toml auto-merged) |
 | 5 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | — | — | — | — | — |
 | 5 | EM-46 | Establish Centralized Error Handling and Exception Patterns | Phase 5 | — | — | — | — | — |
 | 5 | EM-48 | Document Testing Strategy and Create Test Templates | Phase 5 | — | — | — | — | — |
