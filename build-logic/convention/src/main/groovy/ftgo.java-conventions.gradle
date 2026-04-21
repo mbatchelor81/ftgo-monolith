@@ -1,0 +1,46 @@
+//
+// ftgo.java-conventions
+// ----------------------
+// Baseline Java settings applied to every FTGO JVM module (services, libs,
+// and platform components alike).
+//
+// What it configures:
+//   * Java toolchain pinned to the version declared in libs.versions.toml
+//   * UTF-8 source encoding and -parameters compiler flag
+//   * -Xlint:all -Werror for new code (opt-out per module via
+//     `tasks.withType(JavaCompile) { options.compilerArgs -= '-Werror' }`)
+//   * Standard repositories (Maven Central) — no jcenter, no Spring milestones
+//
+// Does NOT configure testing (see ftgo.testing-conventions) or Spring Boot
+// (see ftgo.spring-boot-conventions).
+//
+
+plugins {
+    id 'java-library'
+}
+
+def catalog = extensions.getByType(VersionCatalogsExtension).named('libs')
+def javaVersion = JavaLanguageVersion.of(catalog.findVersion('java').get().requiredVersion)
+
+java {
+    toolchain {
+        languageVersion = javaVersion
+    }
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-parameters']
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+group = 'com.ftgo'
