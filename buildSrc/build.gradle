@@ -1,10 +1,24 @@
-test.enabled=false
+//
+// buildSrc — legacy helper plugins.
+//
+// Hosts the `WaitForMySqlPlugin`, `IntegrationTestsPlugin`, and
+// `FtgoServicePlugin` classes that the pre-migration `ftgo-*` modules rely
+// on. NEW microservices MUST NOT use these; they apply the convention
+// plugins defined in `build-logic/` instead.
+//
+
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+test.enabled = false
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'mysql:mysql-connector-java:5.1.39'
-    compile 'commons-lang:commons-lang:2.6'
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'commons-lang:commons-lang:2.6'
 }

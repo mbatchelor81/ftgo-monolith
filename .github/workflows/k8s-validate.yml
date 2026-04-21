@@ -1,0 +1,90 @@
+name: k8s-validate
+
+on:
+  pull_request:
+    paths:
+      - "deployment/kubernetes/**"
+      - "deployment/kustomize/**"
+      - "services/*/k8s/**"
+      - "platform/shared-infrastructure/k8s/**"
+      - ".github/workflows/k8s-validate.yml"
+      - ".github/workflows/deploy.yml"
+  push:
+    branches:
+      - feat/microservices-migration
+      - main
+      - master
+    paths:
+      - "deployment/kubernetes/**"
+      - "deployment/kustomize/**"
+      - "services/*/k8s/**"
+      - "platform/shared-infrastructure/k8s/**"
+
+env:
+  KUSTOMIZE_VERSION: v5.4.2
+
+jobs:
+  yaml-syntax:
+    name: YAML syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install PyYAML
+        run: pip install "pyyaml==6.*"
+      - name: Validate YAML syntax
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            if ! python -c "import sys, yaml; list(yaml.safe_load_all(open(sys.argv[1])))" "$f"; then
+              echo "::error file=$f::YAML parse error"
+              fail=1
+            fi
+          done < <(find \
+              deployment/kubernetes \
+              deployment/kustomize \
+              services/*/k8s \
+              platform/shared-infrastructure/k8s \
+            -type f \( -name "*.yml" -o -name "*.yaml" \) -print0)
+          exit $fail
+
+  kustomize-build:
+    name: Kustomize build + kubeconform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" \
+            | bash -s -- "${KUSTOMIZE_VERSION#v}"
+          sudo mv kustomize /usr/local/bin/kustomize
+          kustomize version
+
+      - name: Install kubeconform
+        run: |
+          curl -sSLo kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/kubeconform
+
+      - name: Build + validate every overlay
+        run: |
+          set -euo pipefail
+          for env in dev staging prod; do
+            echo "::group::overlays/${env}"
+            kustomize build "deployment/kustomize/overlays/${env}" \
+              | tee "rendered-${env}.yaml" \
+              | kubeconform -strict -ignore-missing-schemas -summary -
+            echo "::endgroup::"
+          done
+
+      - name: Upload rendered manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-manifests
+          path: rendered-*.yaml
+          retention-days: 7

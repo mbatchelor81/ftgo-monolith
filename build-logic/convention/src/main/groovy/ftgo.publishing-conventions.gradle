@@ -1,0 +1,54 @@
+//
+// ftgo.publishing-conventions
+// ----------------------------
+// Maven-publish configuration for FTGO shared libraries and `*-service-api`
+// modules. Publishes to the Maven repository configured via the
+// `FTGO_PUBLISH_URL` environment variable; falls back to a local
+// `build/repo` directory during development.
+//
+// Deployable services (fat jars) should NOT apply this convention.
+//
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'maven-publish'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = project.name
+                description = project.description ?: project.name
+                url = 'https://github.com/mbatchelor81/ftgo-monolith'
+
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'ftgo'
+            def releasesUrl  = System.getenv('FTGO_PUBLISH_URL')
+            def snapshotsUrl = System.getenv('FTGO_PUBLISH_SNAPSHOT_URL') ?: releasesUrl
+            url = project.version.toString().endsWith('SNAPSHOT') ? snapshotsUrl : releasesUrl
+            url = url ?: layout.buildDirectory.dir('repo').get().asFile.toURI()
+
+            def user = System.getenv('FTGO_PUBLISH_USERNAME')
+            def pass = System.getenv('FTGO_PUBLISH_PASSWORD')
+            if (user && pass) {
+                credentials {
+                    username = user
+                    password = pass
+                }
+            }
+        }
+    }
+}
