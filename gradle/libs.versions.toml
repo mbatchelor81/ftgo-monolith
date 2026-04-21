@@ -60,6 +60,10 @@ rest-assured = "5.4.0"
 mockito = "5.11.0"
 assertj = "3.25.3"
 spring-security = "6.2.4"
+# Testcontainers replaces the Docker Compose dependency historically used
+# by the monolith integration tests. 1.19.7 is the latest 1.19.x patch
+# compatible with Spring Boot 3.2.x and JUnit Jupiter 5.10.x (see EM-48).
+testcontainers = "1.19.7"
 
 # Tooling plugins
 jib = "3.4.2"
@@ -154,6 +158,14 @@ assertj-core                         = { module = "org.assertj:assertj-core",   
 rest-assured                         = { module = "io.rest-assured:rest-assured",                                  version.ref = "rest-assured" }
 rest-assured-spring-mock-mvc         = { module = "io.rest-assured:spring-mock-mvc",                               version.ref = "rest-assured" }
 rest-assured-json-path               = { module = "io.rest-assured:json-path",                                     version.ref = "rest-assured" }
+
+# Testcontainers — replaces `docker-compose up mysql` for integration tests
+# (EM-48). Services depend on these via `libs:ftgo-test-util`; the shared
+# `FtgoMySqlContainer` spins up a per-test-class MySQL 8 instance, runs
+# Flyway, and exposes JDBC connection properties.
+testcontainers-core                  = { module = "org.testcontainers:testcontainers",                             version.ref = "testcontainers" }
+testcontainers-junit-jupiter         = { module = "org.testcontainers:junit-jupiter",                              version.ref = "testcontainers" }
+testcontainers-mysql                 = { module = "org.testcontainers:mysql",                                      version.ref = "testcontainers" }
 
 # --- Gradle plugin artifacts (used by build-logic convention plugins) -----
 spring-boot-gradle-plugin            = { module = "org.springframework.boot:spring-boot-gradle-plugin",            version.ref = "spring-boot" }
