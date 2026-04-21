@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FTGO SpotBugs exclusion filter.
+
+  Categories and specific bug patterns that produce high false-positive rates
+  against Spring / JPA / Lombok-generated code. Anything not listed here is
+  treated as a build-failing violation.
+-->
+<FindBugsFilter>
+    <!-- JPA entities commonly expose mutable collections intentionally. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Records / DTOs often serialize Spring-managed beans whose serial
+         UID is irrelevant because they are never persisted directly. -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID,SE_BAD_FIELD"/>
+    </Match>
+
+    <!-- @Autowired fields are populated by the framework; nullability here
+         is a framework concern, not an application bug. -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+        <Source name="~.*/src/main/.*Controller\.java"/>
+    </Match>
+
+    <!-- Tests frequently use reflection, static mocks, and duplicated
+         constants; suppress noisy categories inside src/test. -->
+    <Match>
+        <Source name="~.*/src/test/.*"/>
+    </Match>
+
+    <!-- Generated Gradle / Flyway / openapi sources. -->
+    <Match>
+        <Source name="~.*/build/generated/.*"/>
+    </Match>
+</FindBugsFilter>

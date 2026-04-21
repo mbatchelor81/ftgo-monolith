@@ -1,0 +1,133 @@
+name: Quality Gates
+
+# Runs the static-analysis, formatting, and coverage quality gates defined
+# in `build-logic/convention/src/main/groovy/ftgo.quality-conventions.gradle`
+# and enforced through the repo-wide tooling under `config/`.
+#
+# This workflow is the merge gate for EM-47:
+#   * Checkstyle  — config/checkstyle/checkstyle.xml
+#   * PMD         — config/pmd/pmd-ruleset.xml
+#   * SpotBugs    — config/spotbugs/spotbugs-exclude.xml
+#   * JaCoCo      — 70% line-coverage floor (jacocoTestCoverageVerification)
+#   * Spotless    — google-java-format (optional; enable per-module via
+#                   `-Pftgo.spotless.enforce=true`)
+#
+# See CONTRIBUTING.md for how to run these locally and how the coverage
+# ratchet works for legacy modules.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+  pull_request:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+  workflow_dispatch:
+
+concurrency:
+  group: quality-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  static-analysis:
+    name: Static analysis (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - ":services:order-service"
+          - ":services:consumer-service"
+          - ":services:courier-service"
+          - ":services:restaurant-service"
+          - ":services:api-gateway"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+          gradle-home-cache-cleanup: true
+
+      - name: Run Checkstyle / PMD / SpotBugs
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace \
+            ${{ matrix.module }}:checkstyleMain \
+            ${{ matrix.module }}:checkstyleTest \
+            ${{ matrix.module }}:pmdMain \
+            ${{ matrix.module }}:pmdTest \
+            ${{ matrix.module }}:spotbugsMain \
+            ${{ matrix.module }}:spotbugsTest
+
+      - name: Upload static-analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-reports-${{ strategy.job-index }}
+          path: |
+            **/build/reports/checkstyle/**
+            **/build/reports/pmd/**
+            **/build/reports/spotbugs/**
+
+  coverage:
+    name: Coverage (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - ":services:order-service"
+          - ":services:consumer-service"
+          - ":services:courier-service"
+          - ":services:restaurant-service"
+          - ":services:api-gateway"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+          gradle-home-cache-cleanup: true
+
+      - name: Run JaCoCo coverage verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace \
+            ${{ matrix.module }}:test \
+            ${{ matrix.module }}:jacocoTestCoverageVerification
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports-${{ strategy.job-index }}
+          path: |
+            **/build/reports/jacoco/**
