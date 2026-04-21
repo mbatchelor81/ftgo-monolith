@@ -199,16 +199,8 @@ ftgo:
       - consumer-service
       - restaurant-service
       - courier-service
-
-logging:
-  level:
-    root: INFO
-    com.ftgo.order: INFO
-    net.chrisrichardson.ftgo.resilience: INFO
-    io.github.resilience4j: INFO
-# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
-# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
-ftgo:
+  # OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+  # Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
   openapi:
     title: "FTGO Order Service API"
     description: >
@@ -220,5 +212,12 @@ ftgo:
       name: "FTGO Order Team"
       email: "order-team@ftgo.example.com"
       url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/order-service"
+
+logging:
+  level:
+    root: INFO
+    com.ftgo.order: INFO
+    net.chrisrichardson.ftgo.resilience: INFO
+    io.github.resilience4j: INFO
 # SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
 # at /v3/api-docs by default — no extra configuration needed here.

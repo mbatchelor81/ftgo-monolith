@@ -142,8 +142,6 @@ ftgo:
   resilience:
     default-instance-name: default
     dependent-services: []
-
-ftgo:
   openapi:
     title: "FTGO Restaurant Service API"
     description: >
