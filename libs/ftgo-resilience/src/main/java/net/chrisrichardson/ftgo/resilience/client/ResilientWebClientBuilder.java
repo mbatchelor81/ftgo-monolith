@@ -60,7 +60,12 @@ public class ResilientWebClientBuilder {
      */
     public WebClient build(String serviceName) {
         String baseUrl = endpoints.baseUrl(serviceName);
-        return webClientBuilder
+        // WebClient.Builder is mutable and baseUrl()/filter() return `this`,
+        // so clone the injected prototype before configuring it. Without the
+        // clone, a second build() call would inherit the previous service's
+        // baseUrl and stack another resilience filter on top, corrupting
+        // every WebClient produced afterwards.
+        return webClientBuilder.clone()
                 .baseUrl(baseUrl)
                 .filter((request, next) -> next.exchange(request)
                         .transformDeferred(applyResilience(serviceName)))
