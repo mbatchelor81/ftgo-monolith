@@ -66,6 +66,10 @@ jib = "3.4.2"
 docker-compose-plugin = "0.17.6"
 ben-manes-versions = "0.51.0"
 
+# Code quality tooling
+spotbugs = "5.2.5"
+spotless = "6.25.0"
+
 [libraries]
 # --- Spring Boot starters -------------------------------------------------
 spring-boot-starter-web              = { module = "org.springframework.boot:spring-boot-starter-web",              version.ref = "spring-boot" }
@@ -155,6 +159,9 @@ rest-assured-json-path               = { module = "io.rest-assured:json-path",  
 spring-boot-gradle-plugin            = { module = "org.springframework.boot:spring-boot-gradle-plugin",            version.ref = "spring-boot" }
 spring-dependency-management-plugin  = { module = "io.spring.gradle:dependency-management-plugin",                 version.ref = "spring-dependency-management" }
 jib-gradle-plugin                    = { module = "com.google.cloud.tools:jib-gradle-plugin",                      version.ref = "jib" }
+# Code quality plugin artifacts consumed by `ftgo.quality-conventions`.
+spotbugs-gradle-plugin               = { module = "com.github.spotbugs.snom:spotbugs-gradle-plugin",               version.ref = "spotbugs" }
+spotless-gradle-plugin               = { module = "com.diffplug.spotless:spotless-plugin-gradle",                  version.ref = "spotless" }
 
 [bundles]
 spring-boot-web = [

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FTGO SpotBugs exclusion filter.
+
+  Categories and specific bug patterns that produce high false-positive rates
+  against Spring / JPA / Lombok-generated code. Anything not listed here is
+  treated as a build-failing violation.
+-->
+<FindBugsFilter>
+    <!-- JPA entities commonly expose mutable collections intentionally. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Records / DTOs often serialize Spring-managed beans whose serial
+         UID is irrelevant because they are never persisted directly. -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID,SE_BAD_FIELD"/>
+    </Match>
+
+    <!-- @Autowired fields are populated by the framework; nullability here
+         is a framework concern, not an application bug. The Source element
+         matches against the bare filename stored in the class file's
+         SourceFile attribute, not a path. -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+        <Source name="~.*Controller\.java"/>
+    </Match>
+
+    <!-- Tests frequently use reflection, static mocks, and duplicated
+         constants; match by class-name suffix (Test / IT / Tests) because
+         the Source element sees only the bare filename. The spotbugsTest
+         Gradle task is also disabled in ftgo.quality-conventions to avoid
+         analyzing compiled test classes entirely. -->
+    <Match>
+        <Class name="~.*Test"/>
+    </Match>
+    <Match>
+        <Class name="~.*Tests"/>
+    </Match>
+    <Match>
+        <Class name="~.*IT"/>
+    </Match>
+
+    <!-- Generated sources (openapi, annotation processors) commonly live
+         under packages with `.generated.` or end in `$Generated`. -->
+    <Match>
+        <Class name="~.*\.generated\..*"/>
+    </Match>
+</FindBugsFilter>

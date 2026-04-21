@@ -1,0 +1,176 @@
+//
+// ftgo.quality-conventions
+// -------------------------
+// Static analysis, formatting, and coverage enforcement for every FTGO
+// JVM module. Composes:
+//
+//   * Checkstyle   — style and lightweight correctness checks
+//   * PMD          — curated subset of real-defect rules (see config/pmd/)
+//   * SpotBugs     — bytecode-level bug detection
+//   * Spotless     — google-java-format enforcement (see .editorconfig)
+//   * JaCoCo       — coverage collection + minimum-coverage verification
+//
+// Rules files live under `config/` at the repo root so a single edit
+// updates every service and library. All three static analysis tools are
+// wired into the `check` task so `./gradlew check` is the single CI entry
+// point for quality gates (see CONTRIBUTING.md).
+//
+// Coverage verification is bound into `check` with a 70% line-coverage
+// floor. Modules without production code automatically skip enforcement
+// (jacocoTestCoverageVerification becomes a no-op when there is nothing
+// to cover).
+//
+
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'pmd'
+    id 'com.github.spotbugs'
+    id 'com.diffplug.spotless'
+    id 'jacoco'
+}
+
+def qualityConfigDir = rootProject.layout.projectDirectory.dir('config')
+
+// ---------------------------------------------------------------------------
+// Checkstyle
+// ---------------------------------------------------------------------------
+checkstyle {
+    toolVersion = '10.17.0'
+    configFile = qualityConfigDir.file('checkstyle/checkstyle.xml').asFile
+    configDirectory = qualityConfigDir.dir('checkstyle')
+    maxWarnings = 0
+    ignoreFailures = false
+    showViolations = true
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PMD
+// ---------------------------------------------------------------------------
+pmd {
+    toolVersion = '7.0.0'
+    ruleSetFiles = files(qualityConfigDir.file('pmd/pmd-ruleset.xml').asFile)
+    ruleSets = []
+    ignoreFailures = false
+    consoleOutput = true
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SpotBugs
+// ---------------------------------------------------------------------------
+spotbugs {
+    toolVersion = '4.8.6'
+    effort = com.github.spotbugs.snom.Effort.DEFAULT
+    reportLevel = com.github.spotbugs.snom.Confidence.MEDIUM
+    excludeFilter = qualityConfigDir.file('spotbugs/spotbugs-exclude.xml').asFile
+    ignoreFailures = false
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        html {
+            required = true
+        }
+        xml {
+            required = true
+        }
+    }
+}
+
+// Skip SpotBugs on compiled test classes. Test code has a high
+// false-positive rate for the rules we care about (reflection, static
+// mocks, duplicated constants), and the SpotBugs `<Source>` filter
+// matches only bare filenames, which makes path-based test exclusions
+// silently ineffective. Disabling the task is the portable fix.
+tasks.matching { it.name == 'spotbugsTest' }.configureEach {
+    enabled = false
+}
+
+// ---------------------------------------------------------------------------
+// Spotless (google-java-format)
+// ---------------------------------------------------------------------------
+// Spotless is available (`./gradlew spotlessApply` / `spotlessCheck`) but is
+// intentionally NOT bound to `check`. Most legacy modules still need to be
+// reformatted service-by-service as part of the EM-47 ratchet; dedicated CI
+// jobs run `spotlessCheck` for modules that have opted in. See
+// CONTRIBUTING.md for the migration plan.
+spotless {
+    java {
+        target 'src/**/*.java'
+        targetExclude 'build/**', '**/generated/**', '**/generated-src/**'
+        googleJavaFormat('1.22.0')
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    groovyGradle {
+        target '*.gradle', '**/*.gradle'
+        targetExclude 'build/**'
+        greclipse()
+        indentWithSpaces(4)
+    }
+}
+
+tasks.matching { it.name == 'spotlessCheck' }.configureEach {
+    enabled = project.findProperty('ftgo.spotless.enforce') == 'true'
+}
+
+// ---------------------------------------------------------------------------
+// JaCoCo — coverage collection + 70% line-coverage gate.
+// ---------------------------------------------------------------------------
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.withType(Test).configureEach {
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.withType(Test)
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+    // Skip verification when the module produced no coverage data. This
+    // happens for scaffolds and legacy modules whose tests have not yet
+    // been migrated to JUnit 5. Any module that actually runs tests will
+    // produce a `test.exec` file and be held to the 70% line-coverage
+    // floor — see CONTRIBUTING.md for the ratchet plan.
+    onlyIf {
+        def execFile = layout.buildDirectory.file('jacoco/test.exec').get().asFile
+        execFile.exists() && execFile.length() > 0
+    }
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}
