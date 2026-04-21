@@ -13,6 +13,18 @@ version: '3.8'
 
 x-service-defaults: &service-defaults
   restart: unless-stopped
+  # The Dockerfile HEALTHCHECK probes /actuator/health on port 8080, but this
+  # compose file binds actuator to the management port 9090 via
+  # MANAGEMENT_SERVER_PORT below. When Spring Boot's management port differs
+  # from the server port, ALL /actuator endpoints move to the management
+  # port and 8080 returns 404 for them — override the healthcheck here so
+  # containers aren't flagged unhealthy and restarted by the compose runtime.
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://localhost:9090/actuator/health"]
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    start_period: 30s
   depends_on:
     mysql:
       condition: service_healthy
