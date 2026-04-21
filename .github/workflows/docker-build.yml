@@ -137,7 +137,7 @@ jobs:
           fi
 
       - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ftgo-${{ matrix.service }}:scan
           format: sarif
