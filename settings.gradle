@@ -85,5 +85,6 @@ include 'services:courier-service'
 // Shared libraries
 include 'libs:ftgo-common'
 include 'libs:ftgo-common-jpa'
+include 'libs:ftgo-domain'
 include 'libs:ftgo-test-util'
 
