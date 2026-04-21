@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-ilm-setup
+  namespace: logging
+  labels:
+    app: elasticsearch
+    component: retention
+data:
+  # Hot → Warm → Delete retention policy for FTGO logs.
+  #   * Rollover when the write index hits 25 GB or 7 days old
+  #   * Move to warm after 7 days (force-merge, read-only)
+  #   * Delete after 30 days
+  policy.json: |
+    {
+      "policy": {
+        "phases": {
+          "hot": {
+            "actions": {
+              "rollover": {
+                "max_primary_shard_size": "25gb",
+                "max_age": "7d"
+              },
+              "set_priority": { "priority": 100 }
+            }
+          },
+          "warm": {
+            "min_age": "7d",
+            "actions": {
+              "forcemerge": { "max_num_segments": 1 },
+              "readonly": {},
+              "set_priority": { "priority": 50 }
+            }
+          },
+          "delete": {
+            "min_age": "30d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      }
+    }
+
+  # Index template + bootstrap index wired to the policy.
+  template.json: |
+    {
+      "index_patterns": ["ftgo-logs-*"],
+      "template": {
+        "settings": {
+          "number_of_shards": 1,
+          "number_of_replicas": 0,
+          "index.lifecycle.name": "ftgo-logs-retention",
+          "index.lifecycle.rollover_alias": "ftgo-logs"
+        },
+        "mappings": {
+          "properties": {
+            "@timestamp":    { "type": "date" },
+            "level":         { "type": "keyword" },
+            "logger":        { "type": "keyword" },
+            "service":       { "type": "keyword" },
+            "correlationId": { "type": "keyword" },
+            "requestId":     { "type": "keyword" },
+            "userId":        { "type": "keyword" },
+            "thread":        { "type": "keyword" },
+            "message":       { "type": "text" },
+            "stack_trace":   { "type": "text" }
+          }
+        }
+      },
+      "priority": 500
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ftgo-ilm-setup
+  namespace: logging
+  labels:
+    app: elasticsearch
+    component: retention
+spec:
+  # Retry on transient ES startup errors but cap total attempts.
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        component: retention
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: setup
+          image: curlimages/curl:8.8.0
+          env:
+            - name: ES_URL
+              value: http://elasticsearch.logging.svc.cluster.local:9200
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+
+              # Wait for Elasticsearch to be ready.
+              until curl -sf "$ES_URL/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null; do
+                echo "Waiting for Elasticsearch at $ES_URL..."
+                sleep 5
+              done
+
+              # 1. Install the ILM policy.
+              curl -sSf -X PUT "$ES_URL/_ilm/policy/ftgo-logs-retention" \
+                -H 'Content-Type: application/json' \
+                --data-binary @/config/policy.json
+
+              # 2. Install the composable index template.
+              curl -sSf -X PUT "$ES_URL/_index_template/ftgo-logs" \
+                -H 'Content-Type: application/json' \
+                --data-binary @/config/template.json
+
+              # 3. Bootstrap the first write index if it doesn't exist.
+              if ! curl -sf "$ES_URL/_alias/ftgo-logs" >/dev/null; then
+                curl -sSf -X PUT "$ES_URL/%3Cftgo-logs-000001%3E" \
+                  -H 'Content-Type: application/json' \
+                  -d '{"aliases":{"ftgo-logs":{"is_write_index":true}}}'
+              fi
+
+              echo "FTGO ILM setup complete."
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: ftgo-ilm-setup

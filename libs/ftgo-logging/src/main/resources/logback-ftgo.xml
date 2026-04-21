@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Base Logback configuration shared by every FTGO microservice.
+
+    Include this file from the service's own `logback-spring.xml`:
+
+        <configuration>
+            <include resource="logback-ftgo.xml"/>
+        </configuration>
+
+    Produces one JSON object per log line on stdout (so Fluentd / Docker
+    can tail the container stdout stream unmodified) with MDC fields
+    (correlationId, requestId, service, userId) flattened into the root
+    object.
+
+    The JSON console appender is wrapped in an AsyncAppender so logging
+    I/O never blocks request threads. Queue sizing and discardingThreshold
+    are tuned for typical microservice throughput (~2k req/s per pod).
+-->
+<included>
+
+    <!-- Pick up spring.application.name so every log line is tagged with
+         the producing service. Fallback keeps local, non-Spring runs
+         (e.g. plain `java -jar`) working. -->
+    <springProperty scope="context" name="serviceName"
+                    source="spring.application.name"
+                    defaultValue="ftgo-service"/>
+
+    <!-- Environment overrides for cluster-level tuning without rebuilding
+         the image. -->
+    <property name="LOG_LEVEL_ROOT" value="${LOG_LEVEL_ROOT:-INFO}"/>
+    <property name="LOG_LEVEL_FTGO" value="${LOG_LEVEL_FTGO:-INFO}"/>
+
+    <!-- JSON encoder: flatten MDC, include the service name, keep the
+         stack trace on exceptions, and drop per-line cost fields we
+         don't use. -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>false</includeContext>
+            <includeMdc>true</includeMdc>
+            <customFields>{"service":"${serviceName}"}</customFields>
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <message>message</message>
+                <thread>thread</thread>
+                <logger>logger</logger>
+                <level>level</level>
+                <stackTrace>stack_trace</stackTrace>
+                <levelValue>[ignore]</levelValue>
+                <version>[ignore]</version>
+            </fieldNames>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>4096</maxLength>
+                <shortenedClassNameLength>40</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- Async wrapper. `neverBlock=true` drops events rather than blocking
+         request threads if the queue fills during a logging spike. -->
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="JSON_CONSOLE"/>
+        <queueSize>8192</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <!-- Keep framework noise at INFO so the signal-to-noise ratio in
+         Kibana stays high. Services can override individual loggers in
+         their own logback-spring.xml after the <include> tag. -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.hibernate" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="net.chrisrichardson.ftgo" level="${LOG_LEVEL_FTGO}"/>
+    <logger name="com.ftgo" level="${LOG_LEVEL_FTGO}"/>
+
+    <root level="${LOG_LEVEL_ROOT}">
+        <appender-ref ref="ASYNC_JSON"/>
+    </root>
+
+</included>

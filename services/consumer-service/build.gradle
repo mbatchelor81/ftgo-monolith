@@ -26,5 +26,8 @@ dependencies {
     implementation libs.bundles.spring.boot.web
     implementation libs.bundles.spring.boot.data.jpa
 
+    // Structured JSON logging + correlation-ID propagation (EM-43).
+    implementation project(':libs:ftgo-logging')
+
     testImplementation libs.spring.boot.starter.test
 }

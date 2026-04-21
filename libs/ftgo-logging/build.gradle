@@ -1,0 +1,53 @@
+// ----------------------------------------------------------------------------
+// ftgo-logging shared library
+//
+// Centralized logging support for every FTGO microservice:
+//   * Structured JSON output (logstash-logback-encoder)
+//   * Async appender so log I/O never blocks request threads
+//   * Correlation-ID servlet filter that populates MDC for every request
+//   * Base logback configuration (logback-ftgo.xml) consumed from each
+//     service's `logback-spring.xml`
+//
+// Services depend on this library and opt-in by including
+// `logback-ftgo.xml` from their own `logback-spring.xml`.
+//
+// Applies the standard FTGO convention plugin stack (see build-logic/).
+// Java package: net.chrisrichardson.ftgo.logging (kept per CONVENTIONS).
+// ----------------------------------------------------------------------------
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
+
+version = '1.0.0'
+description = 'FTGO shared structured JSON logging configuration and correlation-ID propagation'
+
+def catalog = extensions.getByType(VersionCatalogsExtension).named('libs')
+def springBootVersion = catalog.findVersion('spring-boot').get().requiredVersion
+
+// Versions pinned to match the Spring Boot 3.2.x BOM so services on the
+// standard convention plugin stack get a consistent logging classpath.
+def slf4jVersion = '2.0.13'
+def logbackVersion = '1.4.14'
+def servletApiVersion = '6.0.0'
+
+dependencies {
+    // Logstash JSON encoder pulls in Logback 1.4.x transitively, matching the
+    // version shipped by Spring Boot 3.2.
+    api libs.logstash.logback.encoder
+
+    // Re-declare SLF4J + Logback so non-Boot consumers compile against the
+    // same versions the Spring Boot BOM ships.
+    api "org.slf4j:slf4j-api:${slf4jVersion}"
+    api "ch.qos.logback:logback-classic:${logbackVersion}"
+
+    // Servlet + Spring are scoped compileOnly so plain Java consumers that
+    // only need the Logback config + MDC keys don't pull in web deps.
+    compileOnly "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"
+}
