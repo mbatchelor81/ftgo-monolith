@@ -115,10 +115,12 @@ jobs:
 
       - name: Override image tag (workflow_dispatch only)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
         run: |
           cd deployment/kustomize/overlays/dev
           for svc in consumer-service order-service courier-service restaurant-service; do
-            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${{ github.event.inputs.image_tag }}"
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
           done
 
       - name: Apply shared infrastructure (namespaces, RBAC)
@@ -143,8 +145,10 @@ jobs:
     name: Deploy to staging
     needs: deploy-dev
     if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'staging')
+      always() &&
+      (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped') &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'staging'))
     runs-on: ubuntu-latest
     environment:
       name: ftgo-staging
@@ -172,10 +176,12 @@ jobs:
 
       - name: Override image tag (workflow_dispatch only)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
         run: |
           cd deployment/kustomize/overlays/staging
           for svc in consumer-service order-service courier-service restaurant-service; do
-            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${{ github.event.inputs.image_tag }}"
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
           done
 
       - name: Apply shared infrastructure (namespaces, RBAC)
@@ -200,8 +206,10 @@ jobs:
     name: Deploy to prod
     needs: deploy-staging
     if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'prod')
+      always() &&
+      (needs.deploy-staging.result == 'success' || needs.deploy-staging.result == 'skipped') &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.promote_to == 'prod'))
     runs-on: ubuntu-latest
     environment:
       name: ftgo-prod
@@ -229,10 +237,12 @@ jobs:
 
       - name: Override image tag (workflow_dispatch only)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.image_tag != ''
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
         run: |
           cd deployment/kustomize/overlays/prod
           for svc in consumer-service order-service courier-service restaurant-service; do
-            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${{ github.event.inputs.image_tag }}"
+            kustomize edit set image "ftgo/${svc}=ftgo/${svc}:${IMAGE_TAG}"
           done
 
       - name: Apply shared infrastructure (namespaces, RBAC)
