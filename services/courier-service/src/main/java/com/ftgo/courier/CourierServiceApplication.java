@@ -1,16 +1,19 @@
 package com.ftgo.courier;
 
-/**
- * Placeholder entry point for the future standalone Courier microservice.
- *
- * Code will be migrated here from the legacy {@code ftgo-courier-service}
- * module as the microservices decomposition progresses. When that happens,
- * convert this class to a {@code @SpringBootApplication} and wire up the real
- * domain, web, and config packages under {@code com.ftgo.courier}.
- */
-public final class CourierServiceApplication {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    private CourierServiceApplication() {
-        // Scaffold class; no instantiation.
+/**
+ * Entry point for the standalone Courier microservice.
+ *
+ * The domain, web, and config packages under {@code com.ftgo.courier} are
+ * populated as code is extracted from the legacy {@code ftgo-courier-service}
+ * module during the EM-3x migration work.
+ */
+@SpringBootApplication
+public class CourierServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CourierServiceApplication.class, args);
     }
 }

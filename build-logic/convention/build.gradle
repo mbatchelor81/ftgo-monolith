@@ -1,0 +1,31 @@
+//
+// FTGO convention plugins.
+//
+// Each `src/main/groovy/ftgo.*.gradle` file becomes a precompiled script
+// plugin whose ID matches the filename (minus `.gradle`). Services apply
+// these plugins with, for example:
+//
+//     plugins {
+//         id 'ftgo.spring-boot-conventions'
+//     }
+//
+// The plugins depend on Gradle plugin artifacts from the shared version
+// catalog so bumping Spring Boot / Jib / dependency-management in
+// `gradle/libs.versions.toml` is the only place a version needs to change.
+//
+
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation libs.spring.boot.gradle.plugin
+    implementation libs.spring.dependency.management.plugin
+    implementation libs.jib.gradle.plugin
+}

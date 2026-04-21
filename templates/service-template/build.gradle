@@ -1,34 +1,38 @@
-// Template build.gradle for a new FTGO microservice.
 //
-// Copy this file into services/<name>-service/ and replace placeholder values.
-// Services inherit common configuration (java plugin, JDK target, repositories)
-// from the root build.gradle via the `subprojects { ... }` block.
+// templates/service-template
+// --------------------------
+// Canonical build script for a new FTGO microservice. Copy this file into
+// `services/<name>-service/` and tweak only the `description` and any
+// service-specific dependencies.
+//
+// Every deployable service applies the same convention plugin stack:
+//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions      → Jib container image build
+//
+// Keeping this file under 30 non-comment lines is an intentional forcing
+// function — if a service needs more, either roll the common bits back
+// into a convention plugin or justify the divergence in an ADR.
+//
 
-apply plugin: 'io.spring.dependency-management'
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.docker-conventions'
+}
 
-description = 'FTGO microservice template - replace this description'
+description = 'FTGO microservice template — replace this description'
 
 dependencies {
-    // Shared libraries (use :libs:<name> once libs are migrated)
-    // compile project(':libs:ftgo-common')
-    // compile project(':libs:ftgo-common-jpa')
+    // Shared libraries (uncomment as needed)
+    // implementation project(':libs:ftgo-common')
+    // implementation project(':libs:ftgo-common-jpa')
 
     // API contract module(s) this service exposes or consumes
-    // compile project(':services:example-service:example-service-api')
+    // implementation project(':services:example-service-api')
 
-    // Spring Boot baseline
-    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
-    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
-    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
+    implementation libs.bundles.spring.boot.web
+    implementation libs.bundles.spring.boot.data.jpa
 
-    // Validation
-    compile 'javax.el:javax.el-api:2.2.5'
-
-    // Test baseline
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testCompile 'io.rest-assured:rest-assured:3.0.6'
-    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
-    testCompile 'io.rest-assured:json-path:3.0.6'
-    // testCompile project(':libs:ftgo-test-util')
+    testImplementation libs.spring.boot.starter.test
 }

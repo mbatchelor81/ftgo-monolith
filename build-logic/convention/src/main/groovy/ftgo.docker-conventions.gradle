@@ -1,0 +1,40 @@
+//
+// ftgo.docker-conventions
+// ------------------------
+// Container image builds via Google's Jib plugin. Produces an OCI image
+// without requiring a local Docker daemon, which keeps CI runners clean.
+//
+// Image coordinates default to `ftgo/<project-name>:<version>` following
+// the naming convention documented in CONVENTIONS.md §4 ("Docker images").
+// Services override specific fields by reopening the `jib {}` block.
+//
+// Apply AFTER `ftgo.spring-boot-conventions` so Jib picks up the bootJar.
+//
+
+plugins {
+    id 'java'
+    id 'com.google.cloud.tools.jib'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = "ftgo/${project.name}"
+        tags = ['latest', project.version.toString()]
+    }
+    container {
+        jvmFlags = [
+            '-XX:+UseContainerSupport',
+            '-XX:MaxRAMPercentage=75.0',
+            '-Djava.security.egd=file:/dev/./urandom',
+        ]
+        ports = ['8080']
+        labels = [
+            'org.opencontainers.image.source': 'https://github.com/mbatchelor81/ftgo-monolith',
+            'org.opencontainers.image.title' : project.name,
+        ]
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
+}
