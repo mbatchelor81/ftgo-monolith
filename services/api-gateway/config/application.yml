@@ -1,0 +1,14 @@
+# Deployed-environment overrides for the API Gateway.
+# Values here compose on top of the defaults bundled in
+# src/main/resources/application.yml and are further patched per
+# environment by the Kustomize overlays under deployment/kustomize/.
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
