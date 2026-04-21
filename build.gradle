@@ -53,7 +53,14 @@ subprojects {
 // New services MUST NOT rely on this block; they apply `ftgo.java-conventions`
 // (and friends) from `build-logic/` directly.
 // ----------------------------------------------------------------------------
-configure(subprojects.findAll { it.name.startsWith('ftgo-') || it.name == 'common-swagger' }) {
+// Filter on `it.parent == rootProject` so only TOP-LEVEL `ftgo-*` modules
+// (e.g. `:ftgo-domain`) match — the nested `libs/ftgo-*` and `services/ftgo-*`
+// paths have the same last segment but live under `:libs` / `:services` and
+// must use the Java 17 convention plugins instead.
+configure(subprojects.findAll {
+    it.parent == rootProject &&
+        (it.name.startsWith('ftgo-') || it.name == 'common-swagger')
+}) {
     apply plugin: 'java-library'
 
     java {
