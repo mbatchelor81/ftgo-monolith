@@ -1,0 +1,34 @@
+// Template build.gradle for a new FTGO microservice.
+//
+// Copy this file into services/<name>-service/ and replace placeholder values.
+// Services inherit common configuration (java plugin, JDK target, repositories)
+// from the root build.gradle via the `subprojects { ... }` block.
+
+apply plugin: 'io.spring.dependency-management'
+
+description = 'FTGO microservice template - replace this description'
+
+dependencies {
+    // Shared libraries (use :libs:<name> once libs are migrated)
+    // compile project(':libs:ftgo-common')
+    // compile project(':libs:ftgo-common-jpa')
+
+    // API contract module(s) this service exposes or consumes
+    // compile project(':services:example-service:example-service-api')
+
+    // Spring Boot baseline
+    compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+    compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+    compile "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
+
+    // Validation
+    compile 'javax.el:javax.el-api:2.2.5'
+
+    // Test baseline
+    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testCompile 'io.rest-assured:rest-assured:3.0.6'
+    testCompile 'io.rest-assured:spring-mock-mvc:3.0.6'
+    testCompile 'io.rest-assured:json-path:3.0.6'
+    // testCompile project(':libs:ftgo-test-util')
+}
