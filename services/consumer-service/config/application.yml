@@ -208,6 +208,13 @@ ftgo:
 # SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
 # at /v3/api-docs by default — no extra configuration needed here.
 
+logging:
+  level:
+    root: INFO
+    com.ftgo.consumer: INFO
+    net.chrisrichardson.ftgo.resilience: INFO
+    io.github.resilience4j: INFO
+
 ---
 # Production profile overrides. Spring Boot loads this additional document
 # only when `spring.profiles.active` contains `prod`. Tracing overhead on a
