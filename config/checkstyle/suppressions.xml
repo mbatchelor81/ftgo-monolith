@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<!--
+  FTGO Checkstyle suppressions.
+
+  File- or path-level exemptions from the main checkstyle.xml ruleset.
+  Prefer narrow, scoped suppressions over disabling rules globally.
+-->
+<suppressions>
+    <!-- Generated Gradle / IDE sources should not be linted. -->
+    <suppress files="[/\\]build[/\\]generated[/\\]" checks=".*"/>
+    <suppress files="[/\\]build[/\\]generated-src[/\\]" checks=".*"/>
+
+    <!-- Tests get slightly longer line limits and may need unused imports for
+         test fixtures; keep everything else enforced. -->
+    <suppress files="[/\\]src[/\\]test[/\\]" checks="LineLength"/>
+
+    <!-- Package-info files are documentation-only. -->
+    <suppress files="package-info\.java" checks=".*"/>
+</suppressions>

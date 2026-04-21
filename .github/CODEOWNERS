@@ -1,0 +1,79 @@
+# FTGO CODEOWNERS
+# ---------------
+# GitHub enforces a review from at least one owner on every path below.
+# Patterns are evaluated top-to-bottom; the last matching pattern wins, so
+# keep the most specific entries at the bottom of each section.
+#
+# Teams referenced here live under the @ftgo-project GitHub organization.
+# Create the team before merging — an unknown team name silently fails
+# and every PR becomes an unowned change.
+#
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+# ----------------------------------------------------------------------------
+# Default owner — applies to anything not matched by a later rule.
+# ----------------------------------------------------------------------------
+*                                       @ftgo-project/platform-engineering
+
+# ----------------------------------------------------------------------------
+# Build, tooling, and repository-wide configuration.
+# ----------------------------------------------------------------------------
+/build.gradle                           @ftgo-project/platform-engineering
+/settings.gradle                        @ftgo-project/platform-engineering
+/gradle.properties                      @ftgo-project/platform-engineering
+/gradle/                                @ftgo-project/platform-engineering
+/gradlew                                @ftgo-project/platform-engineering
+/gradlew.bat                            @ftgo-project/platform-engineering
+/build-logic/                           @ftgo-project/platform-engineering
+/buildSrc/                              @ftgo-project/platform-engineering
+/config/                                @ftgo-project/platform-engineering @ftgo-project/quality-engineering
+/.editorconfig                          @ftgo-project/platform-engineering @ftgo-project/quality-engineering
+/.github/                               @ftgo-project/platform-engineering @ftgo-project/quality-engineering
+/.circleci/                             @ftgo-project/platform-engineering
+/CONTRIBUTING.md                        @ftgo-project/quality-engineering @ftgo-project/platform-engineering
+/CONVENTIONS.md                         @ftgo-project/platform-engineering
+
+# ----------------------------------------------------------------------------
+# Shared libraries.
+# ----------------------------------------------------------------------------
+/libs/                                  @ftgo-project/platform-engineering
+/libs/ftgo-common/                      @ftgo-project/platform-engineering
+/libs/ftgo-common-jpa/                  @ftgo-project/platform-engineering
+/libs/ftgo-domain/                      @ftgo-project/platform-engineering
+/libs/ftgo-security/                    @ftgo-project/security
+/libs/ftgo-logging/                     @ftgo-project/observability
+/libs/ftgo-resilience/                  @ftgo-project/platform-engineering
+/libs/ftgo-openapi/                     @ftgo-project/platform-engineering
+/libs/ftgo-test-util/                   @ftgo-project/quality-engineering
+
+# ----------------------------------------------------------------------------
+# Services — bounded-context owners.
+# ----------------------------------------------------------------------------
+/services/order-service/                @ftgo-project/order-service-team
+/services/consumer-service/             @ftgo-project/consumer-service-team
+/services/restaurant-service/           @ftgo-project/restaurant-service-team
+/services/courier-service/              @ftgo-project/courier-service-team
+/services/api-gateway/                  @ftgo-project/platform-engineering @ftgo-project/security
+
+# ----------------------------------------------------------------------------
+# Platform infrastructure.
+# ----------------------------------------------------------------------------
+/platform/                              @ftgo-project/platform-engineering
+/platform/observability/                @ftgo-project/observability
+/platform/config-server/                @ftgo-project/platform-engineering
+/platform/service-discovery/            @ftgo-project/platform-engineering
+/platform/api-gateway/                  @ftgo-project/platform-engineering @ftgo-project/security
+/platform/shared-infrastructure/        @ftgo-project/platform-engineering
+
+# ----------------------------------------------------------------------------
+# Deployment + container definitions.
+# ----------------------------------------------------------------------------
+/deployment/                            @ftgo-project/platform-engineering
+/docker-compose.yml                     @ftgo-project/platform-engineering
+/docker-compose.dev.yml                 @ftgo-project/platform-engineering
+/docker-compose.logging.yml             @ftgo-project/platform-engineering @ftgo-project/observability
+
+# ----------------------------------------------------------------------------
+# Legacy monolith modules — kept intentionally broad until decomposed.
+# ----------------------------------------------------------------------------
+/ftgo-*/                                @ftgo-project/platform-engineering

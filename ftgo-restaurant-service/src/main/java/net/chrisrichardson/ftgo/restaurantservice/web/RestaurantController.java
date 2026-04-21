@@ -5,13 +5,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import net.chrisrichardson.ftgo.common.errors.EntityNotFoundException;
+import net.chrisrichardson.ftgo.common.errors.ErrorCode;
 import net.chrisrichardson.ftgo.domain.Restaurant;
 import net.chrisrichardson.ftgo.restaurantservice.domain.RestaurantService;
 import net.chrisrichardson.ftgo.restaurantservice.events.CreateRestaurantRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(path = "/restaurants")
@@ -27,7 +29,7 @@ public class RestaurantController {
       @ApiResponse(responseCode = "400", description = "Request validation failed")
   })
   @RequestMapping(method = RequestMethod.POST)
-  public CreateRestaurantResponse create(@RequestBody CreateRestaurantRequest request) {
+  public CreateRestaurantResponse create(@Valid @RequestBody CreateRestaurantRequest request) {
     Restaurant r = restaurantService.create(request);
     return new CreateRestaurantResponse(r.getId());
   }
@@ -38,11 +40,13 @@ public class RestaurantController {
       @ApiResponse(responseCode = "404", description = "No restaurant with the given ID")
   })
   @RequestMapping(method = RequestMethod.GET, path = "/{restaurantId}")
-  public ResponseEntity<GetRestaurantResponse> get(
+  public GetRestaurantResponse get(
       @Parameter(description = "Restaurant identifier") @PathVariable long restaurantId) {
+    // GlobalExceptionHandler maps this to 404 + FTGO-RES-001.
     return restaurantService.findById(restaurantId)
-            .map(r -> new ResponseEntity<>(makeGetRestaurantResponse(r), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            .map(this::makeGetRestaurantResponse)
+            .orElseThrow(() -> new EntityNotFoundException(ErrorCode.RESTAURANT_NOT_FOUND,
+                "Restaurant not found: " + restaurantId));
   }
 
   private GetRestaurantResponse makeGetRestaurantResponse(Restaurant r) {

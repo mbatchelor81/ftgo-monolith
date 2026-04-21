@@ -1,1 +1,3 @@
 net.chrisrichardson.ftgo.logging.CorrelationIdConfiguration
+net.chrisrichardson.ftgo.logging.LoggingAspectConfiguration
+net.chrisrichardson.ftgo.logging.ObservedAspectConfiguration

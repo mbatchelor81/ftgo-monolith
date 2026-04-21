@@ -145,6 +145,23 @@ management:
   metrics:
     tags:
       application: api-gateway
+  # ------------------------------------------------------------------
+  # Distributed tracing (EM-42). Spring Cloud Gateway is the ingress
+  # for every client request, so it's where new trace IDs are minted
+  # and injected into outbound calls. W3C Trace Context is the primary
+  # format; B3 is kept on for interop with any clients or services
+  # that still emit B3. Sampling is 100% by default — the deployed
+  # config/application.yml and/or the MANAGEMENT_TRACING_SAMPLING_
+  # PROBABILITY env var override this in prod.
+  # ------------------------------------------------------------------
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+    propagation:
+      type: W3C,B3
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
 
 logging:
   level:
@@ -152,4 +169,7 @@ logging:
     net.chrisrichardson.ftgo.apigateway: INFO
     org.springframework.cloud.gateway: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    # traceId / spanId come from Micrometer Tracing's MDC contribution
+    # (see EM-42); keeping them in the console pattern means even
+    # non-JSON local dev logs are correlatable with Zipkin.
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"

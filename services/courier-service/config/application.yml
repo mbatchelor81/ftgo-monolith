@@ -39,6 +39,23 @@ spring.lifecycle:
 management:
   server:
     port: ${MANAGEMENT_SERVER_PORT:9090}
+  # ------------------------------------------------------------------
+  # Distributed tracing (EM-42). Micrometer Tracing + Brave bridge ship
+  # spans to Zipkin; W3C Trace Context and B3 propagation are both on so
+  # traces survive hops through the Spring Cloud Gateway (W3C) and any
+  # legacy B3-emitting clients. Sampling is 100% by default so local dev
+  # always shows full traces; the `prod` profile at the bottom of this
+  # file lowers it to 10% and MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+  # allows per-environment overrides.
+  # ------------------------------------------------------------------
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+    propagation:
+      type: W3C,B3
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
   endpoints:
     web:
       base-path: /actuator
@@ -150,16 +167,8 @@ ftgo:
     default-instance-name: default
     dependent-services:
       - order-service
-
-logging:
-  level:
-    root: INFO
-    com.ftgo.courier: INFO
-    net.chrisrichardson.ftgo.resilience: INFO
-    io.github.resilience4j: INFO
-# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
-# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
-ftgo:
+  # OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+  # Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
   openapi:
     title: "FTGO Courier Service API"
     description: >
@@ -170,5 +179,66 @@ ftgo:
       name: "FTGO Courier Team"
       email: "courier-team@ftgo.example.com"
       url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/courier-service"
+
+# ------------------------------------------------------------------
+# Logging (EM-49). Profile-aware appenders live in logback-ftgo.xml
+# (shared from libs:ftgo-logging). This block only tunes Spring Boot's
+# logger registry — output format/rotation is chosen by profile in XML.
+#
+# Defaults apply to local dev; the `dev`, `staging`, and `prod` profile
+# documents further down raise framework loggers per EM-49 acceptance
+# criteria (Local: DEBUG/INFO, Dev+Staging: INFO/WARN, Prod: INFO/ERROR).
+# ------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.ftgo.courier: DEBUG
+    net.chrisrichardson.ftgo: DEBUG
+    net.chrisrichardson.ftgo.resilience: INFO
+    io.github.resilience4j: INFO
+    org.springframework: INFO
+    org.hibernate: INFO
 # SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
 # at /v3/api-docs by default — no extra configuration needed here.
+
+---
+# Dev / Staging profile overrides. INFO on application code, WARN on
+# framework noise.
+spring:
+  config:
+    activate:
+      on-profile: dev | staging
+logging:
+  level:
+    root: INFO
+    com.ftgo.courier: INFO
+    net.chrisrichardson.ftgo: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    com.zaxxer.hikari: WARN
+
+---
+# Production profile overrides. Spring Boot loads this additional document
+# only when `spring.profiles.active` contains `prod`. Tracing overhead on a
+# high-throughput service is non-trivial, so we sample 10% of requests per
+# the EM-42 acceptance criteria; operators can tune
+# MANAGEMENT_TRACING_SAMPLING_PROBABILITY per-deployment without a rebuild.
+# Framework loggers drop to ERROR so the Elasticsearch ingestion bill stays
+# predictable (EM-49).
+spring:
+  config:
+    activate:
+      on-profile: prod
+management:
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:0.1}
+logging:
+  level:
+    root: INFO
+    com.ftgo.courier: INFO
+    net.chrisrichardson.ftgo: INFO
+    org.springframework: ERROR
+    org.hibernate: ERROR
+    org.hibernate.SQL: ERROR
+    com.zaxxer.hikari: ERROR

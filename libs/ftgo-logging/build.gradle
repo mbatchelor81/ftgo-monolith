@@ -32,6 +32,7 @@ def springBootVersion = catalog.findVersion('spring-boot').get().requiredVersion
 def slf4jVersion = '2.0.13'
 def logbackVersion = '1.4.14'
 def servletApiVersion = '6.0.0'
+def aspectjVersion = '1.9.21'
 
 dependencies {
     // Logstash JSON encoder pulls in Logback 1.4.x transitively, matching the
@@ -47,6 +48,18 @@ dependencies {
     // only need the Logback config + MDC keys don't pull in web deps.
     compileOnly "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"
     compileOnly "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+    // Micrometer Observation is scoped compileOnly so the ObservedAspect
+    // auto-configuration compiles. Services that actually use @Observed
+    // pull the runtime library in via the shared `tracing` bundle applied
+    // by `ftgo.observability-conventions`.
+    compileOnly libs.micrometer.observation
+    // AspectJ is scoped compileOnly so the shared LoggingAspect compiles
+    // against the AspectJ annotations. Services opt in at runtime by
+    // applying `ftgo.observability-conventions` (or declaring
+    // `spring-boot-starter-aop` directly), which puts AspectJ on the
+    // classpath; services that skip AOP simply never instantiate the
+    // aspect bean (see LoggingAspectConfiguration @ConditionalOnClass).
+    compileOnly "org.aspectj:aspectjweaver:${aspectjVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testImplementation "jakarta.servlet:jakarta.servlet-api:${servletApiVersion}"

@@ -1,0 +1,99 @@
+# -----------------------------------------------------------------------------
+# Zipkin collector for FTGO distributed tracing (EM-42)
+# -----------------------------------------------------------------------------
+# A single-replica, in-memory Zipkin deployment fronted by a ClusterIP Service
+# so every FTGO microservice can POST spans to
+#   http://zipkin.ftgo.svc.cluster.local:9411/api/v2/spans
+# (the value baked into each service's `MANAGEMENT_ZIPKIN_TRACING_ENDPOINT`
+# ConfigMap entry).
+#
+# In-memory storage is intentional: it keeps the ops footprint zero for dev /
+# staging clusters. For production volume, swap the `STORAGE_TYPE` env var to
+# `elasticsearch` or `mysql` and add the matching connection vars — see the
+# openzipkin/zipkin container docs. The Service contract (port 9411 named
+# `http`) stays identical so services don't need to be reconfigured.
+#
+# Not wired into `deployment/kustomize/base/kustomization.yaml` by default so
+# it can be layered in per-environment (e.g. only in `dev`/`staging`). Add
+# `../../../platform/observability/k8s` to an overlay's `resources` list to
+# include it.
+# -----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkin
+  labels:
+    app: zipkin
+    app.kubernetes.io/name: zipkin
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: ftgo
+spec:
+  replicas: 1
+  # Zipkin with in-memory storage cannot tolerate concurrent pods — recreate
+  # on every rollout so there's only ever one span store at a time.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      labels:
+        app: zipkin
+        app.kubernetes.io/name: zipkin
+        app.kubernetes.io/component: tracing
+        app.kubernetes.io/part-of: ftgo
+    spec:
+      containers:
+        - name: zipkin
+          image: openzipkin/zipkin:3.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9411
+              protocol: TCP
+          env:
+            - name: STORAGE_TYPE
+              value: mem
+            - name: JAVA_OPTS
+              value: "-XX:MaxRAMPercentage=75.0"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin
+  labels:
+    app: zipkin
+    app.kubernetes.io/name: zipkin
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: ftgo
+spec:
+  type: ClusterIP
+  selector:
+    app: zipkin
+  ports:
+    - name: http
+      port: 9411
+      targetPort: http
+      protocol: TCP

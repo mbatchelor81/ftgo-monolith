@@ -43,6 +43,11 @@ x-service-defaults: &service-defaults
     # to tighten limits for a specific compose run.
     JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
     SPRING_PROFILES_ACTIVE: dev
+    # Distributed tracing (EM-42). 100% sampling in dev so every local
+    # request produces a full trace in Zipkin; production overrides this
+    # to 10% via the prod profile (see services/*/config/application.yml).
+    MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+    MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
 
 services:
   mysql:
@@ -149,6 +154,25 @@ services:
       - order-service
       - restaurant-service
       - courier-service
+
+  # Zipkin stores spans in-memory so the local dev loop stays zero-config;
+  # restart to start fresh. Services POST spans to /api/v2/spans
+  # (see MANAGEMENT_ZIPKIN_TRACING_ENDPOINT above) and the Zipkin UI is
+  # available on the host at http://localhost:9411.
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: ftgo-zipkin
+    restart: unless-stopped
+    environment:
+      STORAGE_TYPE: mem
+    ports:
+      - "9411:9411"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:9411/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
 
   grafana:
     image: grafana/grafana:10.4.2

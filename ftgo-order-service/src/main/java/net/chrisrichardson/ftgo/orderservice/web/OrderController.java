@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class OrderController {
       @ApiResponse(responseCode = "404", description = "Consumer or restaurant not found")
   })
   @RequestMapping(method = RequestMethod.POST)
-  public CreateOrderResponse create(@RequestBody CreateOrderRequest request) {
+  public CreateOrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
     Order order = orderService.createOrder(request.getConsumerId(),
             request.getRestaurantId(),
             request.getLineItems().stream().map(x -> new MenuItemIdAndQuantity(x.getMenuItemId(), x.getQuantity())).collect(toList())
@@ -62,10 +63,11 @@ public class OrderController {
       @ApiResponse(responseCode = "404", description = "No order with the given ID")
   })
   @RequestMapping(path = "/{orderId}", method = RequestMethod.GET)
-  public ResponseEntity<GetOrderResponse> getOrder(
+  public GetOrderResponse getOrder(
       @Parameter(description = "Order identifier", example = "42") @PathVariable long orderId) {
-    Optional<Order> order = orderRepository.findById(orderId);
-    return order.map(o -> new ResponseEntity<>(makeGetOrderResponse(o), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    return orderRepository.findById(orderId)
+        .map(this::makeGetOrderResponse)
+        .orElseThrow(() -> new OrderNotFoundException(orderId));
   }
 
   @Operation(summary = "List orders for a consumer",
@@ -104,12 +106,11 @@ public class OrderController {
   })
   @RequestMapping(path = "/{orderId}/cancel", method = RequestMethod.POST)
   public ResponseEntity<GetOrderResponse> cancel(@PathVariable long orderId) {
-    try {
-      Order order = orderService.cancel(orderId);
-      return new ResponseEntity<>(makeGetOrderResponse(order), HttpStatus.OK);
-    } catch (OrderNotFoundException e) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    // OrderNotFoundException / UnsupportedStateTransitionException are both
+    // FtgoException subclasses — GlobalExceptionHandler maps them to 404 / 409
+    // so we no longer need per-method try/catch here (see EM-46).
+    Order order = orderService.cancel(orderId);
+    return new ResponseEntity<>(makeGetOrderResponse(order), HttpStatus.OK);
   }
 
   @Operation(summary = "Revise an order",
@@ -119,13 +120,11 @@ public class OrderController {
       @ApiResponse(responseCode = "404", description = "Order not found")
   })
   @RequestMapping(path = "/{orderId}/revise", method = RequestMethod.POST)
-  public ResponseEntity<GetOrderResponse> revise(@PathVariable long orderId, @RequestBody ReviseOrderRequest request) {
-    try {
-      Order order = orderService.reviseOrder(orderId, new OrderRevision(Optional.empty(), request.getRevisedLineItemQuantities()));
-      return new ResponseEntity<>(makeGetOrderResponse(order), HttpStatus.OK);
-    } catch (OrderNotFoundException e) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+  public ResponseEntity<GetOrderResponse> revise(@PathVariable long orderId,
+                                                 @Valid @RequestBody ReviseOrderRequest request) {
+    Order order = orderService.reviseOrder(orderId,
+        new OrderRevision(Optional.empty(), request.getRevisedLineItemQuantities()));
+    return new ResponseEntity<>(makeGetOrderResponse(order), HttpStatus.OK);
   }
 
   @Operation(summary = "Restaurant accepts an order",
@@ -135,7 +134,8 @@ public class OrderController {
       @ApiResponse(responseCode = "409", description = "Order is not in APPROVED state")
   })
   @RequestMapping(path="/{orderId}/accept", method= RequestMethod.POST)
-  public ResponseEntity<String> accept(@PathVariable long orderId, @RequestBody OrderAcceptance orderAcceptance) {
+  public ResponseEntity<String> accept(@PathVariable long orderId,
+                                       @Valid @RequestBody OrderAcceptance orderAcceptance) {
     orderService.accept(orderId, orderAcceptance.getReadyBy());
     return new ResponseEntity<>(HttpStatus.OK);
   }

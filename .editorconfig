@@ -1,0 +1,42 @@
+# FTGO .editorconfig
+# ------------------
+# Baseline formatting rules applied across every editor that supports the
+# EditorConfig convention (https://editorconfig.org). Values intentionally
+# match the Google Java Style Guide — the same settings enforced in CI via
+# Spotless + google-java-format. See CONTRIBUTING.md for details.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.{java,groovy,gradle}]
+indent_size = 2
+max_line_length = 140
+continuation_indent_size = 4
+
+[*.kt]
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.{xml,html}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+[*.sh]
+indent_size = 2
+
+[gradle/wrapper/gradle-wrapper.properties]
+insert_final_newline = false

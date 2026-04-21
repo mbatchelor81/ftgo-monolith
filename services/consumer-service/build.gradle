@@ -40,4 +40,6 @@ dependencies {
     implementation project(':libs:ftgo-openapi')
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.bundles.security.testing
+    // Shared builders, assertions, and Testcontainers helpers (EM-48).
+    testImplementation project(':libs:ftgo-test-util')
 }

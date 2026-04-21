@@ -1,5 +1,6 @@
 package com.ftgo.order.web;
 
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +48,18 @@ public class ServiceInfoController {
           content = @Content(schema = @Schema(implementation = ServiceInfoResponse.class))
       )
   })
+  // Reference wiring of Micrometer Observation's `@Observed` annotation
+  // (EM-42). The `ObservedAspect` bean registered by ftgo-logging's
+  // ObservedAspectConfiguration intercepts this call and produces a
+  // `ftgo.order.service.info` span on every request, giving a canonical
+  // example for teams adding custom spans to business operations.
+  @Observed(
+      name = "ftgo.order.service.info",
+      contextualName = "order.service-info.lookup",
+      lowCardinalityKeyValues = {"service", "order-service"}
+  )
   @GetMapping
+  @PreAuthorize("isAuthenticated()")
   public ServiceInfoResponse getServiceInfo() {
     return new ServiceInfoResponse(applicationName, apiVersion);
   }
