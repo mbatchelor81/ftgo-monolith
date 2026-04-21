@@ -63,7 +63,13 @@ jobs:
       # image has no payload to package. We skip every downstream step for
       # that matrix entry instead of failing the matrix so the workflow
       # remains green as each service gets wired up incrementally.
-      - name: Detect Spring Boot app (bootJar availability)
+      #
+      # We look strictly at whether `org.springframework.boot` is applied in
+      # the service's own `build.gradle` — not at the presence of a
+      # `@SpringBootApplication` entrypoint in `src/main`, because the
+      # scaffolds ship placeholder entrypoints while deliberately leaving
+      # the plugin unapplied.
+      - name: Detect Spring Boot plugin (bootJar availability)
         id: detect
         run: |
           set -euo pipefail
@@ -71,20 +77,14 @@ jobs:
           GRADLE_FILE="${MODULE_PATH}/build.gradle"
           HAS_BOOTJAR="false"
           if [[ -f "${GRADLE_FILE}" ]] \
-             && grep -qE "(apply plugin:\s*['\"]org\.springframework\.boot['\"]|id\s+['\"]org\.springframework\.boot['\"])" "${GRADLE_FILE}"; then
-            HAS_BOOTJAR="true"
-          fi
-          # Also detect a @SpringBootApplication entrypoint as a secondary
-          # signal in case the plugin is applied via conventions/buildSrc.
-          if [[ "${HAS_BOOTJAR}" != "true" ]] \
-             && grep -rlqE "@SpringBootApplication" "${MODULE_PATH}/src/main" 2>/dev/null; then
+             && grep -qE "(apply plugin:[[:space:]]*['\"]org\.springframework\.boot['\"]|id[[:space:]]+['\"]org\.springframework\.boot['\"])" "${GRADLE_FILE}"; then
             HAS_BOOTJAR="true"
           fi
           echo "has_bootjar=${HAS_BOOTJAR}" >> "${GITHUB_OUTPUT}"
           if [[ "${HAS_BOOTJAR}" == "true" ]]; then
-            echo "Spring Boot app detected for ${{ matrix.service }}; will build image."
+            echo "Spring Boot plugin detected for ${{ matrix.service }}; will build image."
           else
-            echo "${{ matrix.service }} is still a scaffold (no Spring Boot plugin / @SpringBootApplication). Skipping image build."
+            echo "${{ matrix.service }} is still a scaffold (no 'org.springframework.boot' plugin in build.gradle). Skipping image build."
           fi
 
       - name: Skip summary (scaffold)
