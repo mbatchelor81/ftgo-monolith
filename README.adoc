@@ -1,7 +1,49 @@
 = FTGO Monolith
 
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/consumer-service-ci.yml/badge.svg?branch=master["Consumer Service CI", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/consumer-service-ci.yml"]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/order-service-ci.yml/badge.svg?branch=master["Order Service CI", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/order-service-ci.yml"]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/restaurant-service-ci.yml/badge.svg?branch=master["Restaurant Service CI", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/restaurant-service-ci.yml"]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/courier-service-ci.yml/badge.svg?branch=master["Courier Service CI", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/courier-service-ci.yml"]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/shared-libs-ci.yml/badge.svg?branch=master["Shared Libraries CI", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/shared-libs-ci.yml"]
+image:https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/docker-build.yml/badge.svg?branch=master["Docker Build & Publish", link="https://github.com/mbatchelor81/ftgo-monolith/actions/workflows/docker-build.yml"]
+
 This is the monolithic version of the https://github.com/microservices-patterns/ftgo-application[FTGO application] from my book https://microservices.io/book[Microservices patterns].
 It's used to illustrate how to refactor a monolithic application to services.
+
+== Build Pipelines
+
+Each deployable microservice has its own independent CI pipeline in
+`.github/workflows/`. Pipelines use path-based triggers so only the
+services affected by a change are rebuilt on push or PR. JDK 17+ and Gradle
+dependency caching are wired in by the shared reusable workflow
+`gradle-build-reusable.yml`, and every pipeline consumes the convention
+plugins from `build-logic/` (see `CONVENTIONS.md` §1 and
+`docs/build-configuration.md`).
+
+[cols="1,2,3", options="header"]
+|===
+| Pipeline | Gradle project | Triggers on changes to
+
+| `consumer-service-ci.yml`
+| `:services:consumer-service`
+| `services/consumer-service/**`, `libs/**`, `build-logic/**`, version catalog
+
+| `order-service-ci.yml`
+| `:services:order-service`
+| `services/order-service/**`, `libs/**`, `build-logic/**`, version catalog
+
+| `restaurant-service-ci.yml`
+| `:services:restaurant-service`
+| `services/restaurant-service/**`, `libs/**`, `build-logic/**`, version catalog
+
+| `courier-service-ci.yml`
+| `:services:courier-service`
+| `services/courier-service/**`, `libs/**`, `build-logic/**`, version catalog
+
+| `shared-libs-ci.yml`
+| `:libs:ftgo-common`, `:libs:ftgo-common-jpa`, `:libs:ftgo-test-util`
+| `libs/**`, `build-logic/**`, version catalog
+|===
 
 ## Learn more
 

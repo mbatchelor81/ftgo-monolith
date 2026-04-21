@@ -1,0 +1,58 @@
+name: Order Service CI
+
+# Per-service Gradle build pipeline for the Order microservice.
+# Triggers only on changes that could affect the :services:order-service
+# build graph — the service itself, any shared library it depends on, the
+# version catalog, the build-logic convention plugins, or the wrapper.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'services/order-service/**'
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/order-service-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+      - feat/microservices-migration
+    paths:
+      - 'services/order-service/**'
+      - 'libs/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/order-service-ci.yml'
+      - '.github/workflows/gradle-build-reusable.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: order-service-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/gradle-build-reusable.yml
+    with:
+      module-name: order-service
+      gradle-projects: ":services:order-service"
+      gradle-tasks: "build"
