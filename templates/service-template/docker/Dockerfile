@@ -25,6 +25,9 @@ ARG SERVICE_NAME=service-template
 ARG GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
 ENV GRADLE_OPTS=${GRADLE_OPTS}
 
+# gradlew uses `#!/usr/bin/env bash`, which alpine lacks by default.
+RUN apk --no-cache add bash
+
 WORKDIR /workspace
 
 # Gradle wrapper + build metadata first so dependency resolution layers cache
