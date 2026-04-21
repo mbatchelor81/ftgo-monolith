@@ -1,4 +1,44 @@
+//
+// Root Gradle settings
+// --------------------
+// Registers every Gradle subproject in the FTGO monolith. Layered in three
+// sections that match CONVENTIONS.md §1:
+//
+//   1. Included composite build (`build-logic/`) hosting convention plugins.
+//   2. Legacy flat layout (`ftgo-*`) — source of truth during the migration.
+//   3. New microservices layout (`services/`, `libs/`, `platform/`, `templates/`).
+//
+// Consumes `gradle/libs.versions.toml` as the shared version catalog; see
+// `docs/build-configuration.md` for the full consumer guide.
+//
 
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    includeBuild 'build-logic'
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'ftgo-monolith'
+
+// ----------------------------------------------------------------------------
+// Legacy flat layout (source of truth today).
+//
+// These modules remain authoritative until the per-service migration tickets
+// (EM-28, EM-31, EM-32, …) move their contents into `services/` and `libs/`.
+// See docs/adr/0001-repository-structure.md and CONVENTIONS.md.
+// ----------------------------------------------------------------------------
 
 include "common-swagger"
 
@@ -27,4 +67,24 @@ include "ftgo-application"
 
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
+
+// ----------------------------------------------------------------------------
+// New microservices layout (scaffold).
+//
+// Each entry below corresponds to a directory under `services/`, `libs/`, or
+// `platform/`. Scaffolds are intentionally minimal so `./gradlew build`
+// keeps working; they will be filled in as migration tickets land.
+// ----------------------------------------------------------------------------
+
+// Services (one directory per bounded context)
+include 'services:consumer-service'
+include 'services:order-service'
+include 'services:restaurant-service'
+include 'services:courier-service'
+
+// Shared libraries
+include 'libs:ftgo-common'
+include 'libs:ftgo-common-jpa'
+include 'libs:ftgo-domain'
+include 'libs:ftgo-test-util'
 
