@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ftgo-staging
+namePrefix: ""
+
+resources:
+  - ../../base
+
+commonAnnotations:
+  ftgo.io/environment: staging
+
+commonLabels:
+  environment: staging
+
+images:
+  - name: ftgo/consumer-service
+    newTag: staging
+  - name: ftgo/order-service
+    newTag: staging
+  - name: ftgo/courier-service
+    newTag: staging
+  - name: ftgo/restaurant-service
+    newTag: staging
+
+replicas:
+  - name: consumer-service
+    count: 2
+  - name: order-service
+    count: 2
+  - name: courier-service
+    count: 2
+  - name: restaurant-service
+    count: 2
+
+patches:
+  - path: patches/hpa-staging.yaml
+    target:
+      kind: HorizontalPodAutoscaler
