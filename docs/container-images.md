@@ -10,11 +10,17 @@ All service images are published to **GitHub Container Registry (GHCR)**
 under the org namespace:
 
 ```
-ghcr.io/mbatchelor81/ftgo-<service>:<tag>
+ghcr.io/mbatchelor81/ftgo/<service>:<tag>
 ```
 
 where `<service>` is one of `consumer-service`, `order-service`,
 `restaurant-service`, or `courier-service`.
+
+The slash-delimited `ftgo/<service>` path matches the naming pattern
+mandated by [`CONVENTIONS.md`](../CONVENTIONS.md) (**"Pattern:
+`ftgo/<context>-service[:<tag>]`"**). GHCR supports nested package
+paths, so both the registry push and the `actions/delete-package-versions`
+cleanup job reference the package as `ftgo/<service>`.
 
 GHCR was chosen because:
 

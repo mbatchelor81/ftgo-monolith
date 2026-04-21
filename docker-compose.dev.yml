@@ -51,7 +51,7 @@ services:
       args:
         SERVICE_NAME: consumer-service
         SERVICE_VERSION: 0.0.0-dev
-    image: ftgo-consumer-service:dev
+    image: ftgo/consumer-service:dev
     ports:
       - "8082:8080"
     environment:
@@ -66,7 +66,7 @@ services:
       args:
         SERVICE_NAME: order-service
         SERVICE_VERSION: 0.0.0-dev
-    image: ftgo-order-service:dev
+    image: ftgo/order-service:dev
     ports:
       - "8083:8080"
     environment:
@@ -81,7 +81,7 @@ services:
       args:
         SERVICE_NAME: restaurant-service
         SERVICE_VERSION: 0.0.0-dev
-    image: ftgo-restaurant-service:dev
+    image: ftgo/restaurant-service:dev
     ports:
       - "8084:8080"
     environment:
@@ -96,7 +96,7 @@ services:
       args:
         SERVICE_NAME: courier-service
         SERVICE_VERSION: 0.0.0-dev
-    image: ftgo-courier-service:dev
+    image: ftgo/courier-service:dev
     ports:
       - "8085:8080"
     environment:

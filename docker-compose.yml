@@ -63,7 +63,7 @@ services:
 
   consumer-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-consumer-service:${FTGO_IMAGE_TAG:-latest}
+    image: ghcr.io/mbatchelor81/ftgo/consumer-service:${FTGO_IMAGE_TAG:-latest}
     ports:
       - "8082:8080"
     environment:
@@ -72,7 +72,7 @@ services:
 
   order-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-order-service:${FTGO_IMAGE_TAG:-latest}
+    image: ghcr.io/mbatchelor81/ftgo/order-service:${FTGO_IMAGE_TAG:-latest}
     ports:
       - "8083:8080"
     environment:
@@ -81,7 +81,7 @@ services:
 
   restaurant-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-restaurant-service:${FTGO_IMAGE_TAG:-latest}
+    image: ghcr.io/mbatchelor81/ftgo/restaurant-service:${FTGO_IMAGE_TAG:-latest}
     ports:
       - "8084:8080"
     environment:
@@ -90,7 +90,7 @@ services:
 
   courier-service:
     <<: *service-defaults
-    image: ghcr.io/mbatchelor81/ftgo-courier-service:${FTGO_IMAGE_TAG:-latest}
+    image: ghcr.io/mbatchelor81/ftgo/courier-service:${FTGO_IMAGE_TAG:-latest}
     ports:
       - "8085:8080"
     environment:
