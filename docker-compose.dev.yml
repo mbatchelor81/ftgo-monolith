@@ -1,0 +1,176 @@
+version: '3.8'
+
+# Local development compose file for the FTGO microservices.
+#
+# Builds every service image from source via its per-service Dockerfile so
+# developers can iterate without pushing to the registry. For production-like
+# smoke tests using registry images, see docker-compose.yml.
+#
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Each service listens on 8080 inside the container; host ports are offset so
+# they don't collide.
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  # The Dockerfile HEALTHCHECK probes /actuator/health on port 8080, but this
+  # compose file binds actuator to the management port 9090 via
+  # MANAGEMENT_SERVER_PORT below. When Spring Boot's management port differs
+  # from the server port, ALL /actuator endpoints move to the management
+  # port and 8080 returns 404 for them — override the healthcheck here so
+  # containers aren't flagged unhealthy and restarted by the compose runtime.
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://localhost:9090/actuator/health"]
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    start_period: 30s
+  depends_on:
+    mysql:
+      condition: service_healthy
+  environment: &service-env
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql/ftgo
+    SPRING_DATASOURCE_USERNAME: mysqluser
+    SPRING_DATASOURCE_PASSWORD: mysqlpw
+    SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
+    # Actuator + Prometheus are bound to a separate management port so
+    # metrics/health endpoints are isolated from the public service port
+    # (see services/*/config/application.yml).
+    MANAGEMENT_SERVER_PORT: "9090"
+    # Keep the image defaults intact (-XX:MaxRAMPercentage=75.0 +
+    # -Djava.security.egd=file:/dev/./urandom) so the heap scales with the
+    # container's memory limit. Override JAVA_OPTS per service if you need
+    # to tighten limits for a specific compose run.
+    JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+    SPRING_PROFILES_ACTIVE: dev
+
+services:
+  mysql:
+    build: ./mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpw
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  consumer-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/consumer-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: consumer-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-consumer-service:dev
+    ports:
+      - "8082:8080"
+      - "9092:9090"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: consumer-service
+
+  order-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/order-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: order-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-order-service:dev
+    ports:
+      - "8083:8080"
+      - "9093:9090"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: order-service
+
+  restaurant-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/restaurant-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: restaurant-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-restaurant-service:dev
+    ports:
+      - "8084:8080"
+      - "9094:9090"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: restaurant-service
+
+  courier-service:
+    <<: *service-defaults
+    build:
+      context: .
+      dockerfile: services/courier-service/docker/Dockerfile
+      args:
+        SERVICE_NAME: courier-service
+        SERVICE_VERSION: 0.0.0-dev
+    image: ftgo-courier-service:dev
+    ports:
+      - "8085:8080"
+      - "9095:9090"
+    environment:
+      <<: *service-env
+      SERVICE_NAME: courier-service
+
+  # ---------------------------------------------------------------------------
+  # Observability stack (EM-41)
+  # ---------------------------------------------------------------------------
+  # Prometheus scrapes every service's /actuator/prometheus endpoint on the
+  # internal management port 9090 (see services/*/config/application.yml).
+  # Grafana is pre-provisioned with a Prometheus data source and the FTGO
+  # services overview dashboard — no manual setup required for local dev.
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: ftgo-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=24h"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./platform/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - consumer-service
+      - order-service
+      - restaurant-service
+      - courier-service
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: ftgo-grafana
+    restart: unless-stopped
+    environment:
+      # Local-dev credentials only — the Grafana instance is bound to
+      # localhost via compose port mapping and never exposed to the public
+      # internet. Override for any shared/staging deployment.
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./platform/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./platform/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus-data:
+  grafana-data:

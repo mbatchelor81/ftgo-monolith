@@ -1,0 +1,19 @@
+# Grafana dashboard provider.
+#
+# Tells Grafana to hot-load every JSON dashboard under
+# `/etc/grafana/provisioning/dashboards/` on startup. The path is bind-mounted
+# from `platform/observability/grafana/dashboards/` in docker-compose.dev.yml.
+
+apiVersion: 1
+
+providers:
+  - name: FTGO Dashboards
+    orgId: 1
+    folder: FTGO
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true
