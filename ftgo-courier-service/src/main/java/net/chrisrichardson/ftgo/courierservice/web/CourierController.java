@@ -61,13 +61,9 @@ public class CourierController {
   @RequestMapping(path="/couriers/{courierId}", method= RequestMethod.GET)
   public Courier get(
       @Parameter(description = "Courier identifier") @PathVariable long courierId) {
-    Courier courier = courierService.findCourierById(courierId);
-    if (courier == null) {
-      // GlobalExceptionHandler maps this to 404 + FTGO-CRR-001.
-      throw new EntityNotFoundException(ErrorCode.COURIER_NOT_FOUND,
-          "Courier not found: " + courierId);
-    }
-    return courier;
+    return courierService.findCourierById(courierId)
+        .orElseThrow(() -> new EntityNotFoundException(ErrorCode.COURIER_NOT_FOUND,
+            "Courier not found: " + courierId));
   }
 
 }

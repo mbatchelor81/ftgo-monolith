@@ -186,14 +186,6 @@ public class GlobalExceptionHandler {
 
   // --- Fallback -----------------------------------------------------------
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ErrorResponse> handleIllegalArgument(
-      IllegalArgumentException ex, HttpServletRequest request) {
-    return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED,
-        ex.getMessage() == null ? ErrorCode.VALIDATION_FAILED.defaultMessage() : ex.getMessage(),
-        request);
-  }
-
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
     logger.error("Unhandled exception at {}: {}",

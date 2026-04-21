@@ -26,24 +26,7 @@ dependencies {
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
 
-    // EM-46: shared error-handling module.
-    //
-    // Bean Validation annotations (`@NotNull`, `@NotBlank`, `@Pattern`, …) are
-    // used by request DTOs, so the Jakarta Bean Validation API is published
-    // on the `api` configuration. The validator itself (`hibernate-validator`)
-    // comes in transitively from spring-boot-starter-web on services that
-    // actually run.
-    api libs.spring.boot.starter.validation
-
-    // Spring MVC + Servlet APIs are only needed to compile
-    // `errors.GlobalExceptionHandler`. Kept `compileOnly` so pure data
-    // modules that depend on ftgo-common do not pull in the whole servlet
-    // stack — services that register the handler already have
-    // spring-boot-starter-web on their runtime classpath.
-    compileOnly libs.spring.boot.starter.web
-
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testImplementation libs.spring.boot.starter.web
 
     runtimeOnly "javax.xml.bind:jaxb-api:2.2.11"
     runtimeOnly "com.sun.xml.bind:jaxb-core:2.2.11"
