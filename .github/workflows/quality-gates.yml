@@ -74,8 +74,7 @@ jobs:
             ${{ matrix.module }}:checkstyleTest \
             ${{ matrix.module }}:pmdMain \
             ${{ matrix.module }}:pmdTest \
-            ${{ matrix.module }}:spotbugsMain \
-            ${{ matrix.module }}:spotbugsTest
+            ${{ matrix.module }}:spotbugsMain
 
       - name: Upload static-analysis reports
         if: always()

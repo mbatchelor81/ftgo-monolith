@@ -88,11 +88,17 @@ of `./gradlew check`:
 
 | Tool         | Config file                              | Fails build on |
 |--------------|------------------------------------------|----------------|
-| Checkstyle   | `config/checkstyle/checkstyle.xml`       | Any violation  |
-| PMD          | `config/pmd/pmd-ruleset.xml`             | Any violation  |
-| SpotBugs     | `config/spotbugs/spotbugs-exclude.xml`   | Any violation  |
-| Spotless     | `.editorconfig` + Google Java Format     | Unformatted    |
+| Checkstyle   | `config/checkstyle/checkstyle.xml`       | Any violation (main + test) |
+| PMD          | `config/pmd/pmd-ruleset.xml`             | Any violation (main + test) |
+| SpotBugs     | `config/spotbugs/spotbugs-exclude.xml`   | Any violation on `spotbugsMain`; `spotbugsTest` is disabled |
+| Spotless     | `.editorconfig` + Google Java Format     | Unformatted (opt-in: `-Pftgo.spotless.enforce=true`) |
 | JaCoCo       | `jacocoTestCoverageVerification`         | Coverage < 70% |
+
+Spotless is **not** bound to `check` by default — run `./gradlew spotlessCheck`
+or `./gradlew check -Pftgo.spotless.enforce=true` to enforce formatting
+locally. SpotBugs on test bytecode (`spotbugsTest`) is disabled in
+`ftgo.quality-conventions` because the `<Source>` filter only matches bare
+filenames and produces high-false-positive results for tests.
 
 Local commands:
 
