@@ -1,7 +1,22 @@
-// Placeholder build for the future shared `ftgo-common-jpa` library.
-// The live implementation currently lives in `/ftgo-common-jpa` at the repo
-// root and will be migrated here as part of EM-31.
+//
+// libs/ftgo-common-jpa
+// --------------------
+// Shared JPA helpers layered on top of `libs/ftgo-common`. Exposes
+// spring-boot-starter-data-jpa as an `api` dependency so downstream
+// services see the same JPA types without re-declaring the starter.
+//
+// Migration tracked in EM-31.
+//
 
-apply plugin: 'io.spring.dependency-management'
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
 
-description = 'FTGO shared JPA helpers - scaffold; migration tracked in EM-31'
+description = 'FTGO shared JPA helpers'
+
+dependencies {
+    api project(':libs:ftgo-common')
+    api libs.spring.boot.starter.data.jpa
+}

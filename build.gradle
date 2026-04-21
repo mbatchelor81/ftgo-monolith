@@ -1,43 +1,65 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-        classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementPluginVersion"
-    }
-
-    apply plugin: WaitForMySqlPlugin
-}
+//
+// Root build script
+// -----------------
+// Cross-cutting project configuration for every FTGO Gradle module.
+//
+// What lives here:
+//   * Root-only plugins (`ben-manes-versions`, `WaitForMySqlPlugin`).
+//   * `allprojects` version coordinate — individual modules override `group`
+//     via `ftgo.java-conventions` (`com.ftgo`); legacy modules continue to
+//     publish under `net.chrisrichardson.ftgo` until migrated.
+//
+// What does NOT live here:
+//   * Java toolchain / compiler flags          → ftgo.java-conventions
+//   * Spring Boot plugin + BOM                  → ftgo.spring-boot-conventions
+//   * Test framework wiring                     → ftgo.testing-conventions
+//   * Container image builds (Jib)              → ftgo.docker-conventions
+//   * Maven-publish configuration               → ftgo.publishing-conventions
+//
+// New services MUST apply the appropriate `ftgo.*` convention plugins from
+// `build-logic/` rather than add their own subproject-level configuration.
+// See docs/build-configuration.md for the full guide.
+//
 
 plugins {
-    id "com.github.ben-manes.versions" version "0.20.0"
+    alias(libs.plugins.ben.manes.versions)
 }
 
+apply plugin: WaitForMySqlPlugin
+
+allprojects {
+    version = '0.1.0-SNAPSHOT'
+}
 
 subprojects {
-
-    apply plugin: "java"
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
-
-    group = "net.chrisrichardson.ftgo"
-
     repositories {
         mavenCentral()
-        jcenter()
-
-        // Commenting out problematic repositories that require authentication or are no longer available
-        // eventuateMavenRepoUrl.split(',').each { repoUrl -> maven { url repoUrl } }
-
-        // maven {
-        //     url 'https://repo.spring.io/libs-milestone'
-        // }
-
         maven {
-            url "${project.rootDir}/build/repo"
+            url = "${project.rootDir}/build/repo"
         }
+    }
+}
 
+// ----------------------------------------------------------------------------
+// Legacy compatibility shim.
+//
+// The pre-migration `ftgo-*` modules used `compile` / `testCompile` and
+// relied on a root-level `subprojects { apply plugin: 'java' }` block. That
+// block was removed in favor of per-module convention plugins — legacy
+// modules get the equivalent via this filtered block so they continue to
+// parse under Gradle 8 while their contents are migrated module-by-module
+// into `services/` and `libs/`.
+//
+// New services MUST NOT rely on this block; they apply `ftgo.java-conventions`
+// (and friends) from `build-logic/` directly.
+// ----------------------------------------------------------------------------
+configure(subprojects.findAll { it.name.startsWith('ftgo-') || it.name == 'common-swagger' }) {
+    apply plugin: 'java-library'
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
+    group = 'net.chrisrichardson.ftgo'
 }

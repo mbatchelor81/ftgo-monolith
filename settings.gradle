@@ -1,3 +1,36 @@
+//
+// Root Gradle settings
+// --------------------
+// Registers every Gradle subproject in the FTGO monolith. Layered in three
+// sections that match CONVENTIONS.md §1:
+//
+//   1. Included composite build (`build-logic/`) hosting convention plugins.
+//   2. Legacy flat layout (`ftgo-*`) — source of truth during the migration.
+//   3. New microservices layout (`services/`, `libs/`, `platform/`, `templates/`).
+//
+// Consumes `gradle/libs.versions.toml` as the shared version catalog; see
+// `docs/build-configuration.md` for the full consumer guide.
+//
+
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    includeBuild 'build-logic'
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'ftgo-monolith'
 
 // ----------------------------------------------------------------------------
 // Legacy flat layout (source of truth today).

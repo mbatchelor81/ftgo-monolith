@@ -1,7 +1,22 @@
-// Placeholder build for the future shared `ftgo-common` library.
-// The live implementation currently lives in `/ftgo-common` at the repo root
-// and will be migrated here as part of EM-32.
+//
+// libs/ftgo-common
+// ----------------
+// Shared FTGO value objects (Money, PersonName, Address, …). Consumed by
+// every service and so must stay strictly Spring-agnostic at the public
+// API level — do NOT add a Spring Boot starter here.
+//
+// Migration tracked in EM-32; until then the live implementation still
+// lives at `/ftgo-common` and this directory is scaffolding only.
+//
 
-apply plugin: 'io.spring.dependency-management'
+plugins {
+    id 'ftgo.java-conventions'
+    id 'ftgo.testing-conventions'
+    id 'ftgo.publishing-conventions'
+}
 
-description = 'FTGO shared value objects - scaffold; migration tracked in EM-32'
+description = 'FTGO shared value objects (Money, PersonName, Address)'
+
+dependencies {
+    api libs.bundles.jackson
+}
