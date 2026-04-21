@@ -65,7 +65,6 @@ spring-boot-starter-validation       = { module = "org.springframework.boot:spri
 spring-boot-starter-security         = { module = "org.springframework.boot:spring-boot-starter-security",         version.ref = "spring-boot" }
 spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "spring-boot" }
 spring-boot-starter-test             = { module = "org.springframework.boot:spring-boot-starter-test",             version.ref = "spring-boot" }
-spring-boot-starter-security         = { module = "org.springframework.boot:spring-boot-starter-security",         version.ref = "spring-boot" }
 spring-security-test                 = { module = "org.springframework.security:spring-security-test",             version.ref = "spring-security" }
 
 # --- Spring Cloud --------------------------------------------------------
@@ -200,6 +199,8 @@ resilience4j = [
   "resilience4j-timelimiter",
   "resilience4j-reactor",
   "resilience4j-micrometer",
+]
+
 [plugins]
 spring-boot                = { id = "org.springframework.boot",          version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

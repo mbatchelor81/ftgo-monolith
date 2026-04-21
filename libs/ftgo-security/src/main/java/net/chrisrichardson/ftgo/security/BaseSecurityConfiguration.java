@@ -1,5 +1,7 @@
 package net.chrisrichardson.ftgo.security;
 
+import net.chrisrichardson.ftgo.security.jwt.FtgoJwtAuthenticationConverter;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +11,9 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -68,7 +72,9 @@ public class BaseSecurityConfiguration {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
                                                       CorsConfigurationSource corsConfigurationSource,
                                                       AuthenticationEntryPoint authenticationEntryPoint,
-                                                      AccessDeniedHandler accessDeniedHandler) throws Exception {
+                                                      AccessDeniedHandler accessDeniedHandler,
+                                                      ObjectProvider<JwtDecoder> jwtDecoderProvider,
+                                                      ObjectProvider<FtgoJwtAuthenticationConverter> jwtAuthenticationConverterProvider) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().authenticated()
@@ -82,7 +88,41 @@ public class BaseSecurityConfiguration {
                 .accessDeniedHandler(accessDeniedHandler)
             );
 
+        configureJwt(http, jwtDecoderProvider, jwtAuthenticationConverterProvider,
+                authenticationEntryPoint, accessDeniedHandler);
+
         return http.build();
+    }
+
+    /**
+     * Enables OAuth2 Resource Server JWT support when a {@link JwtDecoder}
+     * is available in the application context (see {@code JwtAuthenticationConfiguration}).
+     *
+     * <p>Extracted as a static helper so per-service overrides (e.g.
+     * {@code OrderServiceSecurityConfiguration}) can reuse the exact same
+     * wiring without copy-pasting the configurer chain.
+     */
+    public static void configureJwt(HttpSecurity http,
+                                    ObjectProvider<JwtDecoder> jwtDecoderProvider,
+                                    ObjectProvider<FtgoJwtAuthenticationConverter> jwtAuthenticationConverterProvider,
+                                    AuthenticationEntryPoint authenticationEntryPoint,
+                                    AccessDeniedHandler accessDeniedHandler) throws Exception {
+        JwtDecoder decoder = jwtDecoderProvider.getIfAvailable();
+        if (decoder == null) {
+            return;
+        }
+
+        FtgoJwtAuthenticationConverter converter = jwtAuthenticationConverterProvider
+                .getIfAvailable(FtgoJwtAuthenticationConverter::new);
+
+        http.oauth2ResourceServer((OAuth2ResourceServerConfigurer<HttpSecurity> oauth2) -> oauth2
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+                .jwt(jwt -> jwt
+                        .decoder(decoder)
+                        .jwtAuthenticationConverter(converter)
+                )
+        );
     }
 
     /**
