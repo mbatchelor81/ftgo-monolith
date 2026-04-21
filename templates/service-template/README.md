@@ -40,8 +40,11 @@ services/<name>-service/
 1. Copy `templates/service-template/` → `services/<name>-service/`.
 2. Rename the package `com.ftgo.example` → `com.ftgo.<context>` under both
    `src/main/java` and `src/test/java`.
-3. Replace `example-service` / `example` in `build.gradle`, `Dockerfile`,
-   `k8s/*.yaml`, and `config/application.yml`.
+3. Replace every occurrence of `example`, `Example`, and `example-service`
+   across the copied tree. In particular, rename
+   `ExampleServiceApplication.java` (and `ExampleServiceApplicationTest.java`)
+   to `<Context>ServiceApplication.java`, and update `build.gradle`,
+   `Dockerfile`, `k8s/*.yaml`, and `config/application.yml`.
 4. Register the module in the root `settings.gradle`
    (`include 'services:<name>-service'`).
 5. Add the service's schema migrations under

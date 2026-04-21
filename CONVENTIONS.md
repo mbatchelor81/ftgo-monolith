@@ -121,8 +121,7 @@ com.ftgo.<context>[.<layer>]
 
 ### Class names (Java)
 
-Follow the [user-provided Java best-practices](../CONVENTIONS.md#java-coding-best-practices)
-style:
+Standard Java naming, summarized:
 
 | Element   | Style                  | Example                                   |
 |-----------|------------------------|-------------------------------------------|

@@ -8,9 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * this template into a new service under {@code services/<name>-service/}.
  */
 @SpringBootApplication
-public class ServiceApplication {
+public class ExampleServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ServiceApplication.class, args);
+        SpringApplication.run(ExampleServiceApplication.class, args);
     }
 }

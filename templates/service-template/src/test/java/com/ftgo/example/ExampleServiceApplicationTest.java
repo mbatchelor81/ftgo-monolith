@@ -5,7 +5,7 @@ import org.junit.Test;
 /**
  * Template smoke test. Replace with real tests when implementing the service.
  */
-public class ServiceApplicationTest {
+public class ExampleServiceApplicationTest {
 
     @Test
     public void placeholder() {
