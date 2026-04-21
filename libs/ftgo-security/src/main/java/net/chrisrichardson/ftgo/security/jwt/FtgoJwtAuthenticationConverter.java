@@ -37,17 +37,14 @@ public class FtgoJwtAuthenticationConverter implements Converter<Jwt, AbstractAu
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
+        // NOTE: we deliberately do NOT call token.setDetails(principal). Spring
+        // Security's JwtAuthenticationProvider.authenticate() unconditionally
+        // overwrites details with WebAuthenticationDetails after the converter
+        // returns. Consumers must retrieve the principal via
+        // SecurityUtils.getCurrentPrincipal(), which rebuilds it from the
+        // decoded Jwt using FtgoJwtPrincipal.fromJwt(...).
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
-        FtgoJwtPrincipal principal = new FtgoJwtPrincipal(
-                jwt.getClaimAsString(JwtClaimNames.USER_ID),
-                resolveUsername(jwt),
-                extractClaimAsSet(jwt, JwtClaimNames.ROLES),
-                extractClaimAsSet(jwt, JwtClaimNames.PERMISSIONS)
-        );
-
-        JwtAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principal.username());
-        token.setDetails(principal);
-        return token;
+        return new JwtAuthenticationToken(jwt, authorities, resolveUsername(jwt));
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {

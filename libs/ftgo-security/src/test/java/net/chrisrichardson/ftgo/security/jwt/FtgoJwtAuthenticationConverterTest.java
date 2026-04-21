@@ -29,7 +29,10 @@ class FtgoJwtAuthenticationConverterTest {
         assertThat(authorities).containsExactlyInAnyOrder(
                 "ROLE_CONSUMER", "ROLE_ADMIN", "PERM_order:read", "PERM_order:write");
 
-        FtgoJwtPrincipal principal = (FtgoJwtPrincipal) auth.getDetails();
+        // Principal is not stored on the token (JwtAuthenticationProvider would
+        // overwrite Authentication.getDetails); it is rebuilt from the JWT by
+        // SecurityUtils.getCurrentPrincipal() at call time.
+        FtgoJwtPrincipal principal = FtgoJwtPrincipal.fromJwt(jwt);
         assertThat(principal.userId()).isEqualTo("user-42");
         assertThat(principal.username()).isEqualTo("alice");
         assertThat(principal.roles()).containsExactlyInAnyOrder("CONSUMER", "ADMIN");
@@ -71,8 +74,7 @@ class FtgoJwtAuthenticationConverterTest {
         AbstractAuthenticationToken auth = converter.convert(jwt);
 
         assertThat(auth.getName()).isEqualTo("user-42");
-        FtgoJwtPrincipal principal = (FtgoJwtPrincipal) auth.getDetails();
-        assertThat(principal.username()).isEqualTo("user-42");
+        assertThat(FtgoJwtPrincipal.fromJwt(jwt).username()).isEqualTo("user-42");
     }
 
     private static Jwt accessToken(String userId, String username,

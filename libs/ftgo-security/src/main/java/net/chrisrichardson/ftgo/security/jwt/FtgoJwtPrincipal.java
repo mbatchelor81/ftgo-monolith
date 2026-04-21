@@ -1,13 +1,20 @@
 package net.chrisrichardson.ftgo.security.jwt;
 
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Immutable projection of the FTGO-specific claims carried by an access token.
  *
- * <p>Set as the {@code Authentication.principal} by
- * {@link FtgoJwtAuthenticationConverter}, allowing downstream services to
- * read the caller's identity without re-parsing raw claims:
+ * <p>Exposed to application code via {@code SecurityUtils.getCurrentPrincipal()},
+ * which constructs the principal on demand from the current request's decoded
+ * {@link Jwt}. The principal is <em>not</em> attached via
+ * {@code Authentication.getDetails()} because Spring Security's
+ * {@code JwtAuthenticationProvider} unconditionally overwrites that slot with
+ * its own {@code WebAuthenticationDetails}.
  *
  * <pre>{@code
  * FtgoJwtPrincipal principal = SecurityUtils.getCurrentPrincipal().orElseThrow();
@@ -26,6 +33,32 @@ public record FtgoJwtPrincipal(
     public FtgoJwtPrincipal {
         roles = roles == null ? Set.of() : Set.copyOf(roles);
         permissions = permissions == null ? Set.of() : Set.copyOf(permissions);
+    }
+
+    /**
+     * Builds a principal from a decoded access-token {@link Jwt}, reading the
+     * {@code user_id}, {@code username} (falling back to {@code sub}),
+     * {@code roles}, and {@code permissions} claims. Called by
+     * {@code SecurityUtils.getCurrentPrincipal()} and by
+     * {@link FtgoJwtAuthenticationConverter} so both paths share one
+     * canonical claim-extraction implementation.
+     */
+    public static FtgoJwtPrincipal fromJwt(Jwt jwt) {
+        return new FtgoJwtPrincipal(
+                jwt.getClaimAsString(JwtClaimNames.USER_ID),
+                resolveUsername(jwt),
+                toSet(jwt.getClaimAsStringList(JwtClaimNames.ROLES)),
+                toSet(jwt.getClaimAsStringList(JwtClaimNames.PERMISSIONS))
+        );
+    }
+
+    private static String resolveUsername(Jwt jwt) {
+        String username = jwt.getClaimAsString(JwtClaimNames.USERNAME);
+        return username != null ? username : jwt.getSubject();
+    }
+
+    private static Set<String> toSet(List<String> values) {
+        return values == null ? Set.of() : new LinkedHashSet<>(values);
     }
 
     /** Convenience: does the principal carry the given role? */

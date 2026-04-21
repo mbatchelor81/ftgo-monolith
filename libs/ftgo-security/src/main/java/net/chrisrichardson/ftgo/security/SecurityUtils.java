@@ -96,17 +96,17 @@ public final class SecurityUtils {
     }
 
     /**
-     * Returns the {@link FtgoJwtPrincipal} attached to the current request
-     * by {@link FtgoJwtAuthenticationConverter}, or {@link Optional#empty()}
-     * when the request is not authenticated via JWT.
+     * Returns a {@link FtgoJwtPrincipal} projected from the JWT that
+     * authenticated the current request, or {@link Optional#empty()} when the
+     * request is not authenticated via JWT (e.g. HTTP Basic, anonymous).
+     *
+     * <p>The principal is rebuilt from the decoded token on each call rather
+     * than pulled from {@code Authentication.getDetails()} because Spring
+     * Security's {@code JwtAuthenticationProvider} overwrites the details
+     * slot with {@code WebAuthenticationDetails} after the converter runs.
      */
     public static Optional<FtgoJwtPrincipal> getCurrentPrincipal() {
-        return currentAuthentication()
-                .filter(JwtAuthenticationToken.class::isInstance)
-                .map(JwtAuthenticationToken.class::cast)
-                .map(Authentication::getDetails)
-                .filter(FtgoJwtPrincipal.class::isInstance)
-                .map(FtgoJwtPrincipal.class::cast);
+        return currentJwt().map(FtgoJwtPrincipal::fromJwt);
     }
 
     private static Optional<Jwt> currentJwt() {
