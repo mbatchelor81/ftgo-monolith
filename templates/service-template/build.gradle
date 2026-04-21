@@ -6,9 +6,10 @@
 // service-specific dependencies.
 //
 // Every deployable service applies the same convention plugin stack:
-//   * ftgo.spring-boot-conventions → Java 17 + Spring Boot 3 + BOM
-//   * ftgo.testing-conventions     → JUnit 5 + Rest-Assured + Mockito
-//   * ftgo.docker-conventions      → Jib container image build
+//   * ftgo.spring-boot-conventions   → Java 17 + Spring Boot 3 + BOM
+//   * ftgo.observability-conventions → Actuator + Micrometer + Prometheus
+//   * ftgo.testing-conventions       → JUnit 5 + Rest-Assured + Mockito
+//   * ftgo.docker-conventions        → Jib container image build
 //
 // Keeping this file under 30 non-comment lines is an intentional forcing
 // function — if a service needs more, either roll the common bits back
@@ -17,6 +18,7 @@
 
 plugins {
     id 'ftgo.spring-boot-conventions'
+    id 'ftgo.observability-conventions'
     id 'ftgo.testing-conventions'
     id 'ftgo.docker-conventions'
 }
