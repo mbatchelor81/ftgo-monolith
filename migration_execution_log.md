@@ -10,10 +10,10 @@
 | Batch | Jira Key | Summary | Phase | Child Session ID | Session Status | PR Link | Squash Status | Conflicts Resolved |
 |-------|----------|---------|-------|-----------------|----------------|---------|---------------|-------------------|
 | 1 | EM-30 | Define Microservices Repository Structure and Naming Conventions | Phase 1 | 220740eace3444b38f2015e256c17e7a | completed | [PR #80](https://github.com/mbatchelor81/ftgo-monolith/pull/80) | ✅ squashed | none |
-| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | — | — | — | — | — |
-| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | — | — | — | — | — |
-| 2 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | — | — | — | — | — |
-| 2 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | — | — | — | — | — |
+| 2 | EM-28 | Create Shared Parent Gradle Configuration for Microservices | Phase 1 | a020bf047e9a45579c4a94432e66a102 | completed | [PR #84](https://github.com/mbatchelor81/ftgo-monolith/pull/84) | ✅ squashed | none |
+| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | 8b6460b4c63d45129484d1f1debb44bb | completed | [PR #81](https://github.com/mbatchelor81/ftgo-monolith/pull/81) | ✅ squashed | libs/ftgo-common/build.gradle (combined EM-28 plugins + EM-32 deps) |
+| 2 | EM-34 | Set Up Container Registry and Docker Image Build Automation | Phase 2 | 88c3550017a948078e17e83ab86573ed | completed | [PR #82](https://github.com/mbatchelor81/ftgo-monolith/pull/82) | ✅ squashed | none |
+| 2 | EM-35 | Configure Kubernetes Deployment Automation and Environment Promotion | Phase 2 | 28a881fa46e048e88e5f6aff3d2c108a | completed | [PR #83](https://github.com/mbatchelor81/ftgo-monolith/pull/83) | ✅ squashed | none |
 | 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain as Versioned Shared Libraries | Phase 1 | — | — | — | — | — |
 | 3 | EM-33 | Set Up Automated Gradle Build Pipeline with GitHub Actions | Phase 2 | — | — | — | — | — |
 | 3 | EM-38 | Configure API Gateway with Security, Routing, and Rate Limiting | Phase 3 | — | — | — | — | — |
