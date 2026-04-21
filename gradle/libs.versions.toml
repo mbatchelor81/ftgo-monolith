@@ -32,6 +32,9 @@ flyway = "10.10.0"
 mysql = "8.3.0"
 postgresql = "42.7.3"
 
+# API documentation
+springdoc = "2.5.0"
+
 # Serialization
 jackson = "2.17.0"
 
@@ -63,6 +66,12 @@ flyway-core                          = { module = "org.flywaydb:flyway-core",   
 flyway-mysql                         = { module = "org.flywaydb:flyway-mysql",                                     version.ref = "flyway" }
 mysql-connector                      = { module = "com.mysql:mysql-connector-j",                                   version.ref = "mysql" }
 postgresql                           = { module = "org.postgresql:postgresql",                                     version.ref = "postgresql" }
+
+# --- API documentation (OpenAPI 3.0 / SpringDoc) --------------------------
+# SpringDoc replaces the deprecated Springfox Swagger 2.x toolchain.
+# `starter-webmvc-ui` bundles the OpenAPI 3 spec generator plus Swagger UI,
+# exposed by default at `/v3/api-docs` and `/swagger-ui.html`.
+springdoc-openapi-starter-webmvc-ui  = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui",             version.ref = "springdoc" }
 
 # --- Serialization --------------------------------------------------------
 jackson-core                         = { module = "com.fasterxml.jackson.core:jackson-core",                       version.ref = "jackson" }

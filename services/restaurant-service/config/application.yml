@@ -33,6 +33,18 @@ management:
       application: restaurant-service
       bounded-context: restaurant
 
+ftgo:
+  openapi:
+    title: "FTGO Restaurant Service API"
+    description: >
+      Manages restaurant registration, menu catalog, and menu revisions.
+      See the FTGO REST API standards for shared conventions.
+    version: "1.0.0"
+    contact:
+      name: "FTGO Restaurant Team"
+      email: "restaurant-team@ftgo.example.com"
+      url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/restaurant-service"
+
 logging:
   level:
     root: INFO

@@ -58,8 +58,7 @@ subprojects {
 // paths have the same last segment but live under `:libs` / `:services` and
 // must use the Java 17 convention plugins instead.
 configure(subprojects.findAll {
-    it.parent == rootProject &&
-        (it.name.startsWith('ftgo-') || it.name == 'common-swagger')
+    it.parent == rootProject && it.name.startsWith('ftgo-')
 }) {
     apply plugin: 'java-library'
 

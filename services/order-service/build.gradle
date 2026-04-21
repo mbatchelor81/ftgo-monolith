@@ -19,5 +19,8 @@ dependencies {
     implementation libs.bundles.spring.boot.web
     implementation libs.bundles.spring.boot.data.jpa
 
+    // Shared SpringDoc OpenAPI 3 configuration (EM-45).
+    implementation project(':libs:ftgo-openapi')
+
     testImplementation libs.spring.boot.starter.test
 }

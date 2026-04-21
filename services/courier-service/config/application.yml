@@ -37,3 +37,20 @@ logging:
   level:
     root: INFO
     com.ftgo.courier: INFO
+
+# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
+ftgo:
+  openapi:
+    title: "FTGO Courier Service API"
+    description: >
+      Manages courier registration, availability updates, and delivery plan
+      lookups. See the FTGO REST API standards for shared conventions.
+    version: "1.0.0"
+    contact:
+      name: "FTGO Courier Team"
+      email: "courier-team@ftgo.example.com"
+      url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/courier-service"
+
+# SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
+# at /v3/api-docs by default — no extra configuration needed here.

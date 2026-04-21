@@ -1,5 +1,10 @@
 package net.chrisrichardson.ftgo.courierservice.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import net.chrisrichardson.ftgo.courierservice.api.CourierAvailability;
 import net.chrisrichardson.ftgo.courierservice.api.CreateCourierRequest;
 import net.chrisrichardson.ftgo.courierservice.api.CreateCourierResponse;
@@ -10,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Tag(name = "Couriers", description = "Register couriers, update availability, and inspect delivery plans.")
 public class CourierController {
 
   private CourierService courierService;
@@ -18,20 +24,39 @@ public class CourierController {
     this.courierService = courierService;
   }
 
+  @Operation(summary = "Register a new courier")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Courier created"),
+      @ApiResponse(responseCode = "400", description = "Request validation failed")
+  })
   @RequestMapping(path="/couriers", method= RequestMethod.POST)
   public ResponseEntity<CreateCourierResponse> create(@RequestBody CreateCourierRequest request) {
     Courier courier = courierService.createCourier(request.getName(), request.getAddress());
     return new ResponseEntity<>(new CreateCourierResponse(courier.getId()), HttpStatus.OK);
   }
 
+  @Operation(summary = "Update courier availability",
+      description = "Marks a courier as available or unavailable for new deliveries.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Availability updated"),
+      @ApiResponse(responseCode = "404", description = "Courier not found")
+  })
   @RequestMapping(path="/couriers/{courierId}/availability", method= RequestMethod.POST)
-  public ResponseEntity<String> updateCourierLocation(@PathVariable long courierId, @RequestBody CourierAvailability availability) {
+  public ResponseEntity<String> updateCourierLocation(
+      @Parameter(description = "Courier identifier") @PathVariable long courierId,
+      @RequestBody CourierAvailability availability) {
     courierService.updateAvailability(courierId, availability.isAvailable());
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
+  @Operation(summary = "Get a courier by ID")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Courier found"),
+      @ApiResponse(responseCode = "404", description = "No courier with the given ID")
+  })
   @RequestMapping(path="/couriers/{courierId}", method= RequestMethod.GET)
-  public ResponseEntity<Courier> get(@PathVariable long courierId) {
+  public ResponseEntity<Courier> get(
+      @Parameter(description = "Courier identifier") @PathVariable long courierId) {
     Courier courier = courierService.findCourierById(courierId);
     return new ResponseEntity<>(courier, HttpStatus.OK);
   }

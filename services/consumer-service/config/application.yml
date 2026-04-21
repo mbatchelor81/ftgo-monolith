@@ -37,3 +37,21 @@ logging:
   level:
     root: INFO
     com.ftgo.consumer: INFO
+
+# OpenAPI 3.0 metadata consumed by the shared `libs:ftgo-openapi` library.
+# Keys are bound to `OpenApiProperties` (prefix `ftgo.openapi`).
+ftgo:
+  openapi:
+    title: "FTGO Consumer Service API"
+    description: >
+      Manages consumer registration, profile lookup, and per-consumer order
+      validation rules. See the FTGO REST API standards for shared
+      conventions (URL naming, status codes, pagination, dates).
+    version: "1.0.0"
+    contact:
+      name: "FTGO Consumer Team"
+      email: "consumer-team@ftgo.example.com"
+      url: "https://github.com/mbatchelor81/ftgo-monolith/tree/master/services/consumer-service"
+
+# SpringDoc Swagger UI is served at /swagger-ui.html and the OpenAPI JSON
+# at /v3/api-docs by default — no extra configuration needed here.
