@@ -91,4 +91,5 @@ include 'libs:ftgo-common-jpa'
 include 'libs:ftgo-domain'
 include 'libs:ftgo-test-util'
 include 'libs:ftgo-logging'
+include 'libs:ftgo-security'
 

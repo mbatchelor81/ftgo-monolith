@@ -23,6 +23,8 @@ plugins {
 description = 'FTGO Consumer microservice'
 
 dependencies {
+    implementation project(':libs:ftgo-security')
+
     implementation libs.bundles.spring.boot.web
     implementation libs.bundles.spring.boot.data.jpa
 
@@ -30,4 +32,5 @@ dependencies {
     implementation project(':libs:ftgo-logging')
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.bundles.security.testing
 }
