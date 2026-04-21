@@ -24,7 +24,9 @@ dependencies {
 
     // Structured JSON logging + correlation-ID propagation (EM-43).
     implementation project(':libs:ftgo-logging')
-
+    // EM-44: resilience (circuit breakers, retries, bulkheads), K8s-native
+    // service discovery helpers, and shared health indicators.
+    implementation project(':libs:ftgo-resilience')
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.bundles.security.testing
 }

@@ -13,15 +13,29 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  # Resilience4j is bundled by the ftgo-resilience library; Spring Cloud
+  # Circuit Breaker / LoadBalancer auto-configuration is disabled so the
+  # service never reaches for Eureka or Consul — service discovery is
+  # pure Kubernetes DNS (see `ftgo.services.*` below).
+  cloud:
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
 
 server:
   port: 8080
+  # Spring Boot stops accepting new requests then drains in-flight ones;
+  # the K8s preStop hook + terminationGracePeriodSeconds complete the
+  # graceful-shutdown contract so rolling deploys never drop a request.
   shutdown: graceful
 
 # Actuator is bound to a separate management port (9090) so the
 # Prometheus / health surface area is NEVER reachable from the public
 # service port. See platform/observability/README.md for the network-level
 # hardening checklist.
+spring.lifecycle:
+  timeout-per-shutdown-phase: 25s
 management:
   server:
     port: ${MANAGEMENT_SERVER_PORT:9090}
@@ -29,7 +43,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,metrics,circuitbreakers,retries,bulkheads
   endpoint:
     health:
       probes:
@@ -39,6 +53,16 @@ management:
     metrics:
       export:
         enabled: true
+      show-components: always
+      group:
+        readiness:
+          include: readinessState,db,diskSpace,dependentServices
+        liveness:
+          include: livenessState
+  health:
+    diskspace:
+      enabled: true
+    db:
   metrics:
     tags:
       application: restaurant-service
@@ -53,7 +77,75 @@ management:
       slo:
         http.server.requests: 100ms, 250ms, 500ms, 1s, 2s
 
+# Resilience4j defaults mirror the rest of the fleet so operators can
+# reason about a single, uniform behavior. Restaurant-service has no
+# runtime dependencies on peers today, so only the `default` instance is
+# pre-declared — future downstream calls inherit via `baseConfig`.
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException$InternalServerError
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+    instances:
+      default:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 200ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        exponentialMaxWaitDuration: 5s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+    instances:
+      default:
+        baseConfig: default
+  bulkhead:
+    configs:
+      default:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 100ms
+    instances:
+      default:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+        cancelRunningFuture: true
+    instances:
+      default:
+        baseConfig: default
+
+# Restaurant-service does not currently call any peers, so no
+# `ftgo.services.*` entries are declared. `dependent-services` is empty
+# so the readiness probe rolls up only the built-in DB / disk checks.
+ftgo:
+  resilience:
+    default-instance-name: default
+    dependent-services: []
+
 logging:
   level:
     root: INFO
     com.ftgo.restaurant: INFO
+    net.chrisrichardson.ftgo.resilience: INFO
+    io.github.resilience4j: INFO
