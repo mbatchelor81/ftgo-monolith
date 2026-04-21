@@ -7,6 +7,8 @@ import net.chrisrichardson.ftgo.domain.Courier;
 import net.chrisrichardson.ftgo.domain.CourierRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 public class CourierService {
 
   private CourierRepository courierRepository;
@@ -38,8 +40,8 @@ public class CourierService {
     courierRepository.findById(courierId).get().noteUnavailable();
   }
 
-  public Courier findCourierById(long courierId) {
-    return courierRepository.findById(courierId).get();
+  public Optional<Courier> findCourierById(long courierId) {
+    return courierRepository.findById(courierId);
   }
 
 }

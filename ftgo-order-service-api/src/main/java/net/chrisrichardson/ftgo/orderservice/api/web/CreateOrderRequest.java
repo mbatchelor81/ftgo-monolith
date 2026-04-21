@@ -1,11 +1,25 @@
 package net.chrisrichardson.ftgo.orderservice.api.web;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 public class CreateOrderRequest {
 
+  @Positive(message = "restaurantId must be positive")
   private long restaurantId;
+
+  @Positive(message = "consumerId must be positive")
   private long consumerId;
+
+  @NotNull(message = "lineItems is required")
+  @NotEmpty(message = "lineItems must contain at least one item")
+  @Size(max = 100, message = "lineItems may not exceed 100 entries")
+  @Valid
   private List<LineItem> lineItems;
 
   public CreateOrderRequest(long consumerId, long restaurantId, List<LineItem> lineItems) {
@@ -44,7 +58,11 @@ public class CreateOrderRequest {
 
   public static class LineItem {
 
+    @NotNull(message = "menuItemId is required")
+    @Size(min = 1, max = 64, message = "menuItemId must be 1-64 characters")
     private String menuItemId;
+
+    @Min(value = 1, message = "quantity must be at least 1")
     private int quantity;
 
     private LineItem() {
