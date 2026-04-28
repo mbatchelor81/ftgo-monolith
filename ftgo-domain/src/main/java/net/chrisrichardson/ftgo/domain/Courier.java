@@ -27,12 +27,29 @@ public class Courier {
 
   private Boolean available;
 
+  private Double latitude;
+
+  private Double longitude;
+
   public Courier() {
   }
 
   public Courier(PersonName name, Address address) {
     this.name = name;
     this.address = address;
+  }
+
+  public Double getLatitude() {
+    return latitude;
+  }
+
+  public Double getLongitude() {
+    return longitude;
+  }
+
+  public void updateLocation(double latitude, double longitude) {
+    this.latitude = latitude;
+    this.longitude = longitude;
   }
 
   public void noteAvailable() {

@@ -2,6 +2,8 @@ package net.chrisrichardson.ftgo.orderservice.domain;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import net.chrisrichardson.ftgo.consumerservice.domain.ConsumerService;
+import net.chrisrichardson.ftgo.courierservice.domain.CourierService;
+import net.chrisrichardson.ftgo.courierservice.domain.GeoUtils;
 import net.chrisrichardson.ftgo.domain.*;
 import net.chrisrichardson.ftgo.orderservice.web.MenuItemIdAndQuantity;
 import org.slf4j.Logger;
@@ -12,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 
@@ -29,18 +30,25 @@ public class OrderService {
 
   private ConsumerService consumerService;
   private CourierRepository courierRepository;
+  private CourierService courierService;
+  private DeliveryTrackingService deliveryTrackingService;
   private Random random = new Random();
 
   public OrderService(OrderRepository orderRepository,
                       RestaurantRepository restaurantRepository,
                       Optional<MeterRegistry> meterRegistry,
-                      ConsumerService consumerService, CourierRepository courierRepository) {
+                      ConsumerService consumerService,
+                      CourierRepository courierRepository,
+                      CourierService courierService,
+                      DeliveryTrackingService deliveryTrackingService) {
 
     this.orderRepository = orderRepository;
     this.restaurantRepository = restaurantRepository;
     this.meterRegistry = meterRegistry;
     this.consumerService = consumerService;
     this.courierRepository = courierRepository;
+    this.courierService = courierService;
+    this.deliveryTrackingService = deliveryTrackingService;
   }
 
   @Transactional
@@ -97,16 +105,51 @@ public class OrderService {
   }
 
   public void scheduleDelivery(Order order, LocalDateTime readyBy) {
+    Restaurant restaurant = order.getRestaurant();
+    Courier courier;
+    double distanceKm = 0;
 
-    // Stupid implementation
+    if (restaurant.getLatitude() != null && restaurant.getLongitude() != null) {
+      Optional<Courier> nearest = courierService.findNearestAvailableCourier(
+          restaurant.getLatitude(), restaurant.getLongitude());
 
-    List<Courier> couriers = courierRepository.findAllAvailable();
-    Courier courier = couriers.get(random.nextInt(couriers.size()));
+      if (nearest.isPresent()) {
+        courier = nearest.get();
+        distanceKm = GeoUtils.haversineDistance(
+            restaurant.getLatitude(), restaurant.getLongitude(),
+            courier.getLatitude(), courier.getLongitude());
+        logger.info("Assigned nearest courier {} at {} km from restaurant {}",
+            courier.getId(), distanceKm, restaurant.getId());
+      } else {
+        logger.warn("No couriers with location data available, falling back to random assignment");
+        courier = pickRandomAvailableCourier();
+      }
+    } else {
+      logger.warn("Restaurant {} has no coordinates, falling back to random assignment",
+          restaurant.getId());
+      courier = pickRandomAvailableCourier();
+    }
+
+    long travelMinutes = GeoUtils.estimatedTravelTimeMinutes(distanceKm);
+    long deliveryMinutes = travelMinutes > 0 ? travelMinutes : 30;
+
     courier.addAction(Action.makePickup(order));
-    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(30)));
-
+    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(deliveryMinutes)));
     order.schedule(courier);
 
+    LocalDateTime estimatedPickup = readyBy;
+    LocalDateTime estimatedDelivery = readyBy.plusMinutes(deliveryMinutes);
+
+    deliveryTrackingService.createTracking(order, courier, distanceKm,
+        estimatedPickup, estimatedDelivery);
+  }
+
+  private Courier pickRandomAvailableCourier() {
+    List<Courier> couriers = courierRepository.findAllAvailable();
+    if (couriers.isEmpty()) {
+      throw new NoCourierAvailableException();
+    }
+    return couriers.get(random.nextInt(couriers.size()));
   }
 
 
