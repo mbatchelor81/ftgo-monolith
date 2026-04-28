@@ -50,6 +50,8 @@ public class CourierService {
   }
 
   public List<DeliveryTracking> getActiveDeliveries(long courierId) {
+    courierRepository.findById(courierId)
+        .orElseThrow(() -> new CourierNotFoundException(courierId));
     return deliveryTrackingRepository.findByCourierIdAndStatus(courierId, DeliveryStatus.ASSIGNED);
   }
 

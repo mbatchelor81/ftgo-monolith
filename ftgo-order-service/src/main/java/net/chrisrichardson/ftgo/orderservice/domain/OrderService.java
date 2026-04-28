@@ -130,13 +130,15 @@ public class OrderService {
       courier = pickRandomAvailableCourier();
     }
 
+    long travelMinutes = GeoUtils.estimatedTravelTimeMinutes(distanceKm);
+    long deliveryMinutes = travelMinutes > 0 ? travelMinutes : 30;
+
     courier.addAction(Action.makePickup(order));
-    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(30)));
+    courier.addAction(Action.makeDropoff(order, readyBy.plusMinutes(deliveryMinutes)));
     order.schedule(courier);
 
-    long travelMinutes = GeoUtils.estimatedTravelTimeMinutes(distanceKm);
     LocalDateTime estimatedPickup = readyBy;
-    LocalDateTime estimatedDelivery = readyBy.plusMinutes(travelMinutes > 0 ? travelMinutes : 30);
+    LocalDateTime estimatedDelivery = readyBy.plusMinutes(deliveryMinutes);
 
     deliveryTrackingService.createTracking(order, courier, distanceKm,
         estimatedPickup, estimatedDelivery);
