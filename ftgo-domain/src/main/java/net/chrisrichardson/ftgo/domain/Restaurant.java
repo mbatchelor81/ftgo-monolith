@@ -27,6 +27,10 @@ public class Restaurant {
   @CollectionTable(name = "restaurant_menu_items")
   private List<MenuItem> menuItems;
 
+  private Double latitude;
+
+  private Double longitude;
+
   public Restaurant() {
   }
 
@@ -40,6 +44,19 @@ public class Restaurant {
     this.id = id;
     this.name = name;
     this.menuItems = menu.getMenuItems();
+  }
+
+  public Double getLatitude() {
+    return latitude;
+  }
+
+  public Double getLongitude() {
+    return longitude;
+  }
+
+  public void updateLocation(double latitude, double longitude) {
+    this.latitude = latitude;
+    this.longitude = longitude;
   }
 
   public void setId(Long id) {
