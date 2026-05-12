@@ -21,6 +21,9 @@ project(":ftgo-common-jpa-lib").projectDir = file("libs/ftgo-common-jpa-lib")
 include "ftgo-domain-lib"
 project(":ftgo-domain-lib").projectDir = file("libs/ftgo-domain-lib")
 
+include "ftgo-openapi-lib"
+project(":ftgo-openapi-lib").projectDir = file("libs/ftgo-openapi-lib")
+
 // -----------------------------------------------------------------------------
 // Shared Libraries (legacy modules — will migrate to libs/ directory)
 // -----------------------------------------------------------------------------
