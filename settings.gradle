@@ -15,6 +15,12 @@ includeBuild('build-logic')
 include "ftgo-common-lib"
 project(":ftgo-common-lib").projectDir = file("libs/ftgo-common-lib")
 
+include "ftgo-common-jpa-lib"
+project(":ftgo-common-jpa-lib").projectDir = file("libs/ftgo-common-jpa-lib")
+
+include "ftgo-domain-lib"
+project(":ftgo-domain-lib").projectDir = file("libs/ftgo-domain-lib")
+
 // -----------------------------------------------------------------------------
 // Shared Libraries (legacy modules — will migrate to libs/ directory)
 // -----------------------------------------------------------------------------
