@@ -31,10 +31,13 @@ subprojects {
     }
 }
 
+// Modules under libs/ that target Java 17+ and manage their own toolchain.
+def java17Libs = ['ftgo-openapi-lib'] as Set
+
 // Legacy modules: Java 8 target, JUnit 4 test dependency.
 // New microservices (services/*) will use convention plugins from build-logic/
 // which override source/target compat to Java 17.
-configure(subprojects.findAll { it.name.startsWith('ftgo-') || it.name == 'common-swagger' }) {
+configure(subprojects.findAll { (it.name.startsWith('ftgo-') || it.name == 'common-swagger') && !java17Libs.contains(it.name) }) {
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 

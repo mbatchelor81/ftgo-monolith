@@ -44,6 +44,10 @@ jackson-legacy = "2.9.7"
 jib = "3.4.2"
 versions-plugin = "0.51.0"
 
+# --- API Documentation ---
+springdoc = "2.5.0"
+swagger-annotations = "2.2.21"
+
 # --- Misc ---
 commons-lang3 = "3.14.0"
 commons-lang-legacy = "2.6"
@@ -85,6 +89,10 @@ jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jac
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+
+# --- API Documentation ---
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations-jakarta", version.ref = "swagger-annotations" }
 
 # --- Misc ---
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
