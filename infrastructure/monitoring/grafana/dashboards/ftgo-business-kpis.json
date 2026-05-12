@@ -1,0 +1,236 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "title": "Orders Created (rate/min)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "rate(ftgo_orders_created_total[5m]) * 60" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Orders Approved (rate/min)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        { "expr": "rate(ftgo_orders_approved_total[5m]) * 60" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Orders Rejected (rate/min)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "rate(ftgo_orders_rejected_total[5m]) * 60" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Deliveries Completed (rate/min)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        { "expr": "rate(ftgo_couriers_deliveries_completed_total[5m]) * 60" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Order Lifecycle — Rates Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(ftgo_orders_created_total[5m])", "legendFormat": "Created" },
+        { "expr": "rate(ftgo_orders_approved_total[5m])", "legendFormat": "Approved" },
+        { "expr": "rate(ftgo_orders_rejected_total[5m])", "legendFormat": "Rejected" },
+        { "expr": "rate(ftgo_orders_cancelled_total[5m])", "legendFormat": "Cancelled" },
+        { "expr": "rate(ftgo_orders_delivered_total[5m])", "legendFormat": "Delivered" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "title": "Consumer Registrations & Validations",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "rate(ftgo_consumers_registered_total[5m])", "legendFormat": "Registered" },
+        { "expr": "rate(ftgo_consumers_validations_succeeded_total[5m])", "legendFormat": "Validations OK" },
+        { "expr": "rate(ftgo_consumers_validations_failed_total[5m])", "legendFormat": "Validations Failed" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "title": "Restaurant Ticket Pipeline",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "rate(ftgo_restaurants_tickets_created_total[5m])", "legendFormat": "Created" },
+        { "expr": "rate(ftgo_restaurants_tickets_accepted_total[5m])", "legendFormat": "Accepted" },
+        { "expr": "rate(ftgo_restaurants_tickets_preparing_total[5m])", "legendFormat": "Preparing" },
+        { "expr": "rate(ftgo_restaurants_tickets_ready_total[5m])", "legendFormat": "Ready for Pickup" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "title": "Courier Operations",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "rate(ftgo_couriers_available_total[5m])", "legendFormat": "Available" },
+        { "expr": "rate(ftgo_couriers_unavailable_total[5m])", "legendFormat": "Unavailable" },
+        { "expr": "rate(ftgo_couriers_pickups_scheduled_total[5m])", "legendFormat": "Pickups Scheduled" },
+        { "expr": "rate(ftgo_couriers_deliveries_completed_total[5m])", "legendFormat": "Deliveries Completed" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "title": "Order Rejection Rate (%)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "expr": "rate(ftgo_orders_rejected_total[15m]) / (rate(ftgo_orders_created_total[15m]) > 0) * 100"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Avg Order Processing Time",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "targets": [
+        {
+          "expr": "rate(ftgo_orders_processing_time_seconds_sum[5m]) / rate(ftgo_orders_processing_time_seconds_count[5m])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 300 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Avg Delivery Time",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "targets": [
+        {
+          "expr": "rate(ftgo_couriers_delivery_time_seconds_sum[5m]) / rate(ftgo_couriers_delivery_time_seconds_count[5m])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1200 },
+              { "color": "red", "value": 2400 }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["ftgo", "business", "kpi"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "FTGO — Business KPIs",
+  "uid": "ftgo-business-kpis"
+}
