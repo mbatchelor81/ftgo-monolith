@@ -10,6 +10,12 @@
 includeBuild('build-logic')
 
 // -----------------------------------------------------------------------------
+// Shared Libraries — Versioned (libs/ directory)
+// -----------------------------------------------------------------------------
+include "ftgo-common-lib"
+project(":ftgo-common-lib").projectDir = file("libs/ftgo-common-lib")
+
+// -----------------------------------------------------------------------------
 // Shared Libraries (legacy modules — will migrate to libs/ directory)
 // -----------------------------------------------------------------------------
 include "common-swagger"
