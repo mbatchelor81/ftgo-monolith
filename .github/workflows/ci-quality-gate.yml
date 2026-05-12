@@ -106,7 +106,25 @@ jobs:
   sonar:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    if: |
+      secrets.SONAR_TOKEN != '' &&
+      (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: ftgo
+          MYSQL_USER: mysqluser
+          MYSQL_PASSWORD: mysqlpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -131,12 +149,35 @@ jobs:
             ${{ runner.os }}-gradle-sonar-
             ${{ runner.os }}-gradle-
 
+      - name: Apply SonarQube plugin
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/init.d/sonar.gradle << 'EOF'
+          initscript {
+              repositories { mavenCentral() }
+              dependencies {
+                  classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:5.0.0.4638'
+              }
+          }
+          allprojects {
+              apply plugin: org.sonarqube.gradle.SonarQubePlugin
+          }
+          EOF
+
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           ./gradlew build sonar \
+            -Dsonar.projectKey=ftgo-monolith \
+            -Dsonar.projectName='FTGO Platform' \
+            -Dsonar.organization=${SONAR_ORGANIZATION:-mbatchelor81} \
+            -Dsonar.sourceEncoding=UTF-8 \
+            -Dsonar.coverage.jacoco.xmlReportPaths='**/build/reports/jacoco/test/jacocoTestReport.xml' \
+            -Dsonar.exclusions='**/generated/**,**/build/**' \
+            -Dsonar.coverage.exclusions='**/config/**,**/dto/**,**/exception/**,**/*Application.java' \
+            -Dsonar.qualitygate.wait=true \
             -x :ftgo-end-to-end-tests:test \
             -x :ftgo-end-to-end-tests-common:build \
             -x :ftgo-application:compileTestJava \
