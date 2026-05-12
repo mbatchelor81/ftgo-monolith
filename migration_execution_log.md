@@ -10,8 +10,8 @@
 | Batch | Jira Key | Summary | Phase | Child Session ID | Session Status | PR Link | Squash Status | Conflicts Resolved |
 |-------|----------|---------|-------|-----------------|----------------|---------|---------------|--------------------|
 | 1 | EM-30 | Define Microservices Repository Structure | Phase 1 | devin-0506263bbab9451684b35269ddc1bac7 | completed | [PR #103](https://github.com/mbatchelor81/ftgo-monolith/pull/103) | success | None |
-| 2 | EM-28 | Create Shared Parent Gradle Configuration | Phase 1 | — | — | — | — | — |
-| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | — | — | — | — | — |
+| 2 | EM-28 | Create Shared Parent Gradle Configuration | Phase 1 | devin-12279962e94d4c98af8a71cfc01335f5 | completed | [PR #105](https://github.com/mbatchelor81/ftgo-monolith/pull/105) | success | None |
+| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | devin-170975a362634822b628db942c5ab5c0 | completed | [PR #104](https://github.com/mbatchelor81/ftgo-monolith/pull/104) | success (conflicts resolved) | gradle.properties (kept higher micrometer version, added ftgoCommonLibVersion), settings.gradle (combined build-logic includeBuild with ftgo-common-lib include) |
 | 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain | Phase 1 | — | — | — | — | — |
 | 3 | EM-33 | Set Up Automated Build Pipeline | Phase 2 | — | — | — | — | — |
 | 3 | EM-45 | Define REST API Standards / SpringDoc OpenAPI 3 | Phase 5 | — | — | — | — | — |
