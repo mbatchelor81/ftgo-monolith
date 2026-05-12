@@ -11,33 +11,34 @@ buildscript {
 }
 
 plugins {
-    id "com.github.ben-manes.versions" version "0.20.0"
+    id "com.github.ben-manes.versions" version "0.51.0"
 }
 
 
+// All subprojects share the group, repositories, and java-library plugin.
 subprojects {
 
-    apply plugin: "java"
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    apply plugin: "java-library"
 
     group = "net.chrisrichardson.ftgo"
 
     repositories {
         mavenCentral()
-        jcenter()
-
-        // Commenting out problematic repositories that require authentication or are no longer available
-        // eventuateMavenRepoUrl.split(',').each { repoUrl -> maven { url repoUrl } }
-
-        // maven {
-        //     url 'https://repo.spring.io/libs-milestone'
-        // }
 
         maven {
             url "${project.rootDir}/build/repo"
         }
-
     }
+}
 
+// Legacy modules: Java 8 target, JUnit 4 test dependency.
+// New microservices (services/*) will use convention plugins from build-logic/
+// which override source/target compat to Java 17.
+configure(subprojects.findAll { it.name.startsWith('ftgo-') || it.name == 'common-swagger' }) {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    dependencies {
+        testImplementation 'junit:junit:4.13.2'
+    }
 }
