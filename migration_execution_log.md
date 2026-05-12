@@ -1,0 +1,33 @@
+# FTGO Microservices Migration — Execution Log
+
+**Repository:** `mbatchelor81/ftgo-monolith`  
+**Migration Branch:** `feat/microservices-migration`  
+**Base SHA:** `8ccaff6138d4dc150314135464451f23d0d531bb`  
+**Started:** 2026-05-12
+
+## Execution Log
+
+| Batch | Jira Key | Summary | Phase | Child Session ID | Session Status | PR Link | Squash Status | Conflicts Resolved |
+|-------|----------|---------|-------|-----------------|----------------|---------|---------------|--------------------|
+| 1 | EM-30 | Define Microservices Repository Structure | Phase 1 | — | — | — | — | — |
+| 2 | EM-28 | Create Shared Parent Gradle Configuration | Phase 1 | — | — | — | — | — |
+| 2 | EM-32 | Extract and Version ftgo-common Shared Library | Phase 1 | — | — | — | — | — |
+| 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain | Phase 1 | — | — | — | — | — |
+| 3 | EM-33 | Set Up Automated Build Pipeline | Phase 2 | — | — | — | — | — |
+| 3 | EM-45 | Define REST API Standards / SpringDoc OpenAPI 3 | Phase 5 | — | — | — | — | — |
+| 4 | EM-29 | Define Per-Service Database Schema Migration | Phase 1 | — | — | — | — | — |
+| 4 | EM-39 | Implement Spring Security Foundation | Phase 3 | — | — | — | — | — |
+| 4 | EM-41 | Upgrade Micrometer/Prometheus Metrics | Phase 4 | — | — | — | — | — |
+| 4 | EM-47 | Create Code Review Guidelines / Quality Gates | Phase 5 | — | — | — | — | — |
+| 5 | EM-34 | Set Up Container Registry / Docker Build | Phase 2 | — | — | — | — | — |
+| 5 | EM-36 | Configure Automated Testing Pipeline | Phase 2 | — | — | — | — | — |
+| 5 | EM-40 | Implement JWT-Based Authentication | Phase 3 | — | — | — | — | — |
+| 6 | EM-35 | Configure Kubernetes Deployment Automation | Phase 2 | — | — | — | — | — |
+| 6 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | — | — | — | — | — |
+| 6 | EM-42 | Implement Distributed Tracing | Phase 4 | — | — | — | — | — |
+| 6 | EM-48 | Document Testing Strategy / Test Templates | Phase 5 | — | — | — | — | — |
+| 7 | EM-38 | Configure API Gateway | Phase 3 | — | — | — | — | — |
+| 7 | EM-43 | Set Up Centralized Logging (ELK/EFK) | Phase 4 | — | — | — | — | — |
+| 7 | EM-44 | Configure Health Checks / Resilience | Phase 4 | — | — | — | — | — |
+| 7 | EM-46 | Establish Centralized Error Handling | Phase 5 | — | — | — | — | — |
+| 8 | EM-49 | Define Logging Standards | Phase 5 | — | — | — | — | — |
