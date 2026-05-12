@@ -4,6 +4,12 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+// Shared Build Logic — Convention Plugins (Java 17+, Spring Boot 3.x)
+// New microservices apply plugins from build-logic/ instead of buildSrc.
+// -----------------------------------------------------------------------------
+includeBuild('build-logic')
+
+// -----------------------------------------------------------------------------
 // Shared Libraries (legacy modules — will migrate to libs/ directory)
 // -----------------------------------------------------------------------------
 include "common-swagger"

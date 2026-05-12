@@ -1,0 +1,70 @@
+// =============================================================================
+// ftgo.testing-conventions
+// =============================================================================
+// JUnit 5 test configuration with Rest-Assured and integration test source set.
+
+plugins {
+    id 'ftgo.java-conventions'
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+        }
+
+        integrationTest(JvmTestSuite) {
+            useJUnitJupiter()
+            sources {
+                java {
+                    srcDirs = ['src/integration-test/java']
+                }
+                resources {
+                    srcDirs = ['src/integration-test/resources']
+                }
+            }
+            dependencies {
+                implementation project()
+            }
+            targets {
+                all {
+                    testTask.configure {
+                        shouldRunAfter(test)
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testImplementation libs.assertj.core
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.spring.mock.mvc
+    testImplementation libs.rest.assured.json.path
+    testImplementation libs.h2.database
+}
+
+tasks.named('check') {
+    dependsOn testing.suites.integrationTest
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
+
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}

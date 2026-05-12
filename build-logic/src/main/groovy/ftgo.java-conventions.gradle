@@ -1,0 +1,41 @@
+// =============================================================================
+// ftgo.java-conventions
+// =============================================================================
+// Shared Java compilation settings for new FTGO microservices.
+// Targets Java 17+ with UTF-8 encoding and strict compiler options.
+
+plugins {
+    id 'java-library'
+}
+
+group = 'net.chrisrichardson.ftgo'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll([
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation'
+    ])
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType(Jar).configureEach {
+    manifest {
+        attributes(
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
+        )
+    }
+}
