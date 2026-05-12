@@ -43,7 +43,7 @@ public class Order {
 
   @Embedded
   @AttributeOverride(name="amount", column = @Column(name="order_minimum"))
-  private Money orderMinimum = new Money(Integer.MAX_VALUE);
+  private Money orderMinimum = Money.ZERO;
 
   private LocalDateTime readyBy;
   private LocalDateTime acceptTime;
