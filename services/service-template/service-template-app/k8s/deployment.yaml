@@ -24,17 +24,17 @@ spec:
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
-                  name: ftgo-db-credentials
+                  name: template-db-credentials  # Replace 'template' with your service context name
                   key: url
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: ftgo-db-credentials
+                  name: template-db-credentials  # Replace 'template' with your service context name
                   key: username
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ftgo-db-credentials
+                  name: template-db-credentials  # Replace 'template' with your service context name
                   key: password
           readinessProbe:
             httpGet:

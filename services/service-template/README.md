@@ -60,6 +60,20 @@ find services/<context>-service -name '*.java' -exec sed -i 's/com\.ftgo\.templa
 └── README.md
 ```
 
+## Migration Notes
+
+During the transitional period, services being extracted from the monolith may
+need to depend on `:ftgo-domain` to access shared JPA entities that have not
+yet been duplicated into the service's own `domain` package. Add this to your
+`build.gradle` as needed:
+
+```groovy
+compile project(":ftgo-domain")
+```
+
+Once the service's own domain entities are complete, remove the `:ftgo-domain`
+dependency to achieve full decoupling.
+
 ## Conventions
 
 - See `docs/conventions/package-naming.md` for package and class naming rules.

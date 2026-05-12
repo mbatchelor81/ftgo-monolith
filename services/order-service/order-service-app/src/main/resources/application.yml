@@ -5,9 +5,9 @@ spring:
   application:
     name: order-service
   datasource:
-    url: jdbc:mysql://localhost:3306/ftgo
-    username: ftgo_user
-    password: ftgo_password
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ftgo}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:rootpassword}
     driver-class-name: com.mysql.jdbc.Driver
   jpa:
     hibernate:
