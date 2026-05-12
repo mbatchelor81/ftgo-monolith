@@ -22,7 +22,7 @@ dependencies {
     runtimeOnly "com.sun.xml.bind:jaxb-impl:2.2.11"
     runtimeOnly "javax.activation:activation:1.1.1"
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
 }
 
 publishing {
