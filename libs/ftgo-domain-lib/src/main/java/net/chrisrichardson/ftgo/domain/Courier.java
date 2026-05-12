@@ -33,6 +33,7 @@ public class Courier {
   public Courier(PersonName name, Address address) {
     this.name = name;
     this.address = address;
+    this.plan = new Plan();
   }
 
   public void noteAvailable() {
