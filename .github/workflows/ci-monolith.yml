@@ -96,6 +96,11 @@ jobs:
             ${{ runner.os }}-gradle-monolith-
             ${{ runner.os }}-gradle-
 
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mysql-client
+
       - name: Grant database privileges
         run: |
           mysql -h 127.0.0.1 -u root -prootpassword -e \
