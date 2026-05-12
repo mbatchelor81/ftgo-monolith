@@ -1,16 +1,28 @@
 
+// =============================================================================
+// FTGO Platform — Gradle Module Configuration
+// =============================================================================
 
+// -----------------------------------------------------------------------------
+// Shared Libraries (legacy modules — will migrate to libs/ directory)
+// -----------------------------------------------------------------------------
 include "common-swagger"
 
-include "ftgo-flyway"
-
-include "ftgo-test-util"
 include "ftgo-common"
 include "ftgo-common-jpa"
 
 include "ftgo-domain"
 
+include "ftgo-test-util"
 
+// -----------------------------------------------------------------------------
+// Database Migrations
+// -----------------------------------------------------------------------------
+include "ftgo-flyway"
+
+// -----------------------------------------------------------------------------
+// Legacy Monolith Modules (retained during migration)
+// -----------------------------------------------------------------------------
 include "ftgo-order-service"
 include "ftgo-order-service-api"
 
@@ -28,3 +40,37 @@ include "ftgo-application"
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
 
+// -----------------------------------------------------------------------------
+// Microservices — New Module Structure (services/ directory)
+// Each service has an API module (contracts) and an App module (implementation)
+// -----------------------------------------------------------------------------
+
+// Consumer Service
+include "consumer-service-api"
+project(":consumer-service-api").projectDir = file("services/consumer-service/consumer-service-api")
+include "consumer-service-app"
+project(":consumer-service-app").projectDir = file("services/consumer-service/consumer-service-app")
+
+// Order Service
+include "order-service-api"
+project(":order-service-api").projectDir = file("services/order-service/order-service-api")
+include "order-service-app"
+project(":order-service-app").projectDir = file("services/order-service/order-service-app")
+
+// Restaurant Service
+include "restaurant-service-api"
+project(":restaurant-service-api").projectDir = file("services/restaurant-service/restaurant-service-api")
+include "restaurant-service-app"
+project(":restaurant-service-app").projectDir = file("services/restaurant-service/restaurant-service-app")
+
+// Courier Service
+include "courier-service-api"
+project(":courier-service-api").projectDir = file("services/courier-service/courier-service-api")
+include "courier-service-app"
+project(":courier-service-app").projectDir = file("services/courier-service/courier-service-app")
+
+// Service Template (archetype — not deployed, used as a reference)
+include "service-template-api"
+project(":service-template-api").projectDir = file("services/service-template/service-template-api")
+include "service-template-app"
+project(":service-template-app").projectDir = file("services/service-template/service-template-app")
