@@ -16,6 +16,7 @@ on:
       - "build.gradle"
       - "settings.gradle"
       - "gradle/**"
+      - "gradle.properties"
       - ".github/workflows/ci-docker-build.yml"
   pull_request:
     branches: [main, feat/microservices-migration]
@@ -32,6 +33,7 @@ on:
       - "build.gradle"
       - "settings.gradle"
       - "gradle/**"
+      - "gradle.properties"
       - ".github/workflows/ci-docker-build.yml"
 
 concurrency:
