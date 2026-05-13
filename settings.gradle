@@ -102,6 +102,10 @@ project(":courier-service-api").projectDir = file("services/courier-service/cour
 include "courier-service-app"
 project(":courier-service-app").projectDir = file("services/courier-service/courier-service-app")
 
+// API Gateway
+include "api-gateway"
+project(":api-gateway").projectDir = file("services/api-gateway")
+
 // Service Template (archetype — not deployed, used as a reference)
 include "service-template-api"
 project(":service-template-api").projectDir = file("services/service-template/service-template-api")
