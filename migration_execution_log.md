@@ -19,9 +19,9 @@
 | 4 | EM-39 | Implement Spring Security Foundation | Phase 3 | devin-a65260ea5a754578829a2eeb082addd3 | completed | [PR #110](https://github.com/mbatchelor81/ftgo-monolith/pull/110) | success | None |
 | 4 | EM-41 | Upgrade Micrometer/Prometheus Metrics | Phase 4 | devin-502fbe55f14c4a149e080eaeb4520837 | completed | [PR #112](https://github.com/mbatchelor81/ftgo-monolith/pull/112) | success (conflicts resolved) | build.gradle (combined java17Libs set), settings.gradle (combined security-lib and metrics-lib includes) |
 | 4 | EM-47 | Create Code Review Guidelines / Quality Gates | Phase 5 | devin-efee6798282f4380bb18633a8fee2965 | completed | [PR #109](https://github.com/mbatchelor81/ftgo-monolith/pull/109) | success | None |
-| 5 | EM-34 | Set Up Container Registry / Docker Build | Phase 2 | — | — | — | — | — |
-| 5 | EM-36 | Configure Automated Testing Pipeline | Phase 2 | — | — | — | — | — |
-| 5 | EM-40 | Implement JWT-Based Authentication | Phase 3 | — | — | — | — | — |
+| 5 | EM-34 | Set Up Container Registry / Docker Build | Phase 2 | devin-40dd7285601c4ac685a13c2c0430ec42 | completed | [PR #113](https://github.com/mbatchelor81/ftgo-monolith/pull/113) | success | None |
+| 5 | EM-36 | Configure Automated Testing Pipeline | Phase 2 | devin-fed5f71c831943b19934fe0b7be85e13 | completed | [PR #114](https://github.com/mbatchelor81/ftgo-monolith/pull/114) | success | None |
+| 5 | EM-40 | Implement JWT-Based Authentication | Phase 3 | devin-516b0e780ec24b948efde05a9bbdf4b0 | completed | [PR #115](https://github.com/mbatchelor81/ftgo-monolith/pull/115) | success | None |
 | 6 | EM-35 | Configure Kubernetes Deployment Automation | Phase 2 | — | — | — | — | — |
 | 6 | EM-37 | Implement Role-Based Authorization Framework | Phase 3 | — | — | — | — | — |
 | 6 | EM-42 | Implement Distributed Tracing | Phase 4 | — | — | — | — | — |
