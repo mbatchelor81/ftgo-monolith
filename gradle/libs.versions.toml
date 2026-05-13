@@ -71,9 +71,6 @@ versions-plugin = "0.51.0"
 springdoc = "2.5.0"
 swagger-annotations = "2.2.21"
 
-# --- Resilience ---
-resilience4j = "2.2.0"
-
 # --- Misc ---
 commons-lang3 = "3.14.0"
 commons-lang-legacy = "2.6"
