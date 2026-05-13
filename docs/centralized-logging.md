@@ -111,7 +111,7 @@ Include the shared JSON appender in your service's `logback-spring.xml`:
 ```
 
 The `LOGSTASH_TCP` appender ships logs directly to Logstash via TCP. It reads the
-destination from `ftgo.logging.logstash.destination` (defaults to `localhost:5044`).
+destination from `ftgo.logging.logstash.destination` (defaults to `localhost:5000`).
 It is defined in the shared config but only active when referenced in a service's
 `logback-spring.xml`.
 
