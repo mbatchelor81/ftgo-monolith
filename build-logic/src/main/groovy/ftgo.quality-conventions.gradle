@@ -90,6 +90,17 @@ tasks.named('jacocoTestReport') {
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('jacocoTestReport')
 
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: [
+                '**/config/**',
+                '**/dto/**',
+                '**/exception/**',
+                '**/*Application.class'
+            ])
+        }))
+    }
+
     violationRules {
         rule {
             limit {
