@@ -19,7 +19,7 @@ public class OrderServiceHealthIndicator implements HealthIndicator {
         CircuitBreaker.State state = cb.getState();
         CircuitBreaker.Metrics metrics = cb.getMetrics();
 
-        Health.Builder builder = state == CircuitBreaker.State.OPEN
+        Health.Builder builder = (state == CircuitBreaker.State.OPEN || state == CircuitBreaker.State.FORCED_OPEN)
                 ? Health.down()
                 : Health.up();
 

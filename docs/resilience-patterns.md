@@ -144,9 +144,20 @@ Each indicator reports:
 | `circuitBreaker.failedCalls` | Failed calls in the window |
 | `circuitBreaker.successfulCalls` | Successful calls in the window |
 
-When a circuit breaker is OPEN, the health indicator reports `DOWN`, which causes
-Kubernetes readiness probes to fail and removes the pod from the service mesh until
-the circuit recovers.
+When a circuit breaker is OPEN or FORCED_OPEN, the health indicator reports `DOWN`.
+This affects the aggregate `/actuator/health` endpoint (used by Consul health checks).
+
+To also affect Kubernetes readiness probes (`/actuator/health/readiness`), consuming
+services must add the indicators to the readiness group:
+
+```yaml
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState, orderService, consumerService, restaurantService, courierService
+```
 
 **Disabling individual indicators:**
 
