@@ -136,6 +136,7 @@ spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa"
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin-reporter-brave", "zipkin-sender-urlconnection"]
 jwt-auth = ["spring-boot-starter-oauth2-resource-server", "spring-security-oauth2-jose"]
+error-handling = ["spring-boot-starter-web", "spring-boot-starter-validation"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
