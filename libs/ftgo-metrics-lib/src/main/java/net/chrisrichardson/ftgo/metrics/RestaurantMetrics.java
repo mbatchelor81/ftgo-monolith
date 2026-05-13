@@ -3,30 +3,22 @@ package net.chrisrichardson.ftgo.metrics;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.binder.MeterBinder;
+
 /**
  * Business metrics for the Restaurant Service.
  * Tracks restaurant onboarding, ticket lifecycle, and menu operations.
  */
-public class RestaurantMetrics implements MeterBinder {
+public class RestaurantMetrics {
 
-    private final MeterRegistry registry;
-
-    private Counter restaurantsCreated;
-    private Counter ticketsCreated;
-    private Counter ticketsAccepted;
-    private Counter ticketsPreparing;
-    private Counter ticketsReadyForPickup;
-    private Counter menuRevisions;
-    private Timer ticketPreparationTime;
+    private final Counter restaurantsCreated;
+    private final Counter ticketsCreated;
+    private final Counter ticketsAccepted;
+    private final Counter ticketsPreparing;
+    private final Counter ticketsReadyForPickup;
+    private final Counter menuRevisions;
+    private final Timer ticketPreparationTime;
 
     public RestaurantMetrics(MeterRegistry registry) {
-        this.registry = registry;
-        bindTo(registry);
-    }
-
-    @Override
-    public void bindTo(MeterRegistry registry) {
         restaurantsCreated = Counter.builder("ftgo.restaurants.created")
                 .description("Total number of restaurants onboarded")
                 .register(registry);

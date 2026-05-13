@@ -87,12 +87,10 @@ groups:
           description: "No new orders have been created in the last 30 minutes during expected business hours."
 
       - alert: CourierShortage
-        expr: >
-          ftgo_couriers_available_total
-          / (ftgo_couriers_created_total > 0) < 0.10
+        expr: ftgo_couriers_currently_available < 2
         for: 15m
         labels:
           severity: warning
         annotations:
-          summary: "Courier availability below 10%"
-          description: "Less than 10% of couriers are available for the last 15 minutes."
+          summary: "Courier availability critically low"
+          description: "Fewer than 2 couriers have been available for the last 15 minutes."

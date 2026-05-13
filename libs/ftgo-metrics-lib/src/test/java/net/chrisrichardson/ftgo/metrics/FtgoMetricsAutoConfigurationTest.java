@@ -62,6 +62,19 @@ class FtgoMetricsAutoConfigurationTest {
             MeterRegistry registry = context.getBean(MeterRegistry.class);
             assertThat(registry.find("ftgo.couriers.created").counter()).isNotNull();
             assertThat(registry.find("ftgo.couriers.deliveries.completed").counter()).isNotNull();
+            assertThat(registry.find("ftgo.couriers.currently.available").gauge()).isNotNull();
         });
+    }
+
+    @Test
+    void domainMetricsCanBeDisabledViaProperty() {
+        new ApplicationContextRunner()
+                .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
+                .withConfiguration(AutoConfigurations.of(FtgoMetricsAutoConfiguration.class))
+                .withPropertyValues("ftgo.metrics.order.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(OrderMetrics.class);
+                    assertThat(context).hasSingleBean(ConsumerMetrics.class);
+                });
     }
 }

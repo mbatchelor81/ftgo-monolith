@@ -53,4 +53,7 @@ volumes:
 
 networks:
   ftgo-monitoring:
+    # When running alongside the application services compose file, connect them
+    # with: docker-compose -f docker-compose.yml -f infrastructure/monitoring/docker-compose.monitoring.yml up
+    # Or add 'ftgo-monitoring' as an external network in the service compose file.
     driver: bridge

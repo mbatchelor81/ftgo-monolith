@@ -49,7 +49,7 @@ implementation project(":ftgo-metrics-lib")
 
 ### Prometheus
 
-Scrapes metrics from all services every 10 seconds. Configuration is at
+Scrapes metrics from application services every 10 seconds (global default 15s). Configuration is at
 `infrastructure/monitoring/prometheus/prometheus.yml`.
 
 **Scrape targets:**
@@ -93,7 +93,7 @@ Defined in `infrastructure/monitoring/prometheus/alert-rules.yml`:
 | HighGCPause | Avg GC pause > 500ms for 5m | warning |
 | HighOrderRejectionRate | Rejection > 20% for 10m | warning |
 | NoOrdersCreated | Zero orders for 30m | warning |
-| CourierShortage | < 10% available for 15m | warning |
+| CourierShortage | < 2 couriers available for 15m | warning |
 
 ## Running the Monitoring Stack
 

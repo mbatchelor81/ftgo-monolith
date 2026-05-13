@@ -3,31 +3,23 @@ package net.chrisrichardson.ftgo.metrics;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.binder.MeterBinder;
+
 /**
  * Business metrics for the Order Service.
  * Tracks order lifecycle events: creation, approval, rejection, cancellation, revision, and delivery.
  */
-public class OrderMetrics implements MeterBinder {
+public class OrderMetrics {
 
-    private final MeterRegistry registry;
-
-    private Counter ordersCreated;
-    private Counter ordersApproved;
-    private Counter ordersRejected;
-    private Counter ordersCancelled;
-    private Counter ordersRevised;
-    private Counter ordersDelivered;
-    private Timer orderProcessingTime;
-    private Timer orderFulfillmentTime;
+    private final Counter ordersCreated;
+    private final Counter ordersApproved;
+    private final Counter ordersRejected;
+    private final Counter ordersCancelled;
+    private final Counter ordersRevised;
+    private final Counter ordersDelivered;
+    private final Timer orderProcessingTime;
+    private final Timer orderFulfillmentTime;
 
     public OrderMetrics(MeterRegistry registry) {
-        this.registry = registry;
-        bindTo(registry);
-    }
-
-    @Override
-    public void bindTo(MeterRegistry registry) {
         ordersCreated = Counter.builder("ftgo.orders.created")
                 .description("Total number of orders created")
                 .register(registry);

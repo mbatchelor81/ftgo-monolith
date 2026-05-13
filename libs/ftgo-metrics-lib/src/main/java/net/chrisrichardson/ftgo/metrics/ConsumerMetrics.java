@@ -2,26 +2,18 @@ package net.chrisrichardson.ftgo.metrics;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
+
 /**
  * Business metrics for the Consumer Service.
  * Tracks consumer registration and validation events.
  */
-public class ConsumerMetrics implements MeterBinder {
+public class ConsumerMetrics {
 
-    private final MeterRegistry registry;
-
-    private Counter consumersRegistered;
-    private Counter consumerValidationsSucceeded;
-    private Counter consumerValidationsFailed;
+    private final Counter consumersRegistered;
+    private final Counter consumerValidationsSucceeded;
+    private final Counter consumerValidationsFailed;
 
     public ConsumerMetrics(MeterRegistry registry) {
-        this.registry = registry;
-        bindTo(registry);
-    }
-
-    @Override
-    public void bindTo(MeterRegistry registry) {
         consumersRegistered = Counter.builder("ftgo.consumers.registered")
                 .description("Total number of consumers registered")
                 .register(registry);

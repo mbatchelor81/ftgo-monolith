@@ -28,7 +28,6 @@ assertj = "3.25.3"
 # --- Observability ---
 micrometer = "1.12.5"
 micrometer-legacy = "1.0.4"
-micrometer-core = "1.12.5"
 
 # --- Database ---
 flyway = "10.12.0"
