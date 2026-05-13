@@ -63,7 +63,7 @@ public final class OrderBuilder {
         }
 
         List<OrderLineItem> items = lineItems.isEmpty()
-                ? Collections.singletonList(new OrderLineItem("1", "Chicken Vindaloo", new Money("12.34"), 1))
+                ? Collections.singletonList(new OrderLineItem("1", "Default Item", new Money("10.00"), 1))
                 : lineItems;
 
         Order order = new Order(consumerId, restaurant, items);

@@ -45,7 +45,7 @@ public class MoneyAssert extends AbstractAssert<MoneyAssert, Money> {
 
     public MoneyAssert isPositive() {
         isNotNull();
-        if (!actual.isGreaterThanOrEqual(new Money("0.01"))) {
+        if (Money.ZERO.isGreaterThanOrEqual(actual)) {
             failWithMessage("Expected money to be positive but was <%s>", actual.asString());
         }
         return this;
