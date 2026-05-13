@@ -73,21 +73,18 @@ public class FtgoJwtAutoConfiguration {
         String jwkSetUri = jwtProperties.getJwkSetUri();
         String issuerUri = jwtProperties.getIssuerUri();
 
-        NimbusJwtDecoder decoder;
         if (jwkSetUri != null && !jwkSetUri.isBlank()) {
-            decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+            if (issuerUri != null && !issuerUri.isBlank()) {
+                decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
+            }
+            return decoder;
         } else if (issuerUri != null && !issuerUri.isBlank()) {
-            decoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuerUri);
+            return JwtDecoders.fromIssuerLocation(issuerUri);
         } else {
             throw new IllegalStateException(
                     "Either ftgo.security.jwt.issuer-uri or ftgo.security.jwt.jwk-set-uri must be configured");
         }
-
-        if (issuerUri != null && !issuerUri.isBlank()) {
-            decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
-        }
-
-        return decoder;
     }
 
     @Bean

@@ -65,6 +65,11 @@ public class TokenRefreshService {
             return Optional.empty();
         }
 
+        if (refreshToken == null || refreshToken.isBlank()) {
+            log.warn("Cannot refresh token: refresh token is null or blank");
+            return Optional.empty();
+        }
+
         String formBody = "grant_type=" + encode("refresh_token")
                 + "&refresh_token=" + encode(refreshToken)
                 + "&client_id=" + encode(refreshProperties.getClientId());
