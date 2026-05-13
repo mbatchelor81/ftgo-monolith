@@ -14,6 +14,9 @@ spring-boot-legacy = "2.0.3.RELEASE"
 spring-dependency-management = "1.1.5"
 spring-dependency-management-legacy = "1.0.3.RELEASE"
 
+# --- Spring Security ---
+spring-security = "6.2.4"
+
 # --- Java ---
 java-target = "17"
 java-legacy = "8"
@@ -42,6 +45,8 @@ jackson-legacy = "2.9.7"
 
 # --- Build Plugins ---
 jib = "3.4.2"
+spotbugs-plugin = "6.0.15"
+sonarqube-plugin = "5.0.0.4638"
 versions-plugin = "0.51.0"
 
 # --- API Documentation ---
@@ -63,6 +68,8 @@ spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security" }
 
 # --- Observability ---
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
@@ -102,6 +109,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 [bundles]
 testing = ["junit-jupiter", "rest-assured", "rest-assured-spring-mock-mvc", "rest-assured-json-path", "mockito-core", "mockito-junit-jupiter", "assertj-core"]
 spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa", "spring-boot-starter-actuator", "spring-boot-starter-validation"]
+testing-security = ["spring-security-test", "spring-boot-starter-test"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
@@ -109,3 +117,5 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 flyway = { id = "org.flywaydb.flyway", version.ref = "flyway" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube-plugin" }

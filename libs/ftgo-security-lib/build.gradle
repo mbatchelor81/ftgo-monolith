@@ -1,0 +1,69 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'net.chrisrichardson.ftgo'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll([
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation'
+    ])
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.springframework.boot:spring-boot-starter-security:3.2.5'
+    api 'org.springframework.boot:spring-boot-starter-web:3.2.5'
+    api 'org.springframework.boot:spring-boot-autoconfigure:3.2.5'
+    api 'org.springframework.boot:spring-boot-starter-actuator:3.2.5'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.5'
+    testImplementation 'org.springframework.security:spring-security-test:6.2.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-security-lib'
+            version = '1.0.0'
+
+            pom {
+                name = 'FTGO Security Library'
+                description = 'Spring Security auto-configuration for FTGO platform services'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'local'
+            url = "${rootProject.buildDir}/repo"
+        }
+    }
+}

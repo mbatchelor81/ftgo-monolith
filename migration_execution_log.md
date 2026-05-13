@@ -15,10 +15,10 @@
 | 3 | EM-31 | Extract ftgo-common-jpa and ftgo-domain | Phase 1 | devin-2dccdeda45ed4244b4e830cf9c9de034 | completed | [PR #107](https://github.com/mbatchelor81/ftgo-monolith/pull/107) | success | None |
 | 3 | EM-33 | Set Up Automated Build Pipeline | Phase 2 | devin-5c3f6f134fc9412eb2ad15cc9a22c894 | completed | [PR #106](https://github.com/mbatchelor81/ftgo-monolith/pull/106) | success | None |
 | 3 | EM-45 | Define REST API Standards / SpringDoc OpenAPI 3 | Phase 5 | devin-33c19cda0c5647049edbedebc458f01f | completed | [PR #108](https://github.com/mbatchelor81/ftgo-monolith/pull/108) | success (conflicts resolved) | settings.gradle (combined jpa-lib/domain-lib includes with openapi-lib include) |
-| 4 | EM-29 | Define Per-Service Database Schema Migration | Phase 1 | — | — | — | — | — |
-| 4 | EM-39 | Implement Spring Security Foundation | Phase 3 | — | — | — | — | — |
-| 4 | EM-41 | Upgrade Micrometer/Prometheus Metrics | Phase 4 | — | — | — | — | — |
-| 4 | EM-47 | Create Code Review Guidelines / Quality Gates | Phase 5 | — | — | — | — | — |
+| 4 | EM-29 | Define Per-Service Database Schema Migration | Phase 1 | devin-dbb420fd242d407ab952263408a67647 | completed | [PR #111](https://github.com/mbatchelor81/ftgo-monolith/pull/111) | success | None |
+| 4 | EM-39 | Implement Spring Security Foundation | Phase 3 | devin-a65260ea5a754578829a2eeb082addd3 | completed | [PR #110](https://github.com/mbatchelor81/ftgo-monolith/pull/110) | success | None |
+| 4 | EM-41 | Upgrade Micrometer/Prometheus Metrics | Phase 4 | devin-502fbe55f14c4a149e080eaeb4520837 | completed | [PR #112](https://github.com/mbatchelor81/ftgo-monolith/pull/112) | success (conflicts resolved) | build.gradle (combined java17Libs set), settings.gradle (combined security-lib and metrics-lib includes) |
+| 4 | EM-47 | Create Code Review Guidelines / Quality Gates | Phase 5 | devin-efee6798282f4380bb18633a8fee2965 | completed | [PR #109](https://github.com/mbatchelor81/ftgo-monolith/pull/109) | success | None |
 | 5 | EM-34 | Set Up Container Registry / Docker Build | Phase 2 | — | — | — | — | — |
 | 5 | EM-36 | Configure Automated Testing Pipeline | Phase 2 | — | — | — | — | — |
 | 5 | EM-40 | Implement JWT-Based Authentication | Phase 3 | — | — | — | — | — |

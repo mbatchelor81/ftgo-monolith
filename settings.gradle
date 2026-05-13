@@ -24,6 +24,9 @@ project(":ftgo-domain-lib").projectDir = file("libs/ftgo-domain-lib")
 include "ftgo-openapi-lib"
 project(":ftgo-openapi-lib").projectDir = file("libs/ftgo-openapi-lib")
 
+include "ftgo-security-lib"
+project(":ftgo-security-lib").projectDir = file("libs/ftgo-security-lib")
+
 include "ftgo-metrics-lib"
 project(":ftgo-metrics-lib").projectDir = file("libs/ftgo-metrics-lib")
 

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<!--
+  FTGO Platform — Checkstyle Suppressions
+  Suppress specific rules for generated code, tests, and legacy modules.
+-->
+<suppressions>
+  <!-- Test classes may have longer methods, more parameters, and underscore naming -->
+  <suppress checks="MethodLength" files=".*Test\.java$"/>
+  <suppress checks="MethodName" files=".*Test\.java$"/>
+  <suppress checks="ParameterNumber" files=".*Test\.java$"/>
+  <suppress checks="FileLength" files=".*Test\.java$"/>
+
+  <!-- Generated code (Swagger, OpenAPI) -->
+  <suppress checks=".*" files="[\\/]generated[\\/]"/>
+  <suppress checks=".*" files="[\\/]build[\\/]"/>
+</suppressions>
