@@ -1,0 +1,199 @@
+name: "CD — Deploy to Kubernetes"
+
+on:
+  # Automatic deployment to dev on merge to main
+  push:
+    branches: [main]
+    paths:
+      - "deployment/kubernetes/**"
+      - "services/**"
+      - ".github/workflows/cd-deploy.yml"
+
+  # Manual deployment for staging/prod promotion
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      image_tag:
+        description: "Docker image tag to deploy (e.g., sha-abc1234 or latest)"
+        required: true
+        default: "latest"
+      services:
+        description: "Services to deploy (comma-separated, or 'all')"
+        required: true
+        default: "all"
+
+  # Called by promotion workflow
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: string
+      image_tag:
+        description: "Docker image tag to deploy"
+        required: true
+        type: string
+      services:
+        description: "Services to deploy (comma-separated, or 'all')"
+        required: true
+        type: string
+        default: "all"
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'dev' }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/ftgo
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate Kustomize manifests
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Validate dev overlay
+        run: kustomize build deployment/kubernetes/overlays/dev > /dev/null
+
+      - name: Validate staging overlay
+        run: kustomize build deployment/kubernetes/overlays/staging > /dev/null
+
+      - name: Validate prod overlay
+        run: kustomize build deployment/kubernetes/overlays/prod > /dev/null
+
+  # ---------------------------------------------------------------------------
+  # Deploy to target environment
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: "Deploy to ${{ inputs.environment || 'dev' }}"
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment || 'dev' }}
+      url: "https://ftgo-${{ inputs.environment || 'dev' }}.example.com"
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Determine environment
+        id: env
+        run: |
+          ENV="${{ inputs.environment || 'dev' }}"
+          TAG="${{ inputs.image_tag || 'latest' }}"
+          echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "namespace=ftgo-${ENV}" >> "$GITHUB_OUTPUT"
+
+      - name: Set image tags
+        working-directory: deployment/kubernetes/overlays/${{ steps.env.outputs.environment }}
+        run: |
+          TAG="${{ steps.env.outputs.tag }}"
+          SERVICES="${{ inputs.services || 'all' }}"
+
+          if [[ "$SERVICES" == "all" ]]; then
+            kustomize edit set image \
+              ghcr.io/mbatchelor81/ftgo-consumer-service:${TAG} \
+              ghcr.io/mbatchelor81/ftgo-order-service:${TAG} \
+              ghcr.io/mbatchelor81/ftgo-restaurant-service:${TAG} \
+              ghcr.io/mbatchelor81/ftgo-courier-service:${TAG}
+          else
+            IFS=',' read -ra SVC_ARRAY <<< "$SERVICES"
+            IMAGES=()
+            for svc in "${SVC_ARRAY[@]}"; do
+              svc=$(echo "$svc" | xargs)
+              IMAGES+=("ghcr.io/mbatchelor81/ftgo-${svc}:${TAG}")
+            done
+            kustomize edit set image "${IMAGES[@]}"
+          fi
+
+      - name: Build manifests
+        id: build
+        run: |
+          ENV="${{ steps.env.outputs.environment }}"
+          kustomize build deployment/kubernetes/overlays/${ENV} > /tmp/manifests.yaml
+          echo "Generated manifests for ${ENV}:"
+          cat /tmp/manifests.yaml | head -50
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v4
+
+      # NOTE: Uncomment and configure when a K8s cluster is available.
+      # Replace with your cloud provider's credential action:
+      #   - AWS EKS: aws-actions/configure-aws-credentials@v4
+      #   - GKE: google-github-actions/auth@v2
+      #   - AKS: azure/login@v2
+      #
+      # - name: Configure cluster credentials
+      #   run: |
+      #     # Example for EKS:
+      #     # aws eks update-kubeconfig --name ftgo-cluster --region us-east-1
+      #     echo "Cluster credentials configured"
+      #
+      # - name: Apply manifests
+      #   run: |
+      #     kubectl apply -f /tmp/manifests.yaml
+      #     kubectl -n ${{ steps.env.outputs.namespace }} rollout status deployment --timeout=300s
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ steps.env.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Namespace | ${{ steps.env.outputs.namespace }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${{ steps.env.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Services | ${{ inputs.services || 'all' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered By | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Post-deployment verification
+  # ---------------------------------------------------------------------------
+  verify:
+    name: "Verify deployment"
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.deploy.result == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # NOTE: Uncomment when cluster credentials are configured.
+      # - name: Health checks
+      #   run: |
+      #     NAMESPACE="ftgo-${{ inputs.environment || 'dev' }}"
+      #     for svc in consumer-service order-service restaurant-service courier-service; do
+      #       echo "Checking ftgo-${svc}..."
+      #       kubectl -n ${NAMESPACE} wait --for=condition=available \
+      #         deployment/ftgo-${svc} --timeout=120s
+      #     done
+
+      - name: Verification summary
+        run: |
+          echo "## Verification" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment to **${{ inputs.environment || 'dev' }}** completed." >> $GITHUB_STEP_SUMMARY
+          echo "Manual health check required until cluster credentials are configured." >> $GITHUB_STEP_SUMMARY

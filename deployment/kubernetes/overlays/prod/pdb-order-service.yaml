@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ftgo-order-service
+  labels:
+    app.kubernetes.io/name: ftgo-order-service
+    app.kubernetes.io/part-of: ftgo
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ftgo-order-service

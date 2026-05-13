@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-dev
+
+namePrefix: ""
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+patches:
+  - path: patches/resource-limits.yaml
+  - path: patches/hpa-dev.yaml
+  - path: patches/mysql-storage.yaml
+
+secretGenerator:
+  - name: ftgo-mysql-credentials
+    behavior: replace
+    literals:
+      - root-password=dev-root-password
+      - username=mysqluser
+      - password=dev-mysql-password
+
+configMapGenerator:
+  - name: ftgo-consumer-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-order-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-restaurant-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+  - name: ftgo-courier-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,dev
+
+commonLabels:
+  environment: dev
+
+images:
+  - name: ghcr.io/mbatchelor81/ftgo-consumer-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-order-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-restaurant-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-courier-service
+    newTag: latest
