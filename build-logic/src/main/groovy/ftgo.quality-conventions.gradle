@@ -57,8 +57,8 @@ spotbugs {
     toolVersion = '4.8.5'
     excludeFilter = file("${qualityConfigDir}/spotbugs-exclude.xml")
     ignoreFailures = false
-    effort = 'default'
-    reportLevel = 'high'
+    effort = com.github.spotbugs.snom.Effort.DEFAULT
+    reportLevel = com.github.spotbugs.snom.Confidence.HIGH
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
@@ -87,7 +87,7 @@ tasks.named('jacocoTestReport') {
     }
 }
 
-tasks.register('jacocoTestCoverageVerification', JacocoCoverageVerification) {
+tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('jacocoTestReport')
 
     violationRules {

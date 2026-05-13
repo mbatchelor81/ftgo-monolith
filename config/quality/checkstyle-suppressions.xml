@@ -8,8 +8,9 @@
   Suppress specific rules for generated code, tests, and legacy modules.
 -->
 <suppressions>
-  <!-- Test classes may have longer methods and more parameters -->
+  <!-- Test classes may have longer methods, more parameters, and underscore naming -->
   <suppress checks="MethodLength" files=".*Test\.java$"/>
+  <suppress checks="MethodName" files=".*Test\.java$"/>
   <suppress checks="ParameterNumber" files=".*Test\.java$"/>
   <suppress checks="FileLength" files=".*Test\.java$"/>
 

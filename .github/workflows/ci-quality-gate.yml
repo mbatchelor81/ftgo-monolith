@@ -151,8 +151,8 @@ jobs:
 
       - name: Apply SonarQube plugin
         run: |
-          mkdir -p ~/.gradle
-          cat > ~/.gradle/init.d/sonar.gradle << 'EOF'
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/sonar.gradle <<'INITSCRIPT'
           initscript {
               repositories { mavenCentral() }
               dependencies {
@@ -162,7 +162,8 @@ jobs:
           allprojects {
               apply plugin: org.sonarqube.gradle.SonarQubePlugin
           }
-          EOF
+          INITSCRIPT
+          sed -i 's/^          //' ~/.gradle/init.d/sonar.gradle
 
       - name: Build and analyze
         env:

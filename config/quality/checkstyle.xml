@@ -16,6 +16,12 @@
   <!-- Suppress warnings via @SuppressWarnings annotation -->
   <module name="SuppressWarningsFilter"/>
 
+  <!-- Load external suppressions file -->
+  <module name="SuppressionFilter">
+    <property name="file" value="${suppressionFile}"/>
+    <property name="optional" value="false"/>
+  </module>
+
   <!-- File-level checks -->
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
@@ -59,7 +65,7 @@
     <!-- ======================== Size ======================== -->
     <module name="LineLength">
       <property name="max" value="120"/>
-      <property name="ignorePattern" value="^package.*|^import.*|a]? href|href|http://|https://|ftp://"/>
+      <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
     <module name="MethodLength">
       <property name="max" value="60"/>
