@@ -213,6 +213,7 @@ See [authorization.md](authorization.md) for full documentation.
 
 ## Future Work
 
+
 - Service-to-service authentication (mTLS / API keys)
 - Rate limiting integration
 - Audit logging for security events
