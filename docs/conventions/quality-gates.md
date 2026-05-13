@@ -5,8 +5,9 @@ Platform.
 
 ## Overview
 
-Every microservice under `services/` applies the `ftgo.quality-conventions`
-Gradle plugin, which configures four tools:
+New microservices under `services/` should apply the `ftgo.quality-conventions`
+Gradle plugin (see [Applying to a New Module](#applying-to-a-new-module)).
+The plugin configures four tools:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
