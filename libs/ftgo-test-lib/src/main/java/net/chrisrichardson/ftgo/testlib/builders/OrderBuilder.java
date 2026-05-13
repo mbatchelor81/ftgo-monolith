@@ -7,6 +7,7 @@ import net.chrisrichardson.ftgo.domain.OrderLineItem;
 import net.chrisrichardson.ftgo.domain.Restaurant;
 import net.chrisrichardson.ftgo.domain.RestaurantMenu;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,15 +64,25 @@ public final class OrderBuilder {
         }
 
         List<OrderLineItem> items = lineItems.isEmpty()
-                ? Collections.singletonList(new OrderLineItem("1", "Default Item", new Money("10.00"), 1))
+                ? Collections.singletonList(new OrderLineItem("1", "Chicken Vindaloo", new Money("12.34"), 1))
                 : lineItems;
 
         Order order = new Order(consumerId, restaurant, items);
 
         if (id != null) {
-            order.setId(id);
+            setField(order, "id", id);
         }
 
         return order;
+    }
+
+    private static void setField(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to set field '" + fieldName + "' on " + target.getClass().getSimpleName(), e);
+        }
     }
 }

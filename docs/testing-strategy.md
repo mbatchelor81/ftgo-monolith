@@ -157,6 +157,7 @@ class OrderControllerApiTest {
     @Test
     void getOrder_existingOrder_returns200WithOrderBody() {
         Order order = OrderBuilder.anOrder()
+                .withState(OrderState.APPROVED)
                 .build();
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 

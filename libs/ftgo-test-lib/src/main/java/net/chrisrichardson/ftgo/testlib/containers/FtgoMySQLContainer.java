@@ -43,7 +43,7 @@ public final class FtgoMySQLContainer {
      * Returns a singleton MySQL container instance configured for FTGO.
      * The container is created on first access and reused for the JVM lifetime.
      */
-    public static synchronized MySQLContainer<?> getInstance() {
+    public static MySQLContainer<?> getInstance() {
         if (container == null) {
             container = new MySQLContainer<>(IMAGE)
                     .withDatabaseName(DATABASE)

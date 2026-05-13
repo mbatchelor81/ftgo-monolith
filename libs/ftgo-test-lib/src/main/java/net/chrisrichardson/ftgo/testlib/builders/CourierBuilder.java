@@ -1,7 +1,5 @@
 package net.chrisrichardson.ftgo.testlib.builders;
 
-import net.chrisrichardson.ftgo.common.Address;
-import net.chrisrichardson.ftgo.common.PersonName;
 import net.chrisrichardson.ftgo.domain.Courier;
 
 import java.lang.reflect.Field;
@@ -39,7 +37,7 @@ public final class CourierBuilder {
     }
 
     public Courier build() {
-        Courier courier = new Courier(new PersonName("Test", "Courier"), new Address("1 Main St", "", "Oakland", "CA", "94611"));
+        Courier courier = new Courier();
         if (available) {
             courier.noteAvailable();
         } else {
