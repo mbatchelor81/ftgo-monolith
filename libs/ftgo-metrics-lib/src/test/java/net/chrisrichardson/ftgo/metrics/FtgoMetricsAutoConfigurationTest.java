@@ -14,9 +14,32 @@ class FtgoMetricsAutoConfigurationTest {
             .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
             .withConfiguration(AutoConfigurations.of(FtgoMetricsAutoConfiguration.class));
 
+    private final ApplicationContextRunner allEnabledRunner = contextRunner
+            .withPropertyValues(
+                    "ftgo.metrics.order.enabled=true",
+                    "ftgo.metrics.consumer.enabled=true",
+                    "ftgo.metrics.restaurant.enabled=true",
+                    "ftgo.metrics.courier.enabled=true");
+
     @Test
-    void autoConfigurationRegistersAllMetricsBeans() {
+    void commonMetricsAlwaysRegistered() {
+        contextRunner.run(context ->
+                assertThat(context).hasSingleBean(FtgoCommonMetrics.class));
+    }
+
+    @Test
+    void domainMetricsNotRegisteredByDefault() {
         contextRunner.run(context -> {
+            assertThat(context).doesNotHaveBean(OrderMetrics.class);
+            assertThat(context).doesNotHaveBean(ConsumerMetrics.class);
+            assertThat(context).doesNotHaveBean(RestaurantMetrics.class);
+            assertThat(context).doesNotHaveBean(CourierMetrics.class);
+        });
+    }
+
+    @Test
+    void allMetricsRegisteredWhenExplicitlyEnabled() {
+        allEnabledRunner.run(context -> {
             assertThat(context).hasSingleBean(FtgoCommonMetrics.class);
             assertThat(context).hasSingleBean(OrderMetrics.class);
             assertThat(context).hasSingleBean(ConsumerMetrics.class);
@@ -27,7 +50,7 @@ class FtgoMetricsAutoConfigurationTest {
 
     @Test
     void orderMetricsRegistersExpectedCounters() {
-        contextRunner.run(context -> {
+        allEnabledRunner.run(context -> {
             MeterRegistry registry = context.getBean(MeterRegistry.class);
             assertThat(registry.find("ftgo.orders.created").counter()).isNotNull();
             assertThat(registry.find("ftgo.orders.approved").counter()).isNotNull();
@@ -39,7 +62,7 @@ class FtgoMetricsAutoConfigurationTest {
 
     @Test
     void consumerMetricsRegistersExpectedCounters() {
-        contextRunner.run(context -> {
+        allEnabledRunner.run(context -> {
             MeterRegistry registry = context.getBean(MeterRegistry.class);
             assertThat(registry.find("ftgo.consumers.registered").counter()).isNotNull();
             assertThat(registry.find("ftgo.consumers.validations.succeeded").counter()).isNotNull();
@@ -48,7 +71,7 @@ class FtgoMetricsAutoConfigurationTest {
 
     @Test
     void restaurantMetricsRegistersExpectedCounters() {
-        contextRunner.run(context -> {
+        allEnabledRunner.run(context -> {
             MeterRegistry registry = context.getBean(MeterRegistry.class);
             assertThat(registry.find("ftgo.restaurants.created").counter()).isNotNull();
             assertThat(registry.find("ftgo.restaurants.tickets.created").counter()).isNotNull();
@@ -58,7 +81,7 @@ class FtgoMetricsAutoConfigurationTest {
 
     @Test
     void courierMetricsRegistersExpectedCounters() {
-        contextRunner.run(context -> {
+        allEnabledRunner.run(context -> {
             MeterRegistry registry = context.getBean(MeterRegistry.class);
             assertThat(registry.find("ftgo.couriers.created").counter()).isNotNull();
             assertThat(registry.find("ftgo.couriers.deliveries.completed").counter()).isNotNull();
@@ -67,14 +90,14 @@ class FtgoMetricsAutoConfigurationTest {
     }
 
     @Test
-    void domainMetricsCanBeDisabledViaProperty() {
-        new ApplicationContextRunner()
-                .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
-                .withConfiguration(AutoConfigurations.of(FtgoMetricsAutoConfiguration.class))
-                .withPropertyValues("ftgo.metrics.order.enabled=false")
+    void selectiveOptIn() {
+        contextRunner
+                .withPropertyValues("ftgo.metrics.order.enabled=true")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(OrderMetrics.class);
-                    assertThat(context).hasSingleBean(ConsumerMetrics.class);
+                    assertThat(context).hasSingleBean(OrderMetrics.class);
+                    assertThat(context).doesNotHaveBean(ConsumerMetrics.class);
+                    assertThat(context).doesNotHaveBean(RestaurantMetrics.class);
+                    assertThat(context).doesNotHaveBean(CourierMetrics.class);
                 });
     }
 }

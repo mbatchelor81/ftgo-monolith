@@ -114,9 +114,11 @@ per service domain.
 
 ## Service Configuration
 
-Each service should expose the Prometheus actuator endpoint:
+Each service should expose the Prometheus actuator endpoint and opt-in to its
+domain metrics via `ftgo.metrics.{domain}.enabled=true`:
 
 ```yaml
+# Example for the Order Service
 management:
   endpoints:
     web:
@@ -125,6 +127,12 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+ftgo:
+  metrics:
+    order:
+      enabled: true
 ```
 
-This configuration is already present in all new microservice `application.yml` files.
+Available domains: `order`, `consumer`, `restaurant`, `courier`.
+Common platform metrics (`FtgoCommonMetrics`) are always registered.

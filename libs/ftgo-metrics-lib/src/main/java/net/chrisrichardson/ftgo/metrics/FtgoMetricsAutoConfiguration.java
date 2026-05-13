@@ -16,25 +16,25 @@ public class FtgoMetricsAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "ftgo.metrics.order.enabled", matchIfMissing = true)
+    @ConditionalOnProperty(name = "ftgo.metrics.order.enabled")
     public OrderMetrics orderMetrics(MeterRegistry registry) {
         return new OrderMetrics(registry);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "ftgo.metrics.consumer.enabled", matchIfMissing = true)
+    @ConditionalOnProperty(name = "ftgo.metrics.consumer.enabled")
     public ConsumerMetrics consumerMetrics(MeterRegistry registry) {
         return new ConsumerMetrics(registry);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "ftgo.metrics.restaurant.enabled", matchIfMissing = true)
+    @ConditionalOnProperty(name = "ftgo.metrics.restaurant.enabled")
     public RestaurantMetrics restaurantMetrics(MeterRegistry registry) {
         return new RestaurantMetrics(registry);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "ftgo.metrics.courier.enabled", matchIfMissing = true)
+    @ConditionalOnProperty(name = "ftgo.metrics.courier.enabled")
     public CourierMetrics courierMetrics(MeterRegistry registry) {
         return new CourierMetrics(registry);
     }
