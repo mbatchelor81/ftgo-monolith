@@ -42,6 +42,8 @@ jackson-legacy = "2.9.7"
 
 # --- Build Plugins ---
 jib = "3.4.2"
+spotbugs-plugin = "6.0.15"
+sonarqube-plugin = "5.0.0.4638"
 versions-plugin = "0.51.0"
 
 # --- API Documentation ---
@@ -108,3 +110,5 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 flyway = { id = "org.flywaydb.flyway", version.ref = "flyway" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin" }
+spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube-plugin" }

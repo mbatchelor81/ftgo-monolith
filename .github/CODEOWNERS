@@ -1,0 +1,54 @@
+# =============================================================================
+# FTGO Platform — Code Owners
+# =============================================================================
+# GitHub will automatically request reviews from the listed owners when a PR
+# touches matching paths. Each line is a pattern followed by one or more owners.
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
+
+# ── Default owner (catch-all) ────────────────────────────────────────────────
+*                                       @mbatchelor81
+
+# ── Build & CI ───────────────────────────────────────────────────────────────
+build-logic/                            @mbatchelor81
+buildSrc/                               @mbatchelor81
+build.gradle                            @mbatchelor81
+settings.gradle                         @mbatchelor81
+gradle/                                 @mbatchelor81
+.github/workflows/                      @mbatchelor81
+
+# ── Quality & Standards ──────────────────────────────────────────────────────
+config/quality/                         @mbatchelor81
+.editorconfig                           @mbatchelor81
+CONTRIBUTING.md                         @mbatchelor81
+
+# ── Shared Libraries ────────────────────────────────────────────────────────
+libs/                                   @mbatchelor81
+ftgo-common/                            @mbatchelor81
+ftgo-common-jpa/                        @mbatchelor81
+ftgo-domain/                            @mbatchelor81
+
+# ── Legacy Monolith ─────────────────────────────────────────────────────────
+ftgo-application/                       @mbatchelor81
+ftgo-order-service/                     @mbatchelor81
+ftgo-consumer-service/                  @mbatchelor81
+ftgo-restaurant-service/                @mbatchelor81
+ftgo-courier-service/                   @mbatchelor81
+
+# ── Microservices ────────────────────────────────────────────────────────────
+services/order-service/                 @mbatchelor81
+services/consumer-service/              @mbatchelor81
+services/restaurant-service/            @mbatchelor81
+services/courier-service/               @mbatchelor81
+
+# ── Documentation ────────────────────────────────────────────────────────────
+docs/                                   @mbatchelor81
+
+# ── Database Migrations ─────────────────────────────────────────────────────
+ftgo-flyway/                            @mbatchelor81
+
+# ── Infrastructure ───────────────────────────────────────────────────────────
+infrastructure/                         @mbatchelor81
+deployment/                             @mbatchelor81
+docker-compose.yml                      @mbatchelor81

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0
+                        https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+  <!--
+    FTGO Platform — SpotBugs Exclusion Filter
+    Excludes generated code, test classes, and known false positives.
+  -->
+
+  <!-- Exclude generated code -->
+  <Match>
+    <Source name="~.*[\\/]generated[\\/].*"/>
+  </Match>
+
+  <!-- Exclude test classes from most checks -->
+  <Match>
+    <Class name="~.*Test$"/>
+    <Bug pattern="URF_UNREAD_FIELD"/>
+  </Match>
+  <Match>
+    <Class name="~.*Test$"/>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+  </Match>
+
+  <!-- JPA entities use non-final fields and default constructors by design -->
+  <Match>
+    <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    <Package name="~net\.chrisrichardson\.ftgo\..*\.domain"/>
+  </Match>
+
+  <!-- Spring @Autowired fields are set via reflection -->
+  <Match>
+    <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    <Package name="~net\.chrisrichardson\.ftgo\..*\.configuration"/>
+  </Match>
+
+  <!-- Suppress serialization warnings for Spring-managed beans -->
+  <Match>
+    <Bug pattern="SE_BAD_FIELD"/>
+  </Match>
+  <Match>
+    <Bug pattern="SE_NO_SERIALVERSIONID"/>
+  </Match>
+
+  <!-- Suppress EI_EXPOSE_REP for DTOs and value objects -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Or>
+      <Package name="~net\.chrisrichardson\.ftgo\..*\.api\..*"/>
+      <Package name="~net\.chrisrichardson\.ftgo\.common"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Or>
+      <Package name="~net\.chrisrichardson\.ftgo\..*\.api\..*"/>
+      <Package name="~net\.chrisrichardson\.ftgo\.common"/>
+    </Or>
+  </Match>
+</FindBugsFilter>
