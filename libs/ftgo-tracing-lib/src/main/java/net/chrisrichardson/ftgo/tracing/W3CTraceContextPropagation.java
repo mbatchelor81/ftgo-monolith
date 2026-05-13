@@ -77,6 +77,9 @@ public final class W3CTraceContextPropagation {
             if (parts.length < 4) {
                 return TraceContextOrSamplingFlags.EMPTY;
             }
+            if (parts[1].length() != 32 || parts[2].length() != 16) {
+                return TraceContextOrSamplingFlags.EMPTY;
+            }
             try {
                 long traceIdHigh = hexToLong(parts[1].substring(0, 16));
                 long traceId = hexToLong(parts[1].substring(16));
