@@ -10,7 +10,9 @@ on:
       - "build-logic/**"
       - "build.gradle"
       - "settings.gradle"
+      - "gradle.properties"
       - "gradle/**"
+      - ".github/workflows/ci-quality-gate.yml"
   pull_request:
     branches: [main, feat/microservices-migration]
     paths:
@@ -20,7 +22,9 @@ on:
       - "build-logic/**"
       - "build.gradle"
       - "settings.gradle"
+      - "gradle.properties"
       - "gradle/**"
+      - ".github/workflows/ci-quality-gate.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -166,7 +170,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         run: |
           ./gradlew build sonar \
             -Dsonar.projectKey=ftgo-monolith \

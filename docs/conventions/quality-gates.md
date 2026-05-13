@@ -58,7 +58,7 @@ SonarQube analysis is available via:
 
 Required environment variables:
 - `SONAR_TOKEN` — authentication token
-- `SONAR_HOST_URL` — server URL (defaults to SonarCloud)
+- `SONAR_HOST_URL` — server URL (CI defaults to `https://sonarcloud.io` if not set)
 - `SONAR_ORGANIZATION` — organization key (defaults to `mbatchelor81`)
 
 ## Configuration Files
