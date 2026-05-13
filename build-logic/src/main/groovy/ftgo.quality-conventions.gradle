@@ -1,0 +1,124 @@
+// =============================================================================
+// ftgo.quality-conventions
+// =============================================================================
+// Static analysis and code coverage for new FTGO microservices.
+// Applies Checkstyle, PMD, SpotBugs, and JaCoCo with shared config files
+// from config/quality/ at the root project level.
+//
+// Usage: apply plugin: 'ftgo.quality-conventions'
+// Depends on: ftgo.java-conventions (applied transitively)
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'checkstyle'
+    id 'pmd'
+    id 'com.github.spotbugs'
+    id 'jacoco'
+}
+
+def qualityConfigDir = "${rootProject.projectDir}/config/quality"
+
+// ======================== Checkstyle ========================
+checkstyle {
+    toolVersion = '10.17.0'
+    configFile = file("${qualityConfigDir}/checkstyle.xml")
+    configProperties = [
+        'suppressionFile': "${qualityConfigDir}/checkstyle-suppressions.xml"
+    ]
+    maxWarnings = 0
+    ignoreFailures = false
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ======================== PMD ========================
+pmd {
+    toolVersion = '7.2.0'
+    consoleOutput = true
+    ruleSetFiles = files("${qualityConfigDir}/pmd-ruleset.xml")
+    ruleSets = [] // clear defaults — use only our custom ruleset
+    ignoreFailures = false
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ======================== SpotBugs ========================
+spotbugs {
+    toolVersion = '4.8.5'
+    excludeFilter = file("${qualityConfigDir}/spotbugs-exclude.xml")
+    ignoreFailures = false
+    effort = com.github.spotbugs.snom.Effort.DEFAULT
+    reportLevel = com.github.spotbugs.snom.Confidence.HIGH
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ======================== JaCoCo ========================
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.named('test') {
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: [
+                '**/config/**',
+                '**/dto/**',
+                '**/exception/**',
+                '**/*Application.class'
+            ])
+        }))
+    }
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+        rule {
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.50
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'jacocoTestCoverageVerification'
+}

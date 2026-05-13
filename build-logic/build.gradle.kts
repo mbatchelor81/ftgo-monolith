@@ -14,4 +14,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-gradle-plugin:3.2.5")
     implementation("io.spring.gradle:dependency-management-plugin:1.1.5")
     implementation("com.google.cloud.tools:jib-gradle-plugin:3.4.2")
+    implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.15")
+    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:5.0.0.4638")
 }
