@@ -85,8 +85,10 @@ public class TokenRefreshService {
                     log.debug("Successfully refreshed access token");
                     return Optional.of(accessToken);
                 }
+                log.warn("Token refresh response did not contain access_token");
+            } else {
+                log.warn("Token refresh failed with status {}", response.statusCode());
             }
-            log.warn("Token refresh failed with status {}", response.statusCode());
         } catch (IOException | InterruptedException e) {
             log.error("Error during token refresh", e);
             if (e instanceof InterruptedException) {

@@ -2,8 +2,6 @@ package com.ftgo.security.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Externalized JWT configuration for FTGO services.
@@ -26,8 +24,6 @@ public class FtgoJwtProperties {
     private String userIdClaimName = "sub";
 
     private String rolePrefix = "ROLE_";
-
-    private final List<String> requiredAudience = new ArrayList<>();
 
     private final TokenRefresh tokenRefresh = new TokenRefresh();
 
@@ -85,10 +81,6 @@ public class FtgoJwtProperties {
 
     public void setRolePrefix(String rolePrefix) {
         this.rolePrefix = rolePrefix;
-    }
-
-    public List<String> getRequiredAudience() {
-        return requiredAudience;
     }
 
     public TokenRefresh getTokenRefresh() {
