@@ -39,6 +39,7 @@ public class RequestResponseLoggingFilter implements GlobalFilter, Ordered {
         String method = request.getMethod().name();
         String path = request.getURI().getPath();
         String remoteAddr = request.getRemoteAddress() != null
+                && request.getRemoteAddress().getAddress() != null
                 ? request.getRemoteAddress().getAddress().getHostAddress()
                 : "unknown";
 
