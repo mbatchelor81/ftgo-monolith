@@ -30,6 +30,8 @@ rest-assured = "5.4.0"
 rest-assured-legacy = "2.9.0"
 mockito = "5.11.0"
 assertj = "3.25.3"
+testcontainers = "1.19.7"
+awaitility = "4.2.1"
 
 # --- Observability ---
 micrometer = "1.12.5"
@@ -102,6 +104,11 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 h2-database = { module = "com.h2database:h2", version.ref = "h2" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-core = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 
 # --- Database ---
 mysql-connector = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector" }
@@ -124,6 +131,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 
 [bundles]
 testing = ["junit-jupiter", "rest-assured", "rest-assured-spring-mock-mvc", "rest-assured-json-path", "mockito-core", "mockito-junit-jupiter", "assertj-core"]
+testing-containers = ["testcontainers-core", "testcontainers-junit-jupiter", "testcontainers-mysql"]
 spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa", "spring-boot-starter-actuator", "spring-boot-starter-validation"]
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin-reporter-brave", "zipkin-sender-urlconnection"]
