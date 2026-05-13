@@ -56,8 +56,7 @@ jar {
     manifest {
         attributes(
             'Implementation-Title': project.name,
-            'Implementation-Version': project.version,
-            'Main-Class': 'com.ftgo.apigateway.ApiGatewayApplication'
+            'Implementation-Version': project.version
         )
     }
 }

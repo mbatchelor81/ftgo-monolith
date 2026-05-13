@@ -14,21 +14,21 @@ import java.security.Principal;
 @ConditionalOnProperty(name = "ftgo.gateway.rate-limiting.enabled", havingValue = "true", matchIfMissing = true)
 public class RateLimitingConfig {
 
-    @Bean
-    public RedisRateLimiter redisRateLimiter() {
-        return new RedisRateLimiter(10, 20, 1);
-    }
+  @Bean
+  public RedisRateLimiter redisRateLimiter() {
+    return new RedisRateLimiter(10, 20, 1);
+  }
 
-    @Bean
-    public KeyResolver userKeyResolver() {
-        return exchange -> exchange.getPrincipal()
-                .map(Principal::getName)
-                .switchIfEmpty(Mono.fromSupplier(() -> {
-                    var remoteAddress = exchange.getRequest().getRemoteAddress();
-                    if (remoteAddress != null && remoteAddress.getAddress() != null) {
-                        return remoteAddress.getAddress().getHostAddress();
-                    }
-                    return "anonymous";
-                }));
-    }
+  @Bean
+  public KeyResolver userKeyResolver() {
+    return exchange -> exchange.getPrincipal()
+      .map(Principal::getName)
+      .switchIfEmpty(Mono.fromSupplier(() -> {
+        var remoteAddress = exchange.getRequest().getRemoteAddress();
+        if (remoteAddress != null && remoteAddress.getAddress() != null) {
+          return remoteAddress.getAddress().getHostAddress();
+        }
+        return "anonymous";
+      }));
+  }
 }

@@ -13,20 +13,20 @@ import java.time.Duration;
 @Configuration
 public class CircuitBreakerConfig {
 
-    @Bean
-    public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomizer() {
-        return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-                .circuitBreakerConfig(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
-                        .failureRateThreshold(50)
-                        .waitDurationInOpenState(Duration.ofSeconds(30))
-                        .slidingWindowSize(10)
-                        .minimumNumberOfCalls(5)
-                        .permittedNumberOfCallsInHalfOpenState(3)
-                        .automaticTransitionFromOpenToHalfOpenEnabled(true)
-                        .build())
-                .timeLimiterConfig(io.github.resilience4j.timelimiter.TimeLimiterConfig.custom()
-                        .timeoutDuration(Duration.ofSeconds(5))
-                        .build())
-                .build());
-    }
+  @Bean
+  public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomizer() {
+    return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+      .circuitBreakerConfig(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
+        .failureRateThreshold(50)
+        .waitDurationInOpenState(Duration.ofSeconds(30))
+        .slidingWindowSize(10)
+        .minimumNumberOfCalls(5)
+        .permittedNumberOfCallsInHalfOpenState(3)
+        .automaticTransitionFromOpenToHalfOpenEnabled(true)
+        .build())
+      .timeLimiterConfig(io.github.resilience4j.timelimiter.TimeLimiterConfig.custom()
+        .timeoutDuration(Duration.ofSeconds(5))
+        .build())
+      .build());
+  }
 }

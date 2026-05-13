@@ -12,55 +12,55 @@ import org.springframework.lang.Nullable;
 @Configuration
 public class GatewayRoutingConfig {
 
-    private final RedisRateLimiter redisRateLimiter;
-    private final KeyResolver keyResolver;
+  private final RedisRateLimiter redisRateLimiter;
+  private final KeyResolver keyResolver;
 
-    public GatewayRoutingConfig(@Nullable RedisRateLimiter redisRateLimiter,
-                                 @Nullable KeyResolver keyResolver) {
-        this.redisRateLimiter = redisRateLimiter;
-        this.keyResolver = keyResolver;
+  public GatewayRoutingConfig(@Nullable RedisRateLimiter redisRateLimiter,
+                               @Nullable KeyResolver keyResolver) {
+    this.redisRateLimiter = redisRateLimiter;
+    this.keyResolver = keyResolver;
+  }
+
+  @Bean
+  public RouteLocator ftgoRoutes(RouteLocatorBuilder builder) {
+    return builder.routes()
+      .route("order-service", r -> r
+        .path("/api/orders/**")
+        .filters(f -> applyFilters(f, "orderServiceCB"))
+        .uri("lb://order-service"))
+
+      .route("consumer-service", r -> r
+        .path("/api/consumers/**")
+        .filters(f -> applyFilters(f, "consumerServiceCB"))
+        .uri("lb://consumer-service"))
+
+      .route("restaurant-service", r -> r
+        .path("/api/restaurants/**")
+        .filters(f -> applyFilters(f, "restaurantServiceCB"))
+        .uri("lb://restaurant-service"))
+
+      .route("courier-service", r -> r
+        .path("/api/couriers/**")
+        .filters(f -> applyFilters(f, "courierServiceCB"))
+        .uri("lb://courier-service"))
+
+      .build();
+  }
+
+  private GatewayFilterSpec applyFilters(GatewayFilterSpec filterSpec, String circuitBreakerName) {
+    filterSpec.stripPrefix(1);
+
+    if (redisRateLimiter != null && keyResolver != null) {
+      filterSpec.requestRateLimiter(rl -> rl
+        .setRateLimiter(redisRateLimiter)
+        .setKeyResolver(keyResolver)
+        .setDenyEmptyKey(false));
     }
 
-    @Bean
-    public RouteLocator ftgoRoutes(RouteLocatorBuilder builder) {
-        return builder.routes()
-                .route("order-service", r -> r
-                        .path("/api/orders/**")
-                        .filters(f -> applyFilters(f, "orderServiceCB"))
-                        .uri("lb://order-service"))
+    filterSpec.circuitBreaker(cb -> cb
+      .setName(circuitBreakerName)
+      .setFallbackUri("forward:/fallback"));
 
-                .route("consumer-service", r -> r
-                        .path("/api/consumers/**")
-                        .filters(f -> applyFilters(f, "consumerServiceCB"))
-                        .uri("lb://consumer-service"))
-
-                .route("restaurant-service", r -> r
-                        .path("/api/restaurants/**")
-                        .filters(f -> applyFilters(f, "restaurantServiceCB"))
-                        .uri("lb://restaurant-service"))
-
-                .route("courier-service", r -> r
-                        .path("/api/couriers/**")
-                        .filters(f -> applyFilters(f, "courierServiceCB"))
-                        .uri("lb://courier-service"))
-
-                .build();
-    }
-
-    private GatewayFilterSpec applyFilters(GatewayFilterSpec filterSpec, String circuitBreakerName) {
-        filterSpec.stripPrefix(1);
-
-        if (redisRateLimiter != null && keyResolver != null) {
-            filterSpec.requestRateLimiter(rl -> rl
-                    .setRateLimiter(redisRateLimiter)
-                    .setKeyResolver(keyResolver)
-                    .setDenyEmptyKey(false));
-        }
-
-        filterSpec.circuitBreaker(cb -> cb
-                .setName(circuitBreakerName)
-                .setFallbackUri("forward:/fallback"));
-
-        return filterSpec;
-    }
+    return filterSpec;
+  }
 }
