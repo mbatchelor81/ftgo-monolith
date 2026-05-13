@@ -32,7 +32,7 @@ subprojects {
 }
 
 // Modules under libs/ that target Java 17+ and manage their own toolchain.
-def java17Libs = ['ftgo-openapi-lib', 'ftgo-security-lib'] as Set
+def java17Libs = ['ftgo-openapi-lib', 'ftgo-security-lib', 'ftgo-metrics-lib'] as Set
 
 // Legacy modules: Java 8 target, JUnit 4 test dependency.
 // New microservices (services/*) will use convention plugins from build-logic/

@@ -1,0 +1,96 @@
+groups:
+  # =====================================================================
+  # Service Health Alerts
+  # =====================================================================
+  - name: ftgo_service_health
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FTGO service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been unreachable for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: >
+          rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+          / rate(http_server_requests_seconds_count[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "{{ $labels.job }} has a 5xx error rate above 5% for the last 5 minutes."
+
+      - alert: HighLatency
+        expr: >
+          histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (job, le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P95 latency on {{ $labels.job }}"
+          description: "{{ $labels.job }} P95 latency is above 2 seconds."
+
+  # =====================================================================
+  # JVM Alerts
+  # =====================================================================
+  - name: ftgo_jvm_health
+    rules:
+      - alert: HighHeapUsage
+        expr: >
+          jvm_memory_used_bytes{area="heap"}
+          / jvm_memory_max_bytes{area="heap"} > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High heap usage on {{ $labels.job }}"
+          description: "{{ $labels.job }} heap usage is above 90% for 5 minutes."
+
+      - alert: HighGCPause
+        expr: >
+          rate(jvm_gc_pause_seconds_sum[5m])
+          / rate(jvm_gc_pause_seconds_count[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High GC pause time on {{ $labels.job }}"
+          description: "{{ $labels.job }} average GC pause time exceeds 500ms."
+
+  # =====================================================================
+  # Business Metric Alerts
+  # =====================================================================
+  - name: ftgo_business_metrics
+    rules:
+      - alert: HighOrderRejectionRate
+        expr: >
+          rate(ftgo_orders_rejected_total{job="ftgo-order-service"}[15m])
+          / (rate(ftgo_orders_created_total{job="ftgo-order-service"}[15m]) > 0) > 0.20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High order rejection rate"
+          description: "More than 20% of orders are being rejected over the last 15 minutes."
+
+      - alert: NoOrdersCreated
+        expr: rate(ftgo_orders_created_total{job="ftgo-order-service"}[30m]) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No orders created in 30 minutes"
+          description: "No new orders have been created in the last 30 minutes during expected business hours."
+
+      - alert: CourierShortage
+        expr: ftgo_couriers_currently_available{job="ftgo-courier-service"} < 2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Courier availability critically low"
+          description: "Fewer than 2 couriers have been available for the last 15 minutes."

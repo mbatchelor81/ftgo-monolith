@@ -72,6 +72,7 @@ spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security" }
 
 # --- Observability ---
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 # --- Testing ---

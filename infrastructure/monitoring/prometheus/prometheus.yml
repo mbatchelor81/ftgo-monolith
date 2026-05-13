@@ -1,0 +1,68 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert-rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # -----------------------------------------------------------------------
+  # Prometheus self-monitoring
+  # -----------------------------------------------------------------------
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # -----------------------------------------------------------------------
+  # FTGO Order Service
+  # -----------------------------------------------------------------------
+  - job_name: "ftgo-order-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["order-service:8080"]
+        labels:
+          service: "order-service"
+          team: "order"
+
+  # -----------------------------------------------------------------------
+  # FTGO Consumer Service
+  # -----------------------------------------------------------------------
+  - job_name: "ftgo-consumer-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["consumer-service:8080"]
+        labels:
+          service: "consumer-service"
+          team: "consumer"
+
+  # -----------------------------------------------------------------------
+  # FTGO Restaurant Service
+  # -----------------------------------------------------------------------
+  - job_name: "ftgo-restaurant-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["restaurant-service:8080"]
+        labels:
+          service: "restaurant-service"
+          team: "restaurant"
+
+  # -----------------------------------------------------------------------
+  # FTGO Courier Service
+  # -----------------------------------------------------------------------
+  - job_name: "ftgo-courier-service"
+    metrics_path: /actuator/prometheus
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["courier-service:8080"]
+        labels:
+          service: "courier-service"
+          team: "courier"
