@@ -1,0 +1,66 @@
+name: "CD — Promote Environment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_environment:
+        description: "Source environment to promote FROM"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      image_tag:
+        description: "Image tag to promote (must already be deployed to source)"
+        required: true
+
+concurrency:
+  group: promote-${{ inputs.source_environment }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Determine promotion target
+  # ---------------------------------------------------------------------------
+  plan:
+    name: Plan promotion
+    runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.target.outputs.environment }}
+    steps:
+      - name: Determine target
+        id: target
+        env:
+          SOURCE_ENV: ${{ inputs.source_environment }}
+        run: |
+          case "$SOURCE_ENV" in
+            dev)     echo "environment=staging" >> "$GITHUB_OUTPUT" ;;
+            staging) echo "environment=prod" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "::error::Invalid source environment: $SOURCE_ENV"; exit 1 ;;
+          esac
+
+      - name: Promotion summary
+        env:
+          SOURCE_ENV: ${{ inputs.source_environment }}
+          TARGET_ENV: ${{ steps.target.outputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          echo "## Promotion Plan" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | ${SOURCE_ENV} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | ${TARGET_ENV} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${IMAGE_TAG} |" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Deploy to target environment via reusable workflow
+  # ---------------------------------------------------------------------------
+  promote:
+    name: "Promote to ${{ needs.plan.outputs.target }}"
+    needs: plan
+    uses: ./.github/workflows/cd-deploy.yml
+    with:
+      environment: ${{ needs.plan.outputs.target }}
+      image_tag: ${{ inputs.image_tag }}
+      services: all
+    secrets: inherit

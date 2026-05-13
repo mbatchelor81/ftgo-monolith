@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftgo-restaurant-service
+  labels:
+    app.kubernetes.io/name: ftgo-restaurant-service
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: ftgo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ftgo-restaurant-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ftgo-restaurant-service
+        app.kubernetes.io/component: service
+        app.kubernetes.io/part-of: ftgo
+    spec:
+      containers:
+        - name: restaurant-service
+          image: ghcr.io/mbatchelor81/ftgo-restaurant-service:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://ftgo-mysql:3306/ftgo
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-mysql-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ftgo-mysql-credentials
+                  key: password
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-restaurant-service-config
+                  key: spring-profiles
+            - name: JAVA_OPTS
+              valueFrom:
+                configMapKeyRef:
+                  name: ftgo-restaurant-service-config
+                  key: java-opts
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3

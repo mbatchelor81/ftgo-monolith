@@ -84,7 +84,7 @@ public final class W3CTraceContextPropagation {
                 long traceIdHigh = hexToLong(parts[1].substring(0, 16));
                 long traceId = hexToLong(parts[1].substring(16));
                 long spanId = hexToLong(parts[2]);
-                boolean sampled = "01".equals(parts[3]);
+                boolean sampled = (Integer.parseInt(parts[3].substring(0, 2), 16) & 0x01) != 0;
 
                 TraceContext context = TraceContext.newBuilder()
                         .traceIdHigh(traceIdHigh)
