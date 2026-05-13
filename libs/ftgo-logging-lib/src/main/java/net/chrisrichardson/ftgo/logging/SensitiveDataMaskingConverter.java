@@ -22,16 +22,19 @@ public class SensitiveDataMaskingConverter extends ClassicConverter {
     private static final Pattern[] PATTERNS = {
             // Credit card numbers (13-19 digits, with optional separators)
             Pattern.compile("\\b(\\d{4})[- ]?(\\d{4})[- ]?(\\d{4})[- ]?(\\d{1,7})\\b"),
-            // Bearer tokens (must run before generic key-value patterns)
+            // Bearer tokens
             Pattern.compile("(?i)(Bearer)\\s+([A-Za-z0-9_\\-\\.]+)"),
+            // Basic auth credentials
+            Pattern.compile("(?i)(Basic)\\s+([A-Za-z0-9+/=]+)"),
             // Sensitive key-value pairs — handles JSON ("key":"value") and plain (key=value) formats
             Pattern.compile("(?i)\"?(password|passwd|pwd|api[_-]?key|apikey|api[_-]?secret|token|secret|credential)\"?\\s*[=:]\\s*\"?([^\",\\s}]+)\"?"),
-            // SSN pattern
-            Pattern.compile("\\b(\\d{3})-?(\\d{2})-?(\\d{4})\\b"),
+            // SSN pattern (requires hyphens to avoid false-positives on numeric IDs)
+            Pattern.compile("\\b(\\d{3})-(\\d{2})-(\\d{4})\\b"),
     };
 
     private static final String[] REPLACEMENTS = {
             "$1-" + MASK + "-" + MASK + "-$4",
+            "$1 " + MASK,
             "$1 " + MASK,
             "$1=" + MASK,
             "***-**-$3",

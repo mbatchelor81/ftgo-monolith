@@ -128,9 +128,9 @@ automatically masks the following patterns in log messages:
 | Credit card numbers  | `4111-1111-1111-1111`                      | `4111-****-****-1111`      |
 | Passwords            | `password=secret123`                       | `password=****`            |
 | Bearer tokens        | `Bearer eyJhbGciOi...`                     | `Bearer ****`              |
-| Authorization headers| `Authorization=Basic dXNlcjpwYXNz`        | `Authorization=****`       |
+| Basic auth           | `Authorization: Basic dXNlcjpwYXNz`       | `Authorization: Basic ****`|
 | API keys             | `api_key=abc123secret`                     | `api_key=****`             |
-| SSNs                 | `123-45-6789`                              | `***-**-6789`              |
+| SSNs (hyphenated)    | `123-45-6789`                              | `***-**-6789`              |
 | Tokens/secrets       | `token=abc123`                             | `token=****`               |
 
 > **Important:** Masking is a safety net, not a substitute for careful logging.
@@ -195,6 +195,12 @@ public class PaymentService {
     // All public methods are automatically logged
 }
 ```
+
+### Sensitive Parameters
+
+`@Logged` logs method arguments at `DEBUG` level via `Arrays.toString()`. **Do not**
+apply `@Logged` to methods that accept sensitive parameters (passwords, tokens, PII).
+If you need entry/exit logging on such methods, log manually and omit the sensitive args.
 
 ### Performance
 

@@ -47,6 +47,14 @@ class SensitiveDataMaskingConverterTest {
     }
 
     @Test
+    void masksBasicAuth() {
+        String input = "Authorization: Basic dXNlcjpwYXNz";
+        String result = SensitiveDataMaskingConverter.maskSensitiveData(input);
+        assertThat(result).doesNotContain("dXNlcjpwYXNz");
+        assertThat(result).contains("Basic ****");
+    }
+
+    @Test
     void masksApiKey() {
         String input = "api_key=abc123secret submitted";
         String result = SensitiveDataMaskingConverter.maskSensitiveData(input);
@@ -63,11 +71,18 @@ class SensitiveDataMaskingConverterTest {
     }
 
     @Test
-    void masksSsn() {
+    void masksSsnWithHyphens() {
         String input = "SSN: 123-45-6789";
         String result = SensitiveDataMaskingConverter.maskSensitiveData(input);
         assertThat(result).doesNotContain("123-45");
         assertThat(result).contains("***-**-6789");
+    }
+
+    @Test
+    void doesNotMaskNineDigitOrderId() {
+        String input = "Order 123456789 created";
+        String result = SensitiveDataMaskingConverter.maskSensitiveData(input);
+        assertThat(result).isEqualTo(input);
     }
 
     @Test

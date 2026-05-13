@@ -22,7 +22,7 @@ public class LoggedAspect {
         return doLog(joinPoint);
     }
 
-    @Around("@within(net.chrisrichardson.ftgo.logging.Logged) && execution(public * *(..))")
+    @Around("@within(net.chrisrichardson.ftgo.logging.Logged) && execution(public * *(..)) && !@annotation(net.chrisrichardson.ftgo.logging.Logged)")
     public Object logClassMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         return doLog(joinPoint);
     }
