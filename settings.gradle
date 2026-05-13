@@ -30,6 +30,9 @@ project(":ftgo-security-lib").projectDir = file("libs/ftgo-security-lib")
 include "ftgo-metrics-lib"
 project(":ftgo-metrics-lib").projectDir = file("libs/ftgo-metrics-lib")
 
+include "ftgo-tracing-lib"
+project(":ftgo-tracing-lib").projectDir = file("libs/ftgo-tracing-lib")
+
 // -----------------------------------------------------------------------------
 // Shared Libraries (legacy modules — will migrate to libs/ directory)
 // -----------------------------------------------------------------------------
