@@ -106,9 +106,7 @@ jobs:
   sonar:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    if: |
-      secrets.SONAR_TOKEN != '' &&
-      (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
 
     services:
       mysql:
@@ -163,9 +161,9 @@ jobs:
               apply plugin: org.sonarqube.gradle.SonarQubePlugin
           }
           INITSCRIPT
-          sed -i 's/^          //' ~/.gradle/init.d/sonar.gradle
 
       - name: Build and analyze
+        if: env.SONAR_TOKEN != ''
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
