@@ -206,10 +206,11 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void runtimeExceptionReturns500() throws Exception {
+    void runtimeExceptionReturns500WithGenericMessage() throws Exception {
         mockMvc.perform(get("/test/internal-error"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.code", is("INTERNAL_ERROR")));
+                .andExpect(jsonPath("$.code", is("INTERNAL_ERROR")))
+                .andExpect(jsonPath("$.message", is("An unexpected internal error occurred")));
     }
 
     @Test

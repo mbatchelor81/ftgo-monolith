@@ -177,7 +177,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
         ErrorCode errorCode = resolveErrorCode(ex);
-        String message = ex.getMessage() != null ? ex.getMessage() : errorCode.getDefaultMessage();
+        String message = (errorCode != ErrorCode.INTERNAL_ERROR && ex.getMessage() != null)
+                ? ex.getMessage() : errorCode.getDefaultMessage();
 
         if (errorCode == ErrorCode.INTERNAL_ERROR) {
             log.error("Unhandled exception", ex);
