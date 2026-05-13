@@ -33,16 +33,19 @@ ftgo:
 
 ## Logback Configuration
 
-Include the shared JSON appender in your service's `logback-spring.xml`:
+Include the shared appenders in your service's `logback-spring.xml`. To ship logs
+to Logstash, also include `ftgo/logback-logstash.xml`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="ftgo/logback-json.xml"/>
+    <include resource="ftgo/logback-logstash.xml"/>
 
     <springProfile name="default,docker,k8s">
         <root level="INFO">
             <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="LOGSTASH_TCP"/>
         </root>
     </springProfile>
 

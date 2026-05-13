@@ -88,12 +88,16 @@ ftgo:
 
 ### Logback Integration
 
-Include the shared JSON appender in your service's `logback-spring.xml`:
+Include the shared appenders in your service's `logback-spring.xml`. The console
+appenders (`JSON_CONSOLE`, `PLAIN_CONSOLE`) are in `ftgo/logback-json.xml`. The
+`LOGSTASH_TCP` appender is in a separate `ftgo/logback-logstash.xml` so it is only
+instantiated when explicitly included:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="ftgo/logback-json.xml"/>
+    <include resource="ftgo/logback-logstash.xml"/>
 
     <springProfile name="default,docker,k8s">
         <root level="INFO">
@@ -112,8 +116,8 @@ Include the shared JSON appender in your service's `logback-spring.xml`:
 
 The `LOGSTASH_TCP` appender ships logs directly to Logstash via TCP. It reads the
 destination from `ftgo.logging.logstash.destination` (defaults to `localhost:5000`).
-It is defined in the shared config but only active when referenced in a service's
-`logback-spring.xml`.
+Services that do not need Logstash shipping can omit the `logback-logstash.xml`
+include to avoid background connection attempts.
 
 ## Structured Log Format
 
@@ -222,14 +226,17 @@ ftgo:
 
 ### 3. Add Logback Configuration
 
-Create `src/main/resources/logback-spring.xml` in your service:
+Create `src/main/resources/logback-spring.xml` in your service. Include
+`ftgo/logback-logstash.xml` only if you want to ship logs to Logstash:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="ftgo/logback-json.xml"/>
+    <include resource="ftgo/logback-logstash.xml"/>
     <root level="INFO">
         <appender-ref ref="JSON_CONSOLE"/>
+        <appender-ref ref="LOGSTASH_TCP"/>
     </root>
 </configuration>
 ```
