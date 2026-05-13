@@ -10,48 +10,48 @@ class ErrorCodeTest {
 
     @ParameterizedTest
     @EnumSource(ErrorCode.class)
-    void allCodes_haveValidHttpStatus(ErrorCode code) {
+    void getHttpStatus_allErrorCodes_returnsBetween400And599(ErrorCode code) {
         assertThat(code.getHttpStatus()).isBetween(400, 599);
     }
 
     @ParameterizedTest
     @EnumSource(ErrorCode.class)
-    void allCodes_haveNonBlankDefaultMessage(ErrorCode code) {
+    void getDefaultMessage_allErrorCodes_returnsNonBlank(ErrorCode code) {
         assertThat(code.getDefaultMessage()).isNotBlank();
     }
 
     @Test
-    void validationError_mapsTo400() {
+    void getHttpStatus_validationError_returns400() {
         assertThat(ErrorCode.VALIDATION_ERROR.getHttpStatus()).isEqualTo(400);
     }
 
     @Test
-    void resourceNotFound_mapsTo404() {
+    void getHttpStatus_resourceNotFound_returns404() {
         assertThat(ErrorCode.RESOURCE_NOT_FOUND.getHttpStatus()).isEqualTo(404);
     }
 
     @Test
-    void stateConflict_mapsTo409() {
+    void getHttpStatus_stateConflict_returns409() {
         assertThat(ErrorCode.STATE_CONFLICT.getHttpStatus()).isEqualTo(409);
     }
 
     @Test
-    void orderMinimumNotMet_mapsTo422() {
+    void getHttpStatus_orderMinimumNotMet_returns422() {
         assertThat(ErrorCode.ORDER_MINIMUM_NOT_MET.getHttpStatus()).isEqualTo(422);
     }
 
     @Test
-    void internalError_mapsTo500() {
+    void getHttpStatus_internalError_returns500() {
         assertThat(ErrorCode.INTERNAL_ERROR.getHttpStatus()).isEqualTo(500);
     }
 
     @Test
-    void notImplemented_mapsTo501() {
+    void getHttpStatus_notImplemented_returns501() {
         assertThat(ErrorCode.NOT_IMPLEMENTED.getHttpStatus()).isEqualTo(501);
     }
 
     @Test
-    void serviceUnavailable_mapsTo503() {
+    void getHttpStatus_serviceUnavailable_returns503() {
         assertThat(ErrorCode.SERVICE_UNAVAILABLE.getHttpStatus()).isEqualTo(503);
     }
 }
