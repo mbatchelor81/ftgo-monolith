@@ -14,30 +14,13 @@ RUN apk add --no-cache bash
 
 WORKDIR /workspace
 
-# Copy Gradle wrapper and build files first for layer caching
-COPY gradle/ gradle/
-COPY gradlew settings.gradle build.gradle gradle.properties ./
-COPY build-logic/ build-logic/
-COPY buildSrc/ buildSrc/
-
-# Copy shared libraries and modules required by order-service
-COPY ftgo-common/ ftgo-common/
-COPY ftgo-common-jpa/ ftgo-common-jpa/
-COPY ftgo-domain/ ftgo-domain/
-COPY ftgo-test-util/ ftgo-test-util/
-COPY common-swagger/ common-swagger/
-COPY libs/ libs/
-
-# Copy dependent service APIs
-COPY services/consumer-service/consumer-service-api/ services/consumer-service/consumer-service-api/
-COPY services/restaurant-service/restaurant-service-api/ services/restaurant-service/restaurant-service-api/
-
-# Copy service source
-COPY services/order-service/ services/order-service/
+# Copy entire project context (multi-module Gradle requires all modules
+# referenced in settings.gradle to be present for configuration phase)
+COPY . .
 
 # Build the service JAR (skip tests for Docker build — tests run in CI)
 RUN chmod +x gradlew && \
-    ./gradlew :order-service-app:bootJar --no-daemon -x test
+    ./gradlew :order-service-app:build --no-daemon -x test
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
