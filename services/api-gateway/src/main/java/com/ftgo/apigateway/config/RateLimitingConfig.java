@@ -6,6 +6,8 @@ import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import reactor.core.publisher.Mono;
+
 import java.security.Principal;
 
 @Configuration
@@ -21,9 +23,12 @@ public class RateLimitingConfig {
     public KeyResolver userKeyResolver() {
         return exchange -> exchange.getPrincipal()
                 .map(Principal::getName)
-                .defaultIfEmpty(
-                        exchange.getRequest().getRemoteAddress() != null
-                                ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
-                                : "anonymous");
+                .switchIfEmpty(Mono.fromSupplier(() -> {
+                    var remoteAddress = exchange.getRequest().getRemoteAddress();
+                    if (remoteAddress != null && remoteAddress.getAddress() != null) {
+                        return remoteAddress.getAddress().getHostAddress();
+                    }
+                    return "anonymous";
+                }));
     }
 }

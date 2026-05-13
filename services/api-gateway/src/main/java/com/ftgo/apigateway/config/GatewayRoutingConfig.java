@@ -48,11 +48,7 @@ public class GatewayRoutingConfig {
     }
 
     private GatewayFilterSpec applyFilters(GatewayFilterSpec filterSpec, String circuitBreakerName) {
-        filterSpec
-                .stripPrefix(1)
-                .circuitBreaker(cb -> cb
-                        .setName(circuitBreakerName)
-                        .setFallbackUri("forward:/fallback"));
+        filterSpec.stripPrefix(1);
 
         if (redisRateLimiter != null && keyResolver != null) {
             filterSpec.requestRateLimiter(rl -> rl
@@ -60,6 +56,10 @@ public class GatewayRoutingConfig {
                     .setKeyResolver(keyResolver)
                     .setDenyEmptyKey(false));
         }
+
+        filterSpec.circuitBreaker(cb -> cb
+                .setName(circuitBreakerName)
+                .setFallbackUri("forward:/fallback"));
 
         return filterSpec;
     }

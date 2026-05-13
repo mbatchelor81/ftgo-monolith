@@ -5,25 +5,6 @@ spring:
   application:
     name: api-gateway
 
-  # --- Spring Cloud Gateway ---
-  cloud:
-    gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origin-patterns: "*"
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowed-headers: "*"
-            max-age: 3600
-
   # --- Redis (rate limiting) ---
   data:
     redis:
