@@ -78,28 +78,30 @@ Tests requiring a MySQL 5.7 database. Split into two parallel jobs:
 
 ### Monolith Integration
 
-Runs `FtgoApplicationTest` — a `@SpringBootTest` that boots the full application context
-against a live MySQL instance and exercises the REST API through the order lifecycle.
+Runs the full monolith build and test suite with MySQL, excluding E2E tests and
+`ftgo-application:test` (which depends on the unresolvable `eventuate-util-test` artifact).
 
 ```bash
 # Requires MySQL on localhost:3306
 ./gradlew :ftgo-flyway:flywayMigrate
-./gradlew :ftgo-application:test
+./gradlew clean build \
+  -x :ftgo-end-to-end-tests:test \
+  -x :ftgo-end-to-end-tests-common:build \
+  -x :ftgo-application:compileTestJava \
+  -x :ftgo-application:test
 ```
 
 ### Microservice Integration
 
-Runs the `integrationTest` source set defined by `ftgo.testing-conventions` for each
-microservice module. Sources live in `src/integration-test/java`.
+Runs the `integrationTest` source set defined by `ftgo.testing-conventions` for
+microservice modules that have `src/integration-test/java` directories. The CI job
+discovers eligible modules automatically and skips gracefully if none are found.
 
 ```bash
 # Requires MySQL on localhost:3306
 ./gradlew :ftgo-flyway:flywayMigrate
-./gradlew \
-  :consumer-service-app:integrationTest \
-  :order-service-app:integrationTest \
-  :restaurant-service-app:integrationTest \
-  :courier-service-app:integrationTest
+# Run for any module with src/integration-test/java:
+./gradlew :<module>:integrationTest --continue
 ```
 
 ### MySQL Service Container
@@ -214,8 +216,12 @@ docker compose up -d mysql
 # Wait for MySQL and run migrations
 ./gradlew :ftgo-flyway:flywayMigrate
 
-# Run integration tests
-./gradlew :ftgo-application:test
+# Run monolith integration tests
+./gradlew clean build \
+  -x :ftgo-end-to-end-tests:test \
+  -x :ftgo-end-to-end-tests-common:build \
+  -x :ftgo-application:compileTestJava \
+  -x :ftgo-application:test
 ```
 
 ### Running E2E Tests Locally
