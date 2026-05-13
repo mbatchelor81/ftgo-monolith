@@ -368,7 +368,6 @@ class OrderControllerTest {
     void getOrder_existingOrder_returns200() {
         Order order = OrderBuilder.anOrder()
             .withId(99L)
-            .withState(OrderState.APPROVED)
             .build();
         when(orderRepository.findById(99L)).thenReturn(Optional.of(order));
         // ...

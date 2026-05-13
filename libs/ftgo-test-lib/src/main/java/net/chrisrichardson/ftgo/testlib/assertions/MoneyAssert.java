@@ -28,7 +28,7 @@ public class MoneyAssert extends AbstractAssert<MoneyAssert, Money> {
     public MoneyAssert isEqualTo(String expected) {
         isNotNull();
         Money expectedMoney = new Money(expected);
-        if (!actual.equals(expectedMoney)) {
+        if (!actual.isGreaterThanOrEqual(expectedMoney) || !expectedMoney.isGreaterThanOrEqual(actual)) {
             failWithMessage("Expected money to be <%s> but was <%s>",
                     expectedMoney.asString(), actual.asString());
         }
@@ -37,7 +37,7 @@ public class MoneyAssert extends AbstractAssert<MoneyAssert, Money> {
 
     public MoneyAssert isZero() {
         isNotNull();
-        if (!actual.equals(Money.ZERO)) {
+        if (!actual.isGreaterThanOrEqual(Money.ZERO) || !Money.ZERO.isGreaterThanOrEqual(actual)) {
             failWithMessage("Expected money to be zero but was <%s>", actual.asString());
         }
         return this;
