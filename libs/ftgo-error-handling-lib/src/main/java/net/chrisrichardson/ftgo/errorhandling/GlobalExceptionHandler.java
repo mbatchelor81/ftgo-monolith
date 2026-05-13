@@ -205,9 +205,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ErrorCode resolveErrorCode(RuntimeException ex) {
         String className = ex.getClass().getSimpleName();
 
-        if (className.endsWith("NotFoundException")) {
-            return ErrorCode.RESOURCE_NOT_FOUND;
-        }
+        // Exact name matches first (higher priority than suffix patterns)
         if (className.equals("UnsupportedStateTransitionException")) {
             return ErrorCode.STATE_CONFLICT;
         }
@@ -220,11 +218,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (className.equals("InvalidMenuItemIdException")) {
             return ErrorCode.INVALID_REQUEST;
         }
-        if (className.equals("ConsumerVerificationFailedException")) {
+        if (className.equals("ConsumerNotFoundException")
+                || className.equals("ConsumerVerificationFailedException")) {
             return ErrorCode.CONSUMER_VERIFICATION_FAILED;
         }
         if (className.equals("NotYetImplementedException")) {
             return ErrorCode.NOT_IMPLEMENTED;
+        }
+
+        // Suffix patterns last (catch-all for convention-based naming)
+        if (className.endsWith("NotFoundException")) {
+            return ErrorCode.RESOURCE_NOT_FOUND;
         }
 
         return ErrorCode.INTERNAL_ERROR;

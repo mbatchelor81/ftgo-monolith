@@ -104,6 +104,11 @@ class GlobalExceptionHandlerIntegrationTest {
             throw new OptimisticOfflineLockException();
         }
 
+        @GetMapping("/test/consumer-not-found")
+        String consumerNotFound() {
+            throw new ConsumerNotFoundException();
+        }
+
         @PostMapping("/test/validate")
         String validate(@Valid @RequestBody CreateOrderRequest request) {
             return "ok";
@@ -133,6 +138,13 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     static class OptimisticOfflineLockException extends RuntimeException {
+    }
+
+    static class ConsumerVerificationFailedException extends RuntimeException {
+        ConsumerVerificationFailedException() { super("Consumer verification failed"); }
+    }
+
+    static class ConsumerNotFoundException extends ConsumerVerificationFailedException {
     }
 
     static class CreateOrderRequest {
@@ -226,6 +238,13 @@ class GlobalExceptionHandlerIntegrationTest {
         mockMvc.perform(get("/test/optimistic-lock"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("OPTIMISTIC_LOCK_CONFLICT")));
+    }
+
+    @Test
+    void handleRuntimeException_consumerNotFoundException_returns422() throws Exception {
+        mockMvc.perform(get("/test/consumer-not-found"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code", is("CONSUMER_VERIFICATION_FAILED")));
     }
 
     @Test
