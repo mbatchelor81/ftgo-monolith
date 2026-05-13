@@ -189,9 +189,24 @@ spring-security-test = { module = "org.springframework.security:spring-security-
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 ```
 
+## JWT Authentication
+
+JWT-based authentication is available as an alternative to HTTP Basic.
+See [jwt-authentication.md](jwt-authentication.md) for full documentation.
+
+Enable with:
+
+```yaml
+ftgo:
+  security:
+    jwt:
+      enabled: true
+      issuer-uri: http://localhost:8180/realms/ftgo
+      jwk-set-uri: http://localhost:8180/realms/ftgo/protocol/openid-connect/certs
+```
+
 ## Future Work
 
-- JWT token authentication (replace HTTP Basic)
 - Role-based access control annotations
 - Service-to-service authentication (mTLS / API keys)
 - Rate limiting integration

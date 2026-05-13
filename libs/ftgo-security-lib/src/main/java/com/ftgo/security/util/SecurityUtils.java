@@ -3,6 +3,8 @@ package com.ftgo.security.util;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -67,5 +69,21 @@ public final class SecurityUtils {
                 .map(auth -> auth.getAuthorities().stream()
                         .noneMatch(ga -> "ROLE_ANONYMOUS".equals(ga.getAuthority())))
                 .orElse(false);
+    }
+
+    /**
+     * Returns the current JWT token if the authentication is JWT-based.
+     */
+    public static Optional<Jwt> currentJwt() {
+        return currentAuthentication()
+                .filter(JwtAuthenticationToken.class::isInstance)
+                .map(auth -> ((JwtAuthenticationToken) auth).getToken());
+    }
+
+    /**
+     * Returns a specific claim value from the current JWT token.
+     */
+    public static Optional<String> jwtClaim(String claimName) {
+        return currentJwt().map(jwt -> jwt.getClaimAsString(claimName));
     }
 }

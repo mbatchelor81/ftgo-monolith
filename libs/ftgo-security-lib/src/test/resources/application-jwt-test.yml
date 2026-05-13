@@ -1,0 +1,22 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+ftgo:
+  security:
+    enabled: true
+    jwt:
+      enabled: true
+      roles-claim-name: realm_access.roles
+      permissions-claim-name: permissions
+      user-id-claim-name: sub
+    public-paths:
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
