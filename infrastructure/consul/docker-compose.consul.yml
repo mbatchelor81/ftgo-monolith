@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  consul:
+    image: hashicorp/consul:1.18
+    container_name: ftgo-consul
+    ports:
+      - "8500:8500"   # HTTP API / UI
+      - "8502:8502"   # gRPC
+      - "8600:8600"   # DNS
+    volumes:
+      - ./consul-config.json:/consul/config/consul-config.json:ro
+      - consul-data:/consul/data
+    command: agent -server -bootstrap-expect=1 -config-dir=/consul/config
+    networks:
+      - ftgo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  consul-data:
+
+networks:
+  ftgo-network:
+    external: true

@@ -14,6 +14,9 @@ spring-boot-legacy = "2.0.3.RELEASE"
 spring-dependency-management = "1.1.5"
 spring-dependency-management-legacy = "1.0.3.RELEASE"
 
+# --- Spring Cloud ---
+spring-cloud = "2023.0.1"
+
 # --- Spring Security ---
 spring-security = "6.2.4"
 
@@ -38,6 +41,12 @@ micrometer = "1.12.5"
 micrometer-legacy = "1.0.4"
 micrometer-tracing = "1.2.5"
 
+# --- Resilience ---
+resilience4j = "2.2.0"
+
+# --- Structured Logging ---
+logstash-logback-encoder = "7.4"
+logback = "1.4.14"
 # --- Distributed Tracing ---
 zipkin-reporter = "2.17.2"
 
@@ -83,10 +92,28 @@ spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boo
 spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
 nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
 
+# --- Spring Cloud Gateway ---
+spring-cloud-dependencies = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
+spring-cloud-starter-gateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway" }
+spring-cloud-starter-circuitbreaker-reactor-resilience4j = { module = "org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j" }
+spring-boot-starter-data-redis-reactive = { module = "org.springframework.boot:spring-boot-starter-data-redis-reactive" }
+spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+
 # --- Observability ---
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
+# --- Resilience ---
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
+resilience4j-retry = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
+resilience4j-bulkhead = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
+resilience4j-micrometer = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
+
+# --- Structured Logging ---
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-encoder" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
 # --- Distributed Tracing ---
 micrometer-tracing-core = { module = "io.micrometer:micrometer-tracing", version.ref = "micrometer-tracing" }
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometer-tracing" }
@@ -135,8 +162,11 @@ testing-containers = ["testcontainers-core", "testcontainers-junit-jupiter", "te
 spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa", "spring-boot-starter-actuator", "spring-boot-starter-validation"]
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin-reporter-brave", "zipkin-sender-urlconnection"]
+resilience = ["resilience4j-spring-boot3", "resilience4j-circuitbreaker", "resilience4j-retry", "resilience4j-bulkhead", "resilience4j-micrometer"]
+logging = ["logstash-logback-encoder", "logback-classic", "logback-core"]
 jwt-auth = ["spring-boot-starter-oauth2-resource-server", "spring-security-oauth2-jose"]
 error-handling = ["spring-boot-starter-web", "spring-boot-starter-validation"]
+gateway = ["spring-cloud-starter-gateway", "spring-cloud-starter-circuitbreaker-reactor-resilience4j", "spring-boot-starter-data-redis-reactive"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
