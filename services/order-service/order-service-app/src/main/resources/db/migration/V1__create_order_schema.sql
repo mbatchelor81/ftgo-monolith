@@ -46,6 +46,7 @@ CREATE TABLE order_line_items (
     name         VARCHAR(255),
     price        DECIMAL(19, 2),
     quantity     INTEGER      NOT NULL,
+    INDEX idx_order_line_items_order_id (order_id),
     CONSTRAINT fk_order_line_items_order
         FOREIGN KEY (order_id) REFERENCES orders (id)
 ) ENGINE = InnoDB;

@@ -24,6 +24,7 @@ CREATE TABLE restaurant_menu_items (
     id            VARCHAR(255),
     name          VARCHAR(255),
     price         DECIMAL(19, 2),
+    INDEX idx_restaurant_menu_items_restaurant_id (restaurant_id),
     CONSTRAINT fk_restaurant_menu_items_restaurant
         FOREIGN KEY (restaurant_id) REFERENCES restaurants (id)
 ) ENGINE = InnoDB;

@@ -27,6 +27,7 @@ CREATE TABLE courier_actions (
     order_id   BIGINT,
     time       DATETIME,
     type       VARCHAR(255),
+    INDEX idx_courier_actions_courier_id (courier_id),
     INDEX idx_courier_actions_order_id (order_id),
     CONSTRAINT fk_courier_actions_courier
         FOREIGN KEY (courier_id) REFERENCES courier (id)
