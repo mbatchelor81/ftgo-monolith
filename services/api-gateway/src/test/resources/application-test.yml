@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    gateway:
+      redis-rate-limiter:
+        enabled: false
+
+ftgo:
+  gateway:
+    rate-limiting:
+      enabled: false
+  security:
+    jwt:
+      enabled: true
+      jwk-set-uri: https://localhost/.well-known/jwks.json
