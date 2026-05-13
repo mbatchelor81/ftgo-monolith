@@ -1,0 +1,95 @@
+{
+  "datacenter": "ftgo-dc1",
+  "data_dir": "/consul/data",
+  "log_level": "INFO",
+  "server": true,
+  "bootstrap_expect": 1,
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "ui_config": {
+    "enabled": true
+  },
+  "connect": {
+    "enabled": true
+  },
+  "ports": {
+    "http": 8500,
+    "grpc": 8502,
+    "dns": 8600
+  },
+  "enable_local_script_checks": true,
+  "services": [
+    {
+      "id": "ftgo-order-service",
+      "name": "order-service",
+      "port": 8080,
+      "tags": ["ftgo", "spring-boot", "v1"],
+      "meta": {
+        "version": "1.0.0",
+        "framework": "spring-boot-3.2"
+      },
+      "checks": [
+        {
+          "http": "http://ftgo-order-service:8080/actuator/health",
+          "interval": "15s",
+          "timeout": "5s",
+          "deregister_critical_service_after": "90s"
+        }
+      ]
+    },
+    {
+      "id": "ftgo-consumer-service",
+      "name": "consumer-service",
+      "port": 8080,
+      "tags": ["ftgo", "spring-boot", "v1"],
+      "meta": {
+        "version": "1.0.0",
+        "framework": "spring-boot-3.2"
+      },
+      "checks": [
+        {
+          "http": "http://ftgo-consumer-service:8080/actuator/health",
+          "interval": "15s",
+          "timeout": "5s",
+          "deregister_critical_service_after": "90s"
+        }
+      ]
+    },
+    {
+      "id": "ftgo-restaurant-service",
+      "name": "restaurant-service",
+      "port": 8080,
+      "tags": ["ftgo", "spring-boot", "v1"],
+      "meta": {
+        "version": "1.0.0",
+        "framework": "spring-boot-3.2"
+      },
+      "checks": [
+        {
+          "http": "http://ftgo-restaurant-service:8080/actuator/health",
+          "interval": "15s",
+          "timeout": "5s",
+          "deregister_critical_service_after": "90s"
+        }
+      ]
+    },
+    {
+      "id": "ftgo-courier-service",
+      "name": "courier-service",
+      "port": 8080,
+      "tags": ["ftgo", "spring-boot", "v1"],
+      "meta": {
+        "version": "1.0.0",
+        "framework": "spring-boot-3.2"
+      },
+      "checks": [
+        {
+          "http": "http://ftgo-courier-service:8080/actuator/health",
+          "interval": "15s",
+          "timeout": "5s",
+          "deregister_critical_service_after": "90s"
+        }
+      ]
+    }
+  ]
+}
