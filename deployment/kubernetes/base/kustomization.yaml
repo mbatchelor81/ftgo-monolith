@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - mysql
+  - consul
   - consumer-service
   - order-service
   - restaurant-service
