@@ -62,7 +62,7 @@ public class GatewaySecurityConfig {
       List<String> permissions = claimsExtractor.extractPermissions(jwt);
 
       List<GrantedAuthority> authorities = Stream.<GrantedAuthority>concat(
-        roles.stream().map(role -> new SimpleGrantedAuthority(rolePrefix + role)),
+        roles.stream().map(role -> new SimpleGrantedAuthority(role.startsWith(rolePrefix) ? role : rolePrefix + role)),
         permissions.stream().map(SimpleGrantedAuthority::new)
       ).toList();
 

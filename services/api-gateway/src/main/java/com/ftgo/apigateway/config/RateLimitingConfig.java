@@ -28,6 +28,10 @@ public class RateLimitingConfig {
         if (remoteAddress != null && remoteAddress.getAddress() != null) {
           return remoteAddress.getAddress().getHostAddress();
         }
+        String forwarded = exchange.getRequest().getHeaders().getFirst("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+          return forwarded.split(",")[0].trim();
+        }
         return "anonymous";
       }));
   }

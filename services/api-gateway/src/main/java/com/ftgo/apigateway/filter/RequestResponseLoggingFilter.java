@@ -25,13 +25,13 @@ public class RequestResponseLoggingFilter implements GlobalFilter, Ordered {
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     ServerHttpRequest request = exchange.getRequest();
 
-    String requestId = request.getHeaders().getFirst(REQUEST_ID_HEADER);
-    if (requestId == null || requestId.isBlank()) {
-      requestId = UUID.randomUUID().toString();
-    }
+    String existingId = request.getHeaders().getFirst(REQUEST_ID_HEADER);
+    final String reqId = (existingId == null || existingId.isBlank())
+      ? UUID.randomUUID().toString()
+      : existingId;
 
     ServerHttpRequest mutatedRequest = request.mutate()
-      .header(REQUEST_ID_HEADER, requestId)
+      .headers(h -> h.set(REQUEST_ID_HEADER, reqId))
       .build();
 
     exchange.getAttributes().put(START_TIME_ATTR, System.currentTimeMillis());
@@ -42,8 +42,6 @@ public class RequestResponseLoggingFilter implements GlobalFilter, Ordered {
       && request.getRemoteAddress().getAddress() != null
       ? request.getRemoteAddress().getAddress().getHostAddress()
       : "unknown";
-
-    final String reqId = requestId;
     log.info(">>> {} {} from={} requestId={}", method, path, remoteAddr, reqId);
 
     return chain.filter(exchange.mutate().request(mutatedRequest).build())
