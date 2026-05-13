@@ -13,7 +13,6 @@ and secrets.
 deployment/kubernetes/
 ├── base/                        # Shared manifests (all environments)
 │   ├── kustomization.yaml       # Aggregates all base resources
-│   ├── namespace.yaml           # Base namespace definition
 │   ├── mysql/                   # MySQL StatefulSet (apps/v1)
 │   │   ├── statefulset.yaml
 │   │   ├── service.yaml
