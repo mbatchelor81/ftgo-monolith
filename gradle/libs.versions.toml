@@ -155,6 +155,7 @@ tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin
 resilience = ["resilience4j-spring-boot3", "resilience4j-circuitbreaker", "resilience4j-retry", "resilience4j-bulkhead", "resilience4j-micrometer"]
 logging = ["logstash-logback-encoder", "logback-classic", "logback-core"]
 jwt-auth = ["spring-boot-starter-oauth2-resource-server", "spring-security-oauth2-jose"]
+error-handling = ["spring-boot-starter-web", "spring-boot-starter-validation"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
