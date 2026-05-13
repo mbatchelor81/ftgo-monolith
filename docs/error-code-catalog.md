@@ -90,13 +90,14 @@ The `GlobalExceptionHandler` maps exceptions to error codes using the following 
 
 | Class Name Pattern                         | Error Code                    |
 |--------------------------------------------|-------------------------------|
-| `*NotFoundException`                       | `RESOURCE_NOT_FOUND`          |
 | `UnsupportedStateTransitionException`      | `STATE_CONFLICT`              |
 | `OptimisticOfflineLockException`           | `OPTIMISTIC_LOCK_CONFLICT`    |
 | `OrderMinimumNotMetException`              | `ORDER_MINIMUM_NOT_MET`       |
 | `InvalidMenuItemIdException`              | `INVALID_REQUEST`             |
+| `ConsumerNotFoundException`                | `CONSUMER_VERIFICATION_FAILED`|
 | `ConsumerVerificationFailedException`      | `CONSUMER_VERIFICATION_FAILED`|
 | `NotYetImplementedException`               | `NOT_IMPLEMENTED`             |
+| `*NotFoundException` (other)               | `RESOURCE_NOT_FOUND`          |
 
 Any `RuntimeException` not matching the above patterns returns `INTERNAL_ERROR` (500).
 
