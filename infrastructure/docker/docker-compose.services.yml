@@ -55,7 +55,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -74,7 +74,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -93,7 +93,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -112,7 +112,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy

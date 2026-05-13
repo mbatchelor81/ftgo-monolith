@@ -65,18 +65,28 @@ jobs:
             echo 'services=["consumer-service","order-service","restaurant-service","courier-service"]' >> "$GITHUB_OUTPUT"
           else
             # On PR, detect changes
-            CHANGED_SERVICES="[]"
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            DIFF_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
 
-            SERVICES=("consumer-service" "order-service" "restaurant-service" "courier-service")
+            # If shared build infrastructure changed, rebuild all services
+            if echo "$DIFF_FILES" | grep -qE "^buildSrc/|^build\.gradle$|^settings\.gradle$|^gradle/|^gradle\.properties$"; then
+              echo 'services=["consumer-service","order-service","restaurant-service","courier-service"]' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
             CHANGED=()
 
-            for svc in "${SERVICES[@]}"; do
-              if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qE "^services/${svc}/|^libs/|^ftgo-common|^ftgo-domain|^build-logic/|^common-swagger/"; then
+            # Check each service; order-service also depends on consumer-service-api and restaurant-service-api
+            for svc in consumer-service courier-service restaurant-service; do
+              if echo "$DIFF_FILES" | grep -qE "^services/${svc}/|^libs/|^ftgo-common|^ftgo-domain|^build-logic/|^common-swagger/"; then
                 CHANGED+=("\"${svc}\"")
               fi
             done
+
+            if echo "$DIFF_FILES" | grep -qE "^services/order-service/|^services/consumer-service/consumer-service-api/|^services/restaurant-service/restaurant-service-api/|^libs/|^ftgo-common|^ftgo-domain|^build-logic/|^common-swagger/"; then
+              CHANGED+=("\"order-service\"")
+            fi
 
             if [ ${#CHANGED[@]} -eq 0 ]; then
               echo 'services=[]' >> "$GITHUB_OUTPUT"
