@@ -1,0 +1,127 @@
+# =============================================================================
+# FTGO Platform — Local Development Docker Compose
+# =============================================================================
+# Starts all microservices and shared infrastructure for local development.
+#
+# Usage:
+#   # Build and start everything
+#   docker-compose -f infrastructure/docker/docker-compose.services.yml up --build
+#
+#   # Start only specific services
+#   docker-compose -f infrastructure/docker/docker-compose.services.yml up mysql consumer-service
+#
+#   # Rebuild a single service after code changes
+#   docker-compose -f infrastructure/docker/docker-compose.services.yml up --build order-service
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:5.7
+    container_name: ftgo-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ftgo
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpw
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ftgo
+
+  # ---------------------------------------------------------------------------
+  # Microservices
+  # ---------------------------------------------------------------------------
+  consumer-service:
+    build:
+      context: ../../
+      dockerfile: services/consumer-service/Dockerfile
+    container_name: ftgo-consumer-service
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
+      SPRING_DATASOURCE_USERNAME: mysqluser
+      SPRING_DATASOURCE_PASSWORD: mysqlpw
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ftgo
+
+  order-service:
+    build:
+      context: ../../
+      dockerfile: services/order-service/Dockerfile
+    container_name: ftgo-order-service
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
+      SPRING_DATASOURCE_USERNAME: mysqluser
+      SPRING_DATASOURCE_PASSWORD: mysqlpw
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ftgo
+
+  restaurant-service:
+    build:
+      context: ../../
+      dockerfile: services/restaurant-service/Dockerfile
+    container_name: ftgo-restaurant-service
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
+      SPRING_DATASOURCE_USERNAME: mysqluser
+      SPRING_DATASOURCE_PASSWORD: mysqlpw
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ftgo
+
+  courier-service:
+    build:
+      context: ../../
+      dockerfile: services/courier-service/Dockerfile
+    container_name: ftgo-courier-service
+    ports:
+      - "8084:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
+      SPRING_DATASOURCE_USERNAME: mysqluser
+      SPRING_DATASOURCE_PASSWORD: mysqlpw
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ftgo
+
+volumes:
+  mysql-data:
+
+networks:
+  ftgo:
+    driver: bridge
