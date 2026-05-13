@@ -38,6 +38,9 @@ micrometer = "1.12.5"
 micrometer-legacy = "1.0.4"
 micrometer-tracing = "1.2.5"
 
+# --- Resilience ---
+resilience4j = "2.2.0"
+
 # --- Distributed Tracing ---
 zipkin-reporter = "2.17.2"
 
@@ -87,6 +90,13 @@ nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimb
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
+# --- Resilience ---
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
+resilience4j-retry = { module = "io.github.resilience4j:resilience4j-retry", version.ref = "resilience4j" }
+resilience4j-bulkhead = { module = "io.github.resilience4j:resilience4j-bulkhead", version.ref = "resilience4j" }
+resilience4j-micrometer = { module = "io.github.resilience4j:resilience4j-micrometer", version.ref = "resilience4j" }
+
 # --- Distributed Tracing ---
 micrometer-tracing-core = { module = "io.micrometer:micrometer-tracing", version.ref = "micrometer-tracing" }
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometer-tracing" }
@@ -135,6 +145,7 @@ testing-containers = ["testcontainers-core", "testcontainers-junit-jupiter", "te
 spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa", "spring-boot-starter-actuator", "spring-boot-starter-validation"]
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin-reporter-brave", "zipkin-sender-urlconnection"]
+resilience = ["resilience4j-spring-boot3", "resilience4j-circuitbreaker", "resilience4j-retry", "resilience4j-bulkhead", "resilience4j-micrometer"]
 jwt-auth = ["spring-boot-starter-oauth2-resource-server", "spring-security-oauth2-jose"]
 
 [plugins]
