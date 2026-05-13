@@ -10,6 +10,8 @@
 # ---------------------------------------------------------------------------
 FROM eclipse-temurin:17-jdk-alpine AS builder
 
+RUN apk add --no-cache bash
+
 WORKDIR /workspace
 
 # Copy Gradle wrapper and build files first for layer caching
