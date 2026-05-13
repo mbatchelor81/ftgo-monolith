@@ -30,10 +30,12 @@ dependencies {
     implementation 'org.springframework:spring-context:6.1.6'
     implementation 'org.springframework:spring-webmvc:6.1.6'
     implementation 'org.slf4j:slf4j-api:2.0.12'
+    implementation 'org.aspectj:aspectjweaver:1.9.22'
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-web:3.2.5'
+    testImplementation 'org.springframework.boot:spring-boot-starter-aop:3.2.5'
 }
 
 tasks.named('test') {

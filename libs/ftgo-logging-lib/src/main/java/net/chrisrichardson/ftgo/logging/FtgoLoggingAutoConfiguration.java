@@ -45,4 +45,11 @@ public class FtgoLoggingAutoConfiguration {
     public LoggingStartupListener loggingStartupListener(FtgoLoggingProperties properties) {
         return new LoggingStartupListener(properties);
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnClass(name = "org.aspectj.lang.ProceedingJoinPoint")
+    public LoggedAspect loggedAspect() {
+        return new LoggedAspect();
+    }
 }
