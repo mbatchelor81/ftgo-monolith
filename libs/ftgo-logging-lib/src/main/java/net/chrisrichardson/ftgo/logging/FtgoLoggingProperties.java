@@ -53,7 +53,7 @@ public class FtgoLoggingProperties {
 
     public static class Logstash {
 
-        private String destination = "localhost:5044";
+        private String destination = "localhost:5000";
 
         public String getDestination() {
             return destination;

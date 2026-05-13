@@ -19,7 +19,7 @@ class FtgoLoggingAutoConfigurationTest {
     @Test
     void autoConfigurationRegistersLoggingBeans() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(LoggingEnvironmentPostProcessor.class);
+            assertThat(context).hasSingleBean(LoggingStartupListener.class);
         });
     }
 
@@ -28,7 +28,7 @@ class FtgoLoggingAutoConfigurationTest {
         contextRunner
                 .withPropertyValues("ftgo.logging.enabled=false")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(LoggingEnvironmentPostProcessor.class);
+                    assertThat(context).doesNotHaveBean(LoggingStartupListener.class);
                 });
     }
 

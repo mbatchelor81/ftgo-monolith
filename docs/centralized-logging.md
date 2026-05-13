@@ -72,7 +72,7 @@ All properties are under the `ftgo.logging` prefix:
 | `service-name` | String | `ftgo-service` | Service name injected into every log entry |
 | `json-enabled` | boolean | `true` | Enable structured JSON output |
 | `correlation-id-enabled` | boolean | `true` | Enable correlation ID filter |
-| `logstash.destination` | String | `localhost:5044` | Logstash destination for log shipping |
+| `logstash.destination` | String | `localhost:5000` | Logstash TCP destination for log shipping |
 
 ### Example Service Configuration
 
@@ -83,7 +83,7 @@ ftgo:
     json-enabled: true
     correlation-id-enabled: true
     logstash:
-      destination: logstash:5044
+      destination: logstash:5000
 ```
 
 ### Logback Integration
@@ -217,7 +217,7 @@ ftgo:
   logging:
     service-name: ${SERVICE_NAME:my-service}
     logstash:
-      destination: ${LOGSTASH_DESTINATION:logstash:5044}
+      destination: ${LOGSTASH_DESTINATION:logstash:5000}
 ```
 
 ### 3. Add Logback Configuration

@@ -28,7 +28,7 @@ ftgo:
     json-enabled: true
     correlation-id-enabled: true
     logstash:
-      destination: logstash:5044
+      destination: logstash:5000
 ```
 
 ## Logback Configuration
@@ -75,4 +75,4 @@ The following MDC keys are available in all log entries:
 | `ftgo.logging.service-name` | `ftgo-service` | Logical service name in logs |
 | `ftgo.logging.json-enabled` | `true` | Enable structured JSON output |
 | `ftgo.logging.correlation-id-enabled` | `true` | Enable correlation ID filter |
-| `ftgo.logging.logstash.destination` | `localhost:5044` | Logstash destination for log shipping |
+| `ftgo.logging.logstash.destination` | `localhost:5000` | Logstash TCP destination for log shipping |
