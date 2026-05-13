@@ -152,7 +152,7 @@ class GlobalExceptionHandlerIntegrationTest {
     // -- Tests --
 
     @Test
-    void notFoundExceptionReturns404() throws Exception {
+    void handleRuntimeException_notFoundException_returns404() throws Exception {
         mockMvc.perform(get("/test/not-found"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code", is("RESOURCE_NOT_FOUND")))
@@ -162,7 +162,7 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void stateConflictReturns409() throws Exception {
+    void handleRuntimeException_stateConflict_returns409() throws Exception {
         mockMvc.perform(get("/test/state-conflict"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("STATE_CONFLICT")))
@@ -170,14 +170,14 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void orderMinimumNotMetReturns422() throws Exception {
+    void handleRuntimeException_orderMinimumNotMet_returns422() throws Exception {
         mockMvc.perform(get("/test/order-minimum"))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code", is("ORDER_MINIMUM_NOT_MET")));
     }
 
     @Test
-    void illegalArgumentReturns400() throws Exception {
+    void handleIllegalArgument_invalidValue_returns400() throws Exception {
         mockMvc.perform(get("/test/illegal-argument"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code", is("INVALID_REQUEST")))
@@ -185,28 +185,28 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void illegalStateReturns409() throws Exception {
+    void handleIllegalState_invalidState_returns409() throws Exception {
         mockMvc.perform(get("/test/illegal-state"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("STATE_CONFLICT")));
     }
 
     @Test
-    void unsupportedOperationReturns501() throws Exception {
+    void handleUnsupportedOperation_notImplemented_returns501() throws Exception {
         mockMvc.perform(get("/test/not-implemented"))
                 .andExpect(status().isNotImplemented())
                 .andExpect(jsonPath("$.code", is("NOT_IMPLEMENTED")));
     }
 
     @Test
-    void connectExceptionReturns503() throws Exception {
+    void handleConnectException_connectionRefused_returns503() throws Exception {
         mockMvc.perform(get("/test/connect-error"))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.code", is("SERVICE_UNAVAILABLE")));
     }
 
     @Test
-    void runtimeExceptionReturns500WithGenericMessage() throws Exception {
+    void handleRuntimeException_unhandled_returns500WithGenericMessage() throws Exception {
         mockMvc.perform(get("/test/internal-error"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code", is("INTERNAL_ERROR")))
@@ -214,7 +214,7 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void checkedExceptionReturns500() throws Exception {
+    void handleGenericException_checkedException_returns500() throws Exception {
         mockMvc.perform(get("/test/checked-error"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code", is("INTERNAL_ERROR")))
@@ -222,14 +222,14 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void optimisticLockReturns409() throws Exception {
+    void handleRuntimeException_optimisticLock_returns409() throws Exception {
         mockMvc.perform(get("/test/optimistic-lock"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("OPTIMISTIC_LOCK_CONFLICT")));
     }
 
     @Test
-    void validationErrorReturns400WithDetails() throws Exception {
+    void handleMethodArgumentNotValid_invalidFields_returns400WithDetails() throws Exception {
         String invalidBody = "{ \"restaurantName\": \"\", \"quantity\": -1 }";
 
         mockMvc.perform(post("/test/validate")
@@ -243,7 +243,7 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void malformedJsonReturns400() throws Exception {
+    void handleHttpMessageNotReadable_malformedJson_returns400() throws Exception {
         mockMvc.perform(post("/test/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("not json"))
@@ -252,14 +252,14 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void methodNotAllowedReturns405() throws Exception {
+    void handleHttpRequestMethodNotSupported_deleteOnGetEndpoint_returns405() throws Exception {
         mockMvc.perform(delete("/test/ok"))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.code", is("METHOD_NOT_ALLOWED")));
     }
 
     @Test
-    void successfulRequestDoesNotTriggerHandler() throws Exception {
+    void handleRequest_validGetRequest_returns200() throws Exception {
         mockMvc.perform(get("/test/ok"))
                 .andExpect(status().isOk());
     }

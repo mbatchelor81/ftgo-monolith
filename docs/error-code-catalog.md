@@ -21,9 +21,9 @@ Every error response follows this JSON structure:
 |-------------|---------------------|-----------------------------------------------------------|
 | `code`      | `string`            | Machine-readable error code from the catalog below        |
 | `message`   | `string`            | Human-readable description of the error                   |
-| `details`   | `array` or `null`   | Field-level validation errors (only for `VALIDATION_ERROR`) |
+| `details`   | `array` (optional)  | Field-level validation errors (only for `VALIDATION_ERROR`); omitted when not applicable |
 | `timestamp` | `string` (ISO 8601) | Time the error occurred                                   |
-| `traceId`   | `string` or `null`  | Distributed trace ID for request correlation              |
+| `traceId`   | `string` (optional) | Distributed trace ID for request correlation; omitted when no active trace context |
 
 ### Validation Error Detail
 
