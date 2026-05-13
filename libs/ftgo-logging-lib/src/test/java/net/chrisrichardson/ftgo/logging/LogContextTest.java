@@ -16,31 +16,31 @@ class LogContextTest {
     }
 
     @Test
-    void putAndGetUserId() {
+    void putUserId_validValue_setsInMdc() {
         LogContext.putUserId("user-42");
         assertThat(MDC.get(LogContext.USER_ID)).isEqualTo("user-42");
     }
 
     @Test
-    void putAndGetRequestId() {
+    void putRequestId_validValue_setsInMdc() {
         LogContext.putRequestId("req-abc");
         assertThat(MDC.get(LogContext.REQUEST_ID)).isEqualTo("req-abc");
     }
 
     @Test
-    void putAndGetOrderId() {
+    void putOrderId_validValue_setsInMdc() {
         LogContext.putOrderId("order-99");
         assertThat(MDC.get(LogContext.ORDER_ID)).isEqualTo("order-99");
     }
 
     @Test
-    void putAndGetRestaurantId() {
+    void putRestaurantId_validValue_setsInMdc() {
         LogContext.putRestaurantId("rest-7");
         assertThat(MDC.get(LogContext.RESTAURANT_ID)).isEqualTo("rest-7");
     }
 
     @Test
-    void snapshotCapturesCurrentContext() {
+    void snapshot_multipleKeys_capturesAll() {
         LogContext.putUserId("u1");
         LogContext.putRequestId("r1");
         Map<String, String> snap = LogContext.snapshot();
@@ -49,21 +49,21 @@ class LogContextTest {
     }
 
     @Test
-    void restoreAppliesSnapshot() {
+    void restore_withSnapshot_appliesContext() {
         Map<String, String> context = Map.of(LogContext.USER_ID, "u2");
         LogContext.restore(context);
         assertThat(MDC.get(LogContext.USER_ID)).isEqualTo("u2");
     }
 
     @Test
-    void clearRemovesAll() {
+    void clear_withExistingKeys_removesAll() {
         LogContext.putUserId("u1");
         LogContext.clear();
         assertThat(MDC.get(LogContext.USER_ID)).isNull();
     }
 
     @Test
-    void wrapPropagatesContext() throws Exception {
+    void wrap_withMdcContext_propagatesToRunnable() throws Exception {
         LogContext.putUserId("u-wrap");
         Runnable wrapped = LogContext.wrap(() -> {
             assertThat(MDC.get(LogContext.USER_ID)).isEqualTo("u-wrap");
@@ -77,7 +77,7 @@ class LogContextTest {
     }
 
     @Test
-    void removeDeletesSingleKey() {
+    void remove_singleKey_deletesOnlyThatKey() {
         LogContext.putUserId("u1");
         LogContext.putRequestId("r1");
         LogContext.remove(LogContext.USER_ID);

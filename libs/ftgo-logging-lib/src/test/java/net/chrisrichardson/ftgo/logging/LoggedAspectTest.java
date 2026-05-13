@@ -21,7 +21,7 @@ class LoggedAspectTest {
             .withUserConfiguration(TestServiceConfig.class);
 
     @Test
-    void loggedMethodExecutesSuccessfully() {
+    void greet_withValidArgs_returnsGreeting() {
         contextRunner.run(context -> {
             TestService service = context.getBean(TestService.class);
             String result = service.greet("world");
@@ -30,7 +30,7 @@ class LoggedAspectTest {
     }
 
     @Test
-    void loggedMethodPropagatesException() {
+    void fail_always_propagatesIllegalStateException() {
         contextRunner.run(context -> {
             TestService service = context.getBean(TestService.class);
             assertThatThrownBy(() -> service.fail())
