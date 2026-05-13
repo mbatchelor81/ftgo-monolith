@@ -45,11 +45,11 @@ jobs:
             -x test
 
       - name: Build Docker images
-        run: docker-compose build
+        run: docker compose build
 
       - name: Start full service stack
         run: |
-          docker-compose up -d
+          docker compose up -d
           echo "Waiting for services to start..."
 
       - name: Wait for application health
@@ -62,7 +62,7 @@ jobs:
             fi
             if [ "$i" -eq 60 ]; then
               echo "::error::Application failed to start within 60 attempts"
-              docker-compose logs ftgo-application
+              docker compose logs ftgo-application
               exit 1
             fi
             sleep 5
@@ -96,7 +96,7 @@ jobs:
         if: failure()
         run: |
           mkdir -p docker-logs
-          docker-compose logs --no-color > docker-logs/docker-compose.log 2>&1
+          docker compose logs --no-color > docker-logs/docker-compose.log 2>&1
 
       - name: Upload Docker logs
         if: failure()
@@ -108,4 +108,4 @@ jobs:
 
       - name: Tear down services
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v

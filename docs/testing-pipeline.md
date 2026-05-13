@@ -134,11 +134,11 @@ Full end-to-end tests against the complete Docker Compose stack.
 ### How It Runs
 
 1. Build the application JAR (`./gradlew :ftgo-application:assemble`)
-2. Build Docker images (`docker-compose build`)
-3. Start the full stack (`docker-compose up -d`)
+2. Build Docker images (`docker compose build`)
+3. Start the full stack (`docker compose up -d`)
 4. Wait for the application health endpoint (`/actuator/health`)
 5. Run E2E tests with `DOCKER_HOST_IP=127.0.0.1`
-6. Tear down (`docker-compose down -v`)
+6. Tear down (`docker compose down -v`)
 
 ```bash
 export DOCKER_HOST_IP=127.0.0.1
@@ -209,7 +209,7 @@ separately, including Checkstyle, PMD, SpotBugs, and SonarQube analysis.
 
 ```bash
 # Start MySQL (via Docker Compose from repo root)
-docker-compose up -d mysql
+docker compose up -d mysql
 
 # Wait for MySQL and run migrations
 ./gradlew :ftgo-flyway:flywayMigrate
@@ -223,7 +223,7 @@ docker-compose up -d mysql
 ```bash
 # Build and start the full stack
 ./gradlew :ftgo-application:assemble
-docker-compose up -d
+docker compose up -d
 
 # Wait for application to be healthy
 curl -sf http://localhost:8081/actuator/health
@@ -233,7 +233,7 @@ export DOCKER_HOST_IP=127.0.0.1
 ./gradlew :ftgo-end-to-end-tests:test
 
 # Tear down
-docker-compose down -v
+docker compose down -v
 ```
 
 ### Writing New Tests
