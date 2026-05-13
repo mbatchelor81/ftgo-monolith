@@ -74,9 +74,9 @@ class FtgoPermissionEvaluatorTest {
     }
 
     @Test
-    void hasPermissionWithOwnership_returnsTrue_whenTargetIdIsNull() {
+    void hasPermissionWithOwnership_returnsFalse_whenTargetIdIsNull() {
         Authentication auth = authWithAuthorities("order:read");
-        assertThat(evaluator.hasPermission(auth, null, "Order", "order:read")).isTrue();
+        assertThat(evaluator.hasPermission(auth, null, "Order", "order:read")).isFalse();
     }
 
     @Test

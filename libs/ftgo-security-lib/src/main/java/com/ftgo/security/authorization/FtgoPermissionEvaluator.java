@@ -40,7 +40,11 @@ public class FtgoPermissionEvaluator implements PermissionEvaluator {
                 ? Collections.emptyMap()
                 : checkers.stream().collect(Collectors.toMap(
                         ResourceOwnershipChecker::getTargetType,
-                        Function.identity()));
+                        Function.identity(),
+                        (a, b) -> {
+                            throw new IllegalArgumentException(
+                                    "Duplicate ResourceOwnershipChecker for type '" + a.getTargetType() + "'");
+                        }));
     }
 
     /**
@@ -84,7 +88,8 @@ public class FtgoPermissionEvaluator implements PermissionEvaluator {
         }
 
         if (targetId == null) {
-            return true;
+            log.warn("Null targetId for type '{}'; denying access (cannot verify ownership)", targetType);
+            return false;
         }
 
         ResourceOwnershipChecker checker = checkersByType.get(targetType);
