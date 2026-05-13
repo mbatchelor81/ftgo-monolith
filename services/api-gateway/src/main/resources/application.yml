@@ -1,0 +1,78 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+
+  # --- Redis (rate limiting) ---
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  # --- Security / JWT ---
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/ftgo}
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8180/realms/ftgo/protocol/openid-connect/certs}
+
+# --- FTGO Security Library JWT Configuration ---
+ftgo:
+  security:
+    enabled: true
+    jwt:
+      enabled: true
+      issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/ftgo}
+      jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8180/realms/ftgo/protocol/openid-connect/certs}
+      roles-claim-name: realm_access.roles
+      permissions-claim-name: permissions
+      user-id-claim-name: sub
+
+# --- Actuator ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      show-details: when-authorized
+    gateway:
+      enabled: true
+
+# --- Resilience4J Circuit Breaker ---
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      orderServiceCB:
+        base-config: default
+      consumerServiceCB:
+        base-config: default
+      restaurantServiceCB:
+        base-config: default
+      courierServiceCB:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+
+# --- Logging ---
+logging:
+  level:
+    com.ftgo.apigateway: INFO
+    org.springframework.cloud.gateway: INFO
+    io.github.resilience4j: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

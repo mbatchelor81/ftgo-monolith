@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured JSON Logback configuration for FTGO platform services.
+
+  Include this in your service's logback-spring.xml:
+    <include resource="ftgo/logback-json.xml"/>
+
+  For Logstash TCP shipping, also include:
+    <include resource="ftgo/logback-logstash.xml"/>
+-->
+<included>
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>UTC</timeZone>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+        </encoder>
+    </appender>
+
+    <appender name="PLAIN_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} [%thread] [traceId=%X{traceId} spanId=%X{spanId} correlationId=%X{correlationId}] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+</included>
