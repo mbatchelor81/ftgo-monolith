@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.brave.ZipkinSpanHandler;
 import zipkin2.reporter.urlconnection.URLConnectionSender;
@@ -24,6 +25,7 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnProperty(name = "ftgo.tracing.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(FtgoTracingProperties.class)
+@EnableAspectJAutoProxy
 public class FtgoTracingAutoConfiguration {
 
     @Bean
@@ -70,6 +72,13 @@ public class FtgoTracingAutoConfiguration {
                 braveTracer,
                 new BraveCurrentTraceContext(tracing.currentTraceContext()),
                 new BraveBaggageManager());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnClass(name = "org.aspectj.lang.ProceedingJoinPoint")
+    public TracedAspect tracedAspect(Tracer tracer) {
+        return new TracedAspect(tracer);
     }
 
     @Bean
