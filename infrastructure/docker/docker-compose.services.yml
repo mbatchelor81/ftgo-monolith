@@ -26,10 +26,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: ftgo
-      MYSQL_USER: mysqluser
-      MYSQL_PASSWORD: mysqlpw
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ftgo}
+      MYSQL_USER: ${MYSQL_USER:-mysqluser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -51,11 +51,11 @@ services:
     ports:
       - "8081:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
-      SPRING_DATASOURCE_USERNAME: mysqluser
-      SPRING_DATASOURCE_PASSWORD: mysqlpw
-      SPRING_PROFILES_ACTIVE: docker
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ftgo}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -70,11 +70,11 @@ services:
     ports:
       - "8082:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
-      SPRING_DATASOURCE_USERNAME: mysqluser
-      SPRING_DATASOURCE_PASSWORD: mysqlpw
-      SPRING_PROFILES_ACTIVE: docker
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ftgo}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -89,11 +89,11 @@ services:
     ports:
       - "8083:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
-      SPRING_DATASOURCE_USERNAME: mysqluser
-      SPRING_DATASOURCE_PASSWORD: mysqlpw
-      SPRING_PROFILES_ACTIVE: docker
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ftgo}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -108,11 +108,11 @@ services:
     ports:
       - "8084:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ftgo
-      SPRING_DATASOURCE_USERNAME: mysqluser
-      SPRING_DATASOURCE_PASSWORD: mysqlpw
-      SPRING_PROFILES_ACTIVE: docker
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ftgo}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-mysqluser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-mysqlpw}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx256m}"
     depends_on:
       mysql:
         condition: service_healthy

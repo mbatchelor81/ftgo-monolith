@@ -15,7 +15,6 @@ WORKDIR /workspace
 # Copy Gradle wrapper and build files first for layer caching
 COPY gradle/ gradle/
 COPY gradlew settings.gradle build.gradle gradle.properties ./
-COPY gradle/libs.versions.toml gradle/libs.versions.toml
 COPY build-logic/ build-logic/
 COPY buildSrc/ buildSrc/
 
@@ -30,7 +29,6 @@ COPY libs/ libs/
 # Copy dependent service APIs
 COPY services/consumer-service/consumer-service-api/ services/consumer-service/consumer-service-api/
 COPY services/restaurant-service/restaurant-service-api/ services/restaurant-service/restaurant-service-api/
-COPY services/courier-service/courier-service-api/ services/courier-service/courier-service-api/
 
 # Copy service source
 COPY services/order-service/ services/order-service/
