@@ -16,9 +16,9 @@ import java.util.List;
  * Auto-configuration for FTGO role-based authorization.
  *
  * <p>Enables Spring's method-level security ({@code @PreAuthorize},
- * {@code @PostAuthorize}, {@code @Secured}) and registers the
- * {@link FtgoPermissionEvaluator} to support ownership-based access control
- * via {@code hasPermission()} expressions.
+ * {@code @PostAuthorize}) and registers the {@link FtgoPermissionEvaluator}
+ * to support ownership-based access control via {@code hasPermission()}
+ * expressions.
  *
  * <p>Activated when {@code ftgo.security.enabled=true} (the default).
  */
@@ -38,7 +38,7 @@ public class FtgoAuthorizationAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(MethodSecurityExpressionHandler.class)
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-            FtgoPermissionEvaluator permissionEvaluator) {
+            PermissionEvaluator permissionEvaluator) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setPermissionEvaluator(permissionEvaluator);
         return handler;

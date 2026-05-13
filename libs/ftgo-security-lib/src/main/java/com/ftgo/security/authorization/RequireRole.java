@@ -9,14 +9,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Meta-annotation that restricts access to users holding the
- * {@code ROLE_ADMIN} authority.
+ * Meta-annotations that restrict access based on FTGO platform roles.
+ *
+ * <p>Each nested annotation maps to a {@code @PreAuthorize} expression
+ * for one of the {@link FtgoRole} values. Apply at the method or type
+ * level to enforce role-based access control.
  *
  * <p>Usage:
  * <pre>{@code
  * @RequireRole.Admin
  * @GetMapping("/api/admin/users")
  * public List<UserDto> listUsers() { ... }
+ *
+ * @RequireRole.Customer
+ * @PostMapping("/api/orders")
+ * public OrderDto createOrder(...) { ... }
  * }</pre>
  */
 public final class RequireRole {
@@ -55,7 +62,7 @@ public final class RequireRole {
     @Target({ElementType.METHOD, ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @Documented
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'COURIER', 'ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public @interface Authenticated {
     }
 }
