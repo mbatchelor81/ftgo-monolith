@@ -18,9 +18,9 @@ secretGenerator:
   - name: ftgo-mysql-credentials
     behavior: replace
     literals:
-      - root-password=dev-root-password
+      - root-password=CHANGE_ME_DEV_ROOT_PASSWORD
       - username=mysqluser
-      - password=dev-mysql-password
+      - password=CHANGE_ME_DEV_MYSQL_PASSWORD
 
 configMapGenerator:
   - name: ftgo-consumer-service-config

@@ -8,4 +8,4 @@ metadata:
     app.kubernetes.io/part-of: ftgo
 data:
   spring-profiles: kubernetes
-  java-opts: "-Xmx384m -Xms256m"
+  java-opts: -Xmx384m -Xms256m

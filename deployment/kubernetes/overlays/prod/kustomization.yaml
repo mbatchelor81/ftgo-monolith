@@ -27,22 +27,22 @@ configMapGenerator:
     behavior: merge
     literals:
       - spring-profiles=kubernetes,prod
-      - java-opts="-Xmx512m -Xms384m -XX:+UseG1GC"
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
   - name: ftgo-order-service-config
     behavior: merge
     literals:
       - spring-profiles=kubernetes,prod
-      - java-opts="-Xmx512m -Xms384m -XX:+UseG1GC"
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
   - name: ftgo-restaurant-service-config
     behavior: merge
     literals:
       - spring-profiles=kubernetes,prod
-      - java-opts="-Xmx512m -Xms384m -XX:+UseG1GC"
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
   - name: ftgo-courier-service-config
     behavior: merge
     literals:
       - spring-profiles=kubernetes,prod
-      - java-opts="-Xmx512m -Xms384m -XX:+UseG1GC"
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
 
 commonLabels:
   environment: prod

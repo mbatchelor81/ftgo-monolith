@@ -25,7 +25,7 @@ on:
         required: true
         default: "latest"
       services:
-        description: "Services to deploy (comma-separated, or 'all')"
+        description: "Services to deploy (comma-separated without 'ftgo-' prefix, e.g. 'consumer-service,order-service', or 'all')"
         required: true
         default: "all"
 
@@ -101,31 +101,34 @@ jobs:
 
       - name: Determine environment
         id: env
+        env:
+          INPUT_ENV: ${{ inputs.environment || 'dev' }}
+          INPUT_TAG: ${{ inputs.image_tag || 'latest' }}
         run: |
-          ENV="${{ inputs.environment || 'dev' }}"
-          TAG="${{ inputs.image_tag || 'latest' }}"
-          echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "namespace=ftgo-${ENV}" >> "$GITHUB_OUTPUT"
+          echo "environment=${INPUT_ENV}" >> "$GITHUB_OUTPUT"
+          echo "tag=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
+          echo "namespace=ftgo-${INPUT_ENV}" >> "$GITHUB_OUTPUT"
 
       - name: Set image tags
         working-directory: deployment/kubernetes/overlays/${{ steps.env.outputs.environment }}
+        env:
+          INPUT_TAG: ${{ steps.env.outputs.tag }}
+          INPUT_SERVICES: ${{ inputs.services || 'all' }}
         run: |
-          TAG="${{ steps.env.outputs.tag }}"
-          SERVICES="${{ inputs.services || 'all' }}"
-
-          if [[ "$SERVICES" == "all" ]]; then
+          if [[ "$INPUT_SERVICES" == "all" ]]; then
             kustomize edit set image \
-              ghcr.io/mbatchelor81/ftgo-consumer-service:${TAG} \
-              ghcr.io/mbatchelor81/ftgo-order-service:${TAG} \
-              ghcr.io/mbatchelor81/ftgo-restaurant-service:${TAG} \
-              ghcr.io/mbatchelor81/ftgo-courier-service:${TAG}
+              "ghcr.io/mbatchelor81/ftgo-consumer-service:${INPUT_TAG}" \
+              "ghcr.io/mbatchelor81/ftgo-order-service:${INPUT_TAG}" \
+              "ghcr.io/mbatchelor81/ftgo-restaurant-service:${INPUT_TAG}" \
+              "ghcr.io/mbatchelor81/ftgo-courier-service:${INPUT_TAG}"
           else
-            IFS=',' read -ra SVC_ARRAY <<< "$SERVICES"
+            IFS=',' read -ra SVC_ARRAY <<< "$INPUT_SERVICES"
             IMAGES=()
             for svc in "${SVC_ARRAY[@]}"; do
               svc=$(echo "$svc" | xargs)
-              IMAGES+=("ghcr.io/mbatchelor81/ftgo-${svc}:${TAG}")
+              # Strip 'ftgo-' prefix if user included it
+              svc=${svc#ftgo-}
+              IMAGES+=("ghcr.io/mbatchelor81/ftgo-${svc}:${INPUT_TAG}")
             done
             kustomize edit set image "${IMAGES[@]}"
           fi
@@ -159,15 +162,21 @@ jobs:
       #     kubectl -n ${{ steps.env.outputs.namespace }} rollout status deployment --timeout=300s
 
       - name: Deployment summary
+        env:
+          DEPLOY_ENV: ${{ steps.env.outputs.environment }}
+          DEPLOY_NS: ${{ steps.env.outputs.namespace }}
+          DEPLOY_TAG: ${{ steps.env.outputs.tag }}
+          DEPLOY_SERVICES: ${{ inputs.services || 'all' }}
+          DEPLOY_ACTOR: ${{ github.actor }}
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Environment | ${{ steps.env.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Namespace | ${{ steps.env.outputs.namespace }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Image Tag | ${{ steps.env.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Services | ${{ inputs.services || 'all' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Triggered By | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${DEPLOY_ENV} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Namespace | ${DEPLOY_NS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${DEPLOY_TAG} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Services | ${DEPLOY_SERVICES} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered By | ${DEPLOY_ACTOR} |" >> $GITHUB_STEP_SUMMARY
 
   # ---------------------------------------------------------------------------
   # Post-deployment verification
