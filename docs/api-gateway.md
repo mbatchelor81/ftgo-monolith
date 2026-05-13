@@ -115,12 +115,18 @@ If the client sends an `X-Request-Id` header, it is propagated; otherwise a UUID
 # Start Redis (required for rate limiting)
 docker run -d --name redis -p 6379:6379 redis:7-alpine
 
-# Start the gateway
-./gradlew :api-gateway:bootRun
+# Build the gateway JAR
+./gradlew :api-gateway:build
+
+# Run it (requires Java 17+)
+java -jar services/api-gateway/build/libs/api-gateway-1.0.0.jar
 
 # Or, without rate limiting (no Redis needed)
-FTGO_GATEWAY_RATE_LIMITING_ENABLED=false ./gradlew :api-gateway:bootRun
+java -Dftgo.gateway.rate-limiting.enabled=false -jar services/api-gateway/build/libs/api-gateway-1.0.0.jar
 ```
+
+> **Note:** The `bootRun` task will be available once the project migrates to running
+> Gradle on Java 17+ and the `ftgo.spring-boot-conventions` plugin can be applied.
 
 The gateway starts on **http://localhost:8090**.
 
