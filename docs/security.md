@@ -205,9 +205,14 @@ ftgo:
       jwk-set-uri: http://localhost:8180/realms/ftgo/protocol/openid-connect/certs
 ```
 
+## Authorization (RBAC)
+
+Role-based access control is available with four roles (CUSTOMER,
+RESTAURANT_OWNER, COURIER, ADMIN) and fine-grained permissions.
+See [authorization.md](authorization.md) for full documentation.
+
 ## Future Work
 
-- Role-based access control annotations
 - Service-to-service authentication (mTLS / API keys)
 - Rate limiting integration
 - Audit logging for security events
