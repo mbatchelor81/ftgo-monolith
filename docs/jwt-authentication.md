@@ -115,7 +115,7 @@ ftgo:
       # Token refresh configuration
       token-refresh:
         enabled: false
-        refresh-before-expiry-seconds: 300
+        refresh-before-expiry-seconds: 60
         token-endpoint: http://localhost:8180/realms/ftgo/protocol/openid-connect/token
         client-id: ftgo-api
 ```

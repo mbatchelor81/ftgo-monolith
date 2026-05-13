@@ -99,7 +99,7 @@ public class FtgoJwtProperties {
 
         private boolean enabled = false;
 
-        private long refreshBeforeExpirySeconds = 300;
+        private long refreshBeforeExpirySeconds = 60;
 
         private String tokenEndpoint;
 

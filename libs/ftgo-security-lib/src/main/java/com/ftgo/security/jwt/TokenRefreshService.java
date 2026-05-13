@@ -59,6 +59,12 @@ public class TokenRefreshService {
             return Optional.empty();
         }
 
+        String clientId = refreshProperties.getClientId();
+        if (clientId == null || clientId.isBlank()) {
+            log.warn("Token refresh is enabled but no client-id is configured");
+            return Optional.empty();
+        }
+
         String formBody = "grant_type=" + encode("refresh_token")
                 + "&refresh_token=" + encode(refreshToken)
                 + "&client_id=" + encode(refreshProperties.getClientId());
