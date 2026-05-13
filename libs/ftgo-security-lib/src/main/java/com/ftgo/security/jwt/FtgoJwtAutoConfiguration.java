@@ -5,11 +5,8 @@ import com.ftgo.security.config.FtgoSecurityProperties;
 import com.ftgo.security.exception.SecurityExceptionHandlers;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
@@ -37,7 +34,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableConfigurationProperties({FtgoJwtProperties.class, FtgoSecurityProperties.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@Conditional(FtgoJwtAutoConfiguration.JwtEnabledCondition.class)
+@ConditionalOnProperty(name = "ftgo.security.jwt.enabled", havingValue = "true")
 public class FtgoJwtAutoConfiguration {
 
     private final FtgoJwtProperties jwtProperties;
@@ -73,22 +70,24 @@ public class FtgoJwtAutoConfiguration {
         String jwkSetUri = jwtProperties.getJwkSetUri();
         String issuerUri = jwtProperties.getIssuerUri();
 
+        NimbusJwtDecoder decoder;
         if (jwkSetUri != null && !jwkSetUri.isBlank()) {
-            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-            if (issuerUri != null && !issuerUri.isBlank()) {
-                decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
-            }
-            return decoder;
+            decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
         } else if (issuerUri != null && !issuerUri.isBlank()) {
-            return JwtDecoders.fromIssuerLocation(issuerUri);
+            decoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuerUri);
         } else {
             throw new IllegalStateException(
                     "Either ftgo.security.jwt.issuer-uri or ftgo.security.jwt.jwk-set-uri must be configured");
         }
+
+        if (issuerUri != null && !issuerUri.isBlank()) {
+            decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
+        }
+
+        return decoder;
     }
 
     @Bean
-    @ConditionalOnMissingBean(SecurityFilterChain.class)
     public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http,
                                                       FtgoJwtAuthenticationConverter jwtConverter,
                                                       SecurityExceptionHandlers securityExceptionHandlers) throws Exception {
@@ -118,18 +117,5 @@ public class FtgoJwtAutoConfiguration {
     @ConditionalOnMissingBean
     public SecurityExceptionHandlers securityExceptionHandlers() {
         return new SecurityExceptionHandlers();
-    }
-
-    static class JwtEnabledCondition implements Condition {
-
-        @Override
-        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-            String securityEnabled = context.getEnvironment()
-                    .getProperty("ftgo.security.enabled", "true");
-            String jwtEnabled = context.getEnvironment()
-                    .getProperty("ftgo.security.jwt.enabled", "false");
-            return "true".equalsIgnoreCase(securityEnabled)
-                    && "true".equalsIgnoreCase(jwtEnabled);
-        }
     }
 }

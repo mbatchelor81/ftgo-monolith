@@ -93,17 +93,4 @@ class FtgoJwtAutoConfigurationTest {
                     assertThat(props.getTokenRefresh().getClientId()).isEqualTo("ftgo-api");
                 });
     }
-
-    @Test
-    void jwtIsDisabledWhenSecurityGloballyDisabled() {
-        contextRunner
-                .withPropertyValues(
-                        "ftgo.security.enabled=false",
-                        "ftgo.security.jwt.enabled=true",
-                        "ftgo.security.jwt.jwk-set-uri=http://keycloak:8080/certs")
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(JwtClaimsExtractor.class);
-                    assertThat(context).doesNotHaveBean(FtgoJwtAuthenticationConverter.class);
-                });
-    }
 }

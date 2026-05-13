@@ -59,17 +59,6 @@ public class TokenRefreshService {
             return Optional.empty();
         }
 
-        String clientId = refreshProperties.getClientId();
-        if (clientId == null || clientId.isBlank()) {
-            log.warn("Token refresh is enabled but no client-id is configured");
-            return Optional.empty();
-        }
-
-        if (refreshToken == null || refreshToken.isBlank()) {
-            log.warn("Cannot refresh token: refresh token is null or blank");
-            return Optional.empty();
-        }
-
         String formBody = "grant_type=" + encode("refresh_token")
                 + "&refresh_token=" + encode(refreshToken)
                 + "&client_id=" + encode(refreshProperties.getClientId());
@@ -90,10 +79,8 @@ public class TokenRefreshService {
                     log.debug("Successfully refreshed access token");
                     return Optional.of(accessToken);
                 }
-                log.warn("Token refresh response did not contain access_token");
-            } else {
-                log.warn("Token refresh failed with status {}", response.statusCode());
             }
+            log.warn("Token refresh failed with status {}", response.statusCode());
         } catch (IOException | InterruptedException e) {
             log.error("Error during token refresh", e);
             if (e instanceof InterruptedException) {

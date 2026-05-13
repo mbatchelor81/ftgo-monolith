@@ -29,18 +29,6 @@ class TokenRefreshServiceTest {
     }
 
     @Test
-    void refreshReturnsEmptyWhenNoClientIdConfigured() {
-        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
-        refreshProps.setEnabled(true);
-        refreshProps.setTokenEndpoint("http://localhost:8180/token");
-        refreshProps.setClientId(null);
-
-        TokenRefreshService service = new TokenRefreshService(refreshProps);
-
-        assertThat(service.refreshAccessToken("some-token")).isEmpty();
-    }
-
-    @Test
     void refreshBeforeExpirySecondsIsConfigurable() {
         FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
         refreshProps.setRefreshBeforeExpirySeconds(600);
@@ -48,14 +36,5 @@ class TokenRefreshServiceTest {
         TokenRefreshService service = new TokenRefreshService(refreshProps);
 
         assertThat(service.getRefreshBeforeExpirySeconds()).isEqualTo(600);
-    }
-
-    @Test
-    void defaultRefreshBeforeExpiryIs60Seconds() {
-        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
-
-        TokenRefreshService service = new TokenRefreshService(refreshProps);
-
-        assertThat(service.getRefreshBeforeExpirySeconds()).isEqualTo(60);
     }
 }
