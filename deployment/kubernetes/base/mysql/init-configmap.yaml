@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-mysql-init
+  labels:
+    app.kubernetes.io/name: ftgo-mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: ftgo
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS ftgo;
+    GRANT ALL PRIVILEGES ON ftgo.* TO 'mysqluser'@'%';
+    FLUSH PRIVILEGES;

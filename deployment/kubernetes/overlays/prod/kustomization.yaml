@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ftgo-prod
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - pdb-order-service.yaml
+  - pdb-consumer-service.yaml
+
+patches:
+  - path: patches/replicas.yaml
+  - path: patches/resource-limits.yaml
+  - path: patches/mysql-prod.yaml
+
+secretGenerator:
+  - name: ftgo-mysql-credentials
+    behavior: replace
+    literals:
+      - root-password=CHANGE_ME_PROD_ROOT_PASSWORD
+      - username=mysqluser
+      - password=CHANGE_ME_PROD_MYSQL_PASSWORD
+
+configMapGenerator:
+  - name: ftgo-consumer-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,prod
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
+  - name: ftgo-order-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,prod
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
+  - name: ftgo-restaurant-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,prod
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
+  - name: ftgo-courier-service-config
+    behavior: merge
+    literals:
+      - spring-profiles=kubernetes,prod
+      - java-opts=-Xmx512m -Xms384m -XX:+UseG1GC
+
+commonLabels:
+  environment: prod
+
+images:
+  - name: ghcr.io/mbatchelor81/ftgo-consumer-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-order-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-restaurant-service
+    newTag: latest
+  - name: ghcr.io/mbatchelor81/ftgo-courier-service
+    newTag: latest

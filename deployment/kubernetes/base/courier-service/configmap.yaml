@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftgo-courier-service-config
+  labels:
+    app.kubernetes.io/name: ftgo-courier-service
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: ftgo
+data:
+  spring-profiles: kubernetes
+  java-opts: -Xmx256m -Xms128m
