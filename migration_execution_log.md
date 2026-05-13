@@ -30,4 +30,4 @@
 | 7 | EM-43 | Set Up Centralized Logging (ELK/EFK) | Phase 4 | devin-1d4ff9a0baca47f9ada0b8d14d6f5a10 | completed | [PR #121](https://github.com/mbatchelor81/ftgo-monolith/pull/121) | success (conflicts resolved) | build.gradle (combined java17Libs with logging-lib), gradle/libs.versions.toml (combined resilience and logging versions/libraries/bundles) |
 | 7 | EM-44 | Configure Health Checks / Resilience | Phase 4 | devin-26ee426741144f61b679075554dd0301 | completed | [PR #120](https://github.com/mbatchelor81/ftgo-monolith/pull/120) | success | None |
 | 7 | EM-46 | Establish Centralized Error Handling | Phase 5 | devin-cbc8d0a661574b32a01604717958d127 | completed | [PR #122](https://github.com/mbatchelor81/ftgo-monolith/pull/122) | success (conflicts resolved) | build.gradle (combined java17Libs with error-handling-lib), settings.gradle (combined resilience-lib and error-handling-lib includes) |
-| 8 | EM-49 | Define Logging Standards | Phase 5 | — | — | — | — | — |
+| 8 | EM-49 | Define Logging Standards | Phase 5 | devin-8ba5705fdbd74477a82476e3dcac92e6 | completed | [PR #124](https://github.com/mbatchelor81/ftgo-monolith/pull/124) | success | None |
