@@ -42,7 +42,7 @@ public class FtgoLoggingAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LoggingEnvironmentPostProcessor loggingEnvironmentPostProcessor() {
-        return new LoggingEnvironmentPostProcessor();
+    public LoggingEnvironmentPostProcessor loggingEnvironmentPostProcessor(FtgoLoggingProperties properties) {
+        return new LoggingEnvironmentPostProcessor(properties);
     }
 }

@@ -98,6 +98,7 @@ Include the shared JSON appender in your service's `logback-spring.xml`:
     <springProfile name="default,docker,k8s">
         <root level="INFO">
             <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="LOGSTASH_TCP"/>
         </root>
     </springProfile>
 
@@ -108,6 +109,11 @@ Include the shared JSON appender in your service's `logback-spring.xml`:
     </springProfile>
 </configuration>
 ```
+
+The `LOGSTASH_TCP` appender ships logs directly to Logstash via TCP. It reads the
+destination from `ftgo.logging.logstash.destination` (defaults to `localhost:5044`).
+It is defined in the shared config but only active when referenced in a service's
+`logback-spring.xml`.
 
 ## Structured Log Format
 

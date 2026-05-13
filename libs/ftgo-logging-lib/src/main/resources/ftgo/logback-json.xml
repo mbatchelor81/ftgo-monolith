@@ -10,12 +10,6 @@
 <included>
     <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdcKeyName>correlationId</includeMdcKeyName>
-            <includeMdcKeyName>traceId</includeMdcKeyName>
-            <includeMdcKeyName>spanId</includeMdcKeyName>
-            <includeMdcKeyName>serviceName</includeMdcKeyName>
-            <includeMdcKeyName>httpMethod</includeMdcKeyName>
-            <includeMdcKeyName>requestUri</includeMdcKeyName>
             <timeZone>UTC</timeZone>
             <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
         </encoder>
@@ -24,6 +18,25 @@
     <appender name="PLAIN_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{ISO8601} [%thread] [traceId=%X{traceId} spanId=%X{spanId} correlationId=%X{correlationId}] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+      Logstash TCP appender for shipping logs directly to Logstash.
+      Activate by including this appender-ref in your service's logback-spring.xml
+      and setting ftgo.logging.logstash.destination in application.yml.
+
+      Example:
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="LOGSTASH_TCP"/>
+        </root>
+    -->
+    <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${ftgo.logging.logstash.destination:-localhost:5044}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>UTC</timeZone>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
         </encoder>
     </appender>
 </included>
