@@ -135,11 +135,12 @@ jobs:
 
       - name: Build manifests
         id: build
+        env:
+          DEPLOY_ENV: ${{ steps.env.outputs.environment }}
         run: |
-          ENV="${{ steps.env.outputs.environment }}"
-          kustomize build deployment/kubernetes/overlays/${ENV} > /tmp/manifests.yaml
-          echo "Generated manifests for ${ENV}:"
-          cat /tmp/manifests.yaml | head -50
+          kustomize build "deployment/kubernetes/overlays/${DEPLOY_ENV}" > /tmp/manifests.yaml
+          echo "Generated manifests for ${DEPLOY_ENV}:"
+          head -50 /tmp/manifests.yaml
 
       - name: Configure kubectl
         uses: azure/setup-kubectl@v4
@@ -202,7 +203,9 @@ jobs:
       #     done
 
       - name: Verification summary
+        env:
+          DEPLOY_ENV: ${{ inputs.environment || 'dev' }}
         run: |
           echo "## Verification" >> $GITHUB_STEP_SUMMARY
-          echo "Deployment to **${{ inputs.environment || 'dev' }}** completed." >> $GITHUB_STEP_SUMMARY
+          echo "Deployment to **${DEPLOY_ENV}** completed." >> $GITHUB_STEP_SUMMARY
           echo "Manual health check required until cluster credentials are configured." >> $GITHUB_STEP_SUMMARY
