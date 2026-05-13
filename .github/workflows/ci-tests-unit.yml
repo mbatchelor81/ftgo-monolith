@@ -251,10 +251,10 @@ jobs:
     steps:
       - name: Check unit test results
         run: |
-          if [[ "${{ needs.legacy-unit-tests.result }}" == "failure" || \
-                "${{ needs.library-unit-tests.result }}" == "failure" || \
-                "${{ needs.microservice-unit-tests.result }}" == "failure" ]]; then
-            echo "::error::One or more unit test jobs failed"
+          if [[ "${{ needs.legacy-unit-tests.result }}" != "success" || \
+                "${{ needs.library-unit-tests.result }}" != "success" || \
+                "${{ needs.microservice-unit-tests.result }}" != "success" ]]; then
+            echo "::error::One or more unit test jobs did not succeed (results: legacy=${{ needs.legacy-unit-tests.result }}, libs=${{ needs.library-unit-tests.result }}, svc=${{ needs.microservice-unit-tests.result }})"
             exit 1
           fi
           echo "All unit test jobs passed"

@@ -265,9 +265,9 @@ jobs:
     steps:
       - name: Check integration test results
         run: |
-          if [[ "${{ needs.monolith-integration.result }}" == "failure" || \
-                "${{ needs.microservice-integration.result }}" == "failure" ]]; then
-            echo "::error::One or more integration test jobs failed"
+          if [[ "${{ needs.monolith-integration.result }}" != "success" || \
+                "${{ needs.microservice-integration.result }}" != "success" ]]; then
+            echo "::error::One or more integration test jobs did not succeed (results: mono=${{ needs.monolith-integration.result }}, svc=${{ needs.microservice-integration.result }})"
             exit 1
           fi
           echo "All integration test jobs passed"
