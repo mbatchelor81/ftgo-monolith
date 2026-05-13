@@ -38,6 +38,10 @@ micrometer = "1.12.5"
 micrometer-legacy = "1.0.4"
 micrometer-tracing = "1.2.5"
 
+# --- Structured Logging ---
+logstash-logback-encoder = "7.4"
+logback = "1.4.14"
+
 # --- Distributed Tracing ---
 zipkin-reporter = "2.17.2"
 
@@ -87,6 +91,11 @@ nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimb
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
+# --- Structured Logging ---
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-encoder" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
+
 # --- Distributed Tracing ---
 micrometer-tracing-core = { module = "io.micrometer:micrometer-tracing", version.ref = "micrometer-tracing" }
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave", version.ref = "micrometer-tracing" }
@@ -135,6 +144,7 @@ testing-containers = ["testcontainers-core", "testcontainers-junit-jupiter", "te
 spring-boot-service = ["spring-boot-starter-web", "spring-boot-starter-data-jpa", "spring-boot-starter-actuator", "spring-boot-starter-validation"]
 testing-security = ["spring-security-test", "spring-boot-starter-test"]
 tracing = ["micrometer-tracing-core", "micrometer-tracing-bridge-brave", "zipkin-reporter-brave", "zipkin-sender-urlconnection"]
+logging = ["logstash-logback-encoder", "logback-classic", "logback-core"]
 jwt-auth = ["spring-boot-starter-oauth2-resource-server", "spring-security-oauth2-jose"]
 
 [plugins]
