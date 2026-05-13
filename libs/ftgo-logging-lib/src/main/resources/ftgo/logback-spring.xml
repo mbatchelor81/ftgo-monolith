@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared Logback configuration for FTGO platform services.
+
+  Include this as the base configuration in each service's logback-spring.xml:
+
+    <configuration>
+        <include resource="ftgo/logback-spring.xml"/>
+    </configuration>
+
+  Or copy and customize per-service as needed.
+
+  Profiles:
+    - local:           Human-readable console output (development)
+    - default/docker:  Structured JSON to console (container deployments)
+    - k8s:             Structured JSON to console + Logstash TCP shipping
+-->
+<included>
+
+    <!-- ===== Sensitive Data Masking ===== -->
+    <conversionRule conversionWord="maskedMsg"
+                    converterClass="net.chrisrichardson.ftgo.logging.SensitiveDataMaskingConverter"/>
+
+    <!-- ===== Service name from Spring property ===== -->
+    <springProperty scope="context" name="serviceName"
+                    source="ftgo.logging.service-name"
+                    defaultValue="ftgo-service"/>
+
+    <springProperty scope="context" name="logstashDestination"
+                    source="ftgo.logging.logstash.destination"
+                    defaultValue="localhost:5000"/>
+
+    <!-- ===== Local (human-readable) profile ===== -->
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{ISO8601} [%thread] [%X{serviceName:-${serviceName}}] [correlationId=%X{correlationId} traceId=%X{traceId} spanId=%X{spanId} userId=%X{userId} requestId=%X{requestId}] %-5level %logger{36} - %maskedMsg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+        <!-- Framework noise reduction -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.apache" level="WARN"/>
+
+        <!-- FTGO business logic at DEBUG for development -->
+        <logger name="net.chrisrichardson.ftgo" level="DEBUG"/>
+    </springProfile>
+
+    <!-- ===== Default / Docker profile (JSON console) ===== -->
+    <springProfile name="default | docker">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <timeZone>UTC</timeZone>
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+                <customFields>{"serviceName":"${serviceName}"}</customFields>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.apache" level="WARN"/>
+        <logger name="net.chrisrichardson.ftgo" level="INFO"/>
+    </springProfile>
+
+    <!-- ===== Kubernetes profile (JSON console + Logstash TCP) ===== -->
+    <springProfile name="k8s">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <timeZone>UTC</timeZone>
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+                <customFields>{"serviceName":"${serviceName}"}</customFields>
+            </encoder>
+        </appender>
+
+        <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${logstashDestination}</destination>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <timeZone>UTC</timeZone>
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+                <customFields>{"serviceName":"${serviceName}"}</customFields>
+            </encoder>
+        </appender>
+
+        <root level="WARN">
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="LOGSTASH_TCP"/>
+        </root>
+
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.apache" level="ERROR"/>
+        <logger name="net.chrisrichardson.ftgo" level="INFO"/>
+    </springProfile>
+
+</included>
