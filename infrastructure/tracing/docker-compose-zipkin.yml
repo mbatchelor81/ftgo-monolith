@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: ftgo-zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      # In-memory storage (default). For production, switch to
+      # Elasticsearch or MySQL via STORAGE_TYPE.
+      STORAGE_TYPE: mem
+      # Limit in-memory span retention (default 500_000 spans)
+      MEM_MAX_SPANS: 500000
+      # Collector sample rate — keep all traces in dev
+      COLLECTOR_SAMPLE_RATE: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9411/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - ftgo-tracing
+
+networks:
+  ftgo-tracing:
+    driver: bridge

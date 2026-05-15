@@ -1,0 +1,28 @@
+// =============================================================================
+// ftgo.spring-boot-conventions
+// =============================================================================
+// Applies Spring Boot and dependency management plugins with standard
+// configuration for new FTGO microservices.
+
+plugins {
+    id 'ftgo.java-conventions'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+}
+
+springBoot {
+    buildInfo()
+}
+
+bootJar {
+    archiveClassifier.set('')
+    launchScript()
+}
+
+jar {
+    enabled = false
+}

@@ -1,0 +1,20 @@
+apply plugin: 'io.spring.dependency-management'
+
+dependencies {
+    implementation project(":consumer-service-api")
+    implementation project(":ftgo-common")
+    implementation project(":ftgo-common-jpa")
+    implementation project(":common-swagger")
+
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    implementation "io.micrometer:micrometer-registry-prometheus:$micrometerVersion"
+    implementation 'javax.el:javax.el-api:2.2.5'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testImplementation 'io.rest-assured:rest-assured:3.0.6'
+    testImplementation 'io.rest-assured:spring-mock-mvc:3.0.6'
+    testImplementation "io.rest-assured:json-path:3.0.6"
+    testImplementation project(":ftgo-test-util")
+}

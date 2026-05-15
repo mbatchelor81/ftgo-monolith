@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logstash TCP appender for shipping structured JSON logs to Logstash.
+
+  Include this in your service's logback-spring.xml alongside logback-json.xml:
+    <include resource="ftgo/logback-json.xml"/>
+    <include resource="ftgo/logback-logstash.xml"/>
+
+  Then reference the LOGSTASH_TCP appender:
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+        <appender-ref ref="LOGSTASH_TCP"/>
+    </root>
+
+  Configure the destination in application.yml:
+    ftgo.logging.logstash.destination: logstash:5000
+-->
+<included>
+    <springProperty scope="context" name="logstashDestination"
+                    source="ftgo.logging.logstash.destination"
+                    defaultValue="localhost:5000"/>
+
+    <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstashDestination}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timeZone>UTC</timeZone>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+        </encoder>
+    </appender>
+</included>

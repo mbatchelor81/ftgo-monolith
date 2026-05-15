@@ -1,0 +1,24 @@
+# Spring Cloud Consul configuration for FTGO services
+# Include this profile via SPRING_PROFILES_ACTIVE=consul
+spring:
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        enabled: true
+        register: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+        health-check-timeout: 5s
+        health-check-critical-timeout: 90s
+        instance-id: ${spring.application.name}:${server.port:8080}
+        tags:
+          - ftgo
+          - spring-boot
+          - version=1.0.0
+        metadata:
+          framework: spring-boot-3.2
+      config:
+        enabled: false

@@ -1,16 +1,70 @@
 
+// =============================================================================
+// FTGO Platform — Gradle Module Configuration
+// =============================================================================
 
+// -----------------------------------------------------------------------------
+// Shared Build Logic — Convention Plugins (Java 17+, Spring Boot 3.x)
+// New microservices apply plugins from build-logic/ instead of buildSrc.
+// -----------------------------------------------------------------------------
+includeBuild('build-logic')
+
+// -----------------------------------------------------------------------------
+// Shared Libraries — Versioned (libs/ directory)
+// -----------------------------------------------------------------------------
+include "ftgo-common-lib"
+project(":ftgo-common-lib").projectDir = file("libs/ftgo-common-lib")
+
+include "ftgo-common-jpa-lib"
+project(":ftgo-common-jpa-lib").projectDir = file("libs/ftgo-common-jpa-lib")
+
+include "ftgo-domain-lib"
+project(":ftgo-domain-lib").projectDir = file("libs/ftgo-domain-lib")
+
+include "ftgo-openapi-lib"
+project(":ftgo-openapi-lib").projectDir = file("libs/ftgo-openapi-lib")
+
+include "ftgo-security-lib"
+project(":ftgo-security-lib").projectDir = file("libs/ftgo-security-lib")
+
+include "ftgo-metrics-lib"
+project(":ftgo-metrics-lib").projectDir = file("libs/ftgo-metrics-lib")
+
+include "ftgo-tracing-lib"
+project(":ftgo-tracing-lib").projectDir = file("libs/ftgo-tracing-lib")
+
+include "ftgo-logging-lib"
+project(":ftgo-logging-lib").projectDir = file("libs/ftgo-logging-lib")
+
+include "ftgo-test-lib"
+project(":ftgo-test-lib").projectDir = file("libs/ftgo-test-lib")
+
+include "ftgo-resilience-lib"
+project(":ftgo-resilience-lib").projectDir = file("libs/ftgo-resilience-lib")
+
+include "ftgo-error-handling-lib"
+project(":ftgo-error-handling-lib").projectDir = file("libs/ftgo-error-handling-lib")
+
+// -----------------------------------------------------------------------------
+// Shared Libraries (legacy modules — will migrate to libs/ directory)
+// -----------------------------------------------------------------------------
 include "common-swagger"
 
-include "ftgo-flyway"
-
-include "ftgo-test-util"
 include "ftgo-common"
 include "ftgo-common-jpa"
 
 include "ftgo-domain"
 
+include "ftgo-test-util"
 
+// -----------------------------------------------------------------------------
+// Database Migrations
+// -----------------------------------------------------------------------------
+include "ftgo-flyway"
+
+// -----------------------------------------------------------------------------
+// Legacy Monolith Modules (retained during migration)
+// -----------------------------------------------------------------------------
 include "ftgo-order-service"
 include "ftgo-order-service-api"
 
@@ -28,3 +82,41 @@ include "ftgo-application"
 include "ftgo-end-to-end-tests-common"
 include "ftgo-end-to-end-tests"
 
+// -----------------------------------------------------------------------------
+// Microservices — New Module Structure (services/ directory)
+// Each service has an API module (contracts) and an App module (implementation)
+// -----------------------------------------------------------------------------
+
+// Consumer Service
+include "consumer-service-api"
+project(":consumer-service-api").projectDir = file("services/consumer-service/consumer-service-api")
+include "consumer-service-app"
+project(":consumer-service-app").projectDir = file("services/consumer-service/consumer-service-app")
+
+// Order Service
+include "order-service-api"
+project(":order-service-api").projectDir = file("services/order-service/order-service-api")
+include "order-service-app"
+project(":order-service-app").projectDir = file("services/order-service/order-service-app")
+
+// Restaurant Service
+include "restaurant-service-api"
+project(":restaurant-service-api").projectDir = file("services/restaurant-service/restaurant-service-api")
+include "restaurant-service-app"
+project(":restaurant-service-app").projectDir = file("services/restaurant-service/restaurant-service-app")
+
+// Courier Service
+include "courier-service-api"
+project(":courier-service-api").projectDir = file("services/courier-service/courier-service-api")
+include "courier-service-app"
+project(":courier-service-app").projectDir = file("services/courier-service/courier-service-app")
+
+// API Gateway
+include "api-gateway"
+project(":api-gateway").projectDir = file("services/api-gateway")
+
+// Service Template (archetype — not deployed, used as a reference)
+include "service-template-api"
+project(":service-template-api").projectDir = file("services/service-template/service-template-api")
+include "service-template-app"
+project(":service-template-app").projectDir = file("services/service-template/service-template-app")

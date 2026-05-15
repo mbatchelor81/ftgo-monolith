@@ -1,0 +1,70 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'net.chrisrichardson.ftgo'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll([
+        '-parameters',
+        '-Xlint:unchecked',
+        '-Xlint:deprecation'
+    ])
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Domain model — builders need access to domain types
+    api project(":ftgo-common-lib")
+    api project(":ftgo-domain-lib")
+
+    // JUnit 5
+    api 'org.junit.jupiter:junit-jupiter:5.10.2'
+    api 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+
+    // Mockito
+    api 'org.mockito:mockito-core:5.11.0'
+    api 'org.mockito:mockito-junit-jupiter:5.11.0'
+
+    // AssertJ
+    api 'org.assertj:assertj-core:3.25.3'
+
+    // Rest-Assured
+    api 'io.rest-assured:rest-assured:5.4.0'
+    api 'io.rest-assured:spring-mock-mvc:5.4.0'
+    api 'io.rest-assured:json-path:5.4.0'
+
+    // Testcontainers
+    api platform('org.testcontainers:testcontainers-bom:1.19.7')
+    api 'org.testcontainers:testcontainers:1.19.7'
+    api 'org.testcontainers:junit-jupiter:1.19.7'
+    api 'org.testcontainers:mysql:1.19.7'
+
+    // MySQL connector (for Testcontainers JDBC URL)
+    api 'com.mysql:mysql-connector-j:8.3.0'
+
+    // H2 for lightweight in-memory tests
+    api 'com.h2database:h2:2.2.224'
+
+    // Spring Boot Test (optional — only needed when Spring context is loaded)
+    compileOnly 'org.springframework.boot:spring-boot-starter-test:3.2.5'
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.5'
+
+    // Test the test-lib itself
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.5'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}

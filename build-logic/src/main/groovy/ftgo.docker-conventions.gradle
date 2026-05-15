@@ -1,0 +1,32 @@
+// =============================================================================
+// ftgo.docker-conventions
+// =============================================================================
+// Docker image build using Google Jib plugin.
+// Produces OCI-compliant images without requiring a local Docker daemon.
+
+plugins {
+    id 'ftgo.spring-boot-conventions'
+    id 'com.google.cloud.tools.jib'
+}
+
+def registryPrefix = project.findProperty('docker.registry') ?: 'ftgo'
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre-alpine'
+    }
+    to {
+        image = "${registryPrefix}/${project.name}"
+        tags = [project.version.toString(), 'latest']
+    }
+    container {
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+        ports = ['8080']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+        format = 'OCI'
+        labels = [
+            'org.opencontainers.image.title'  : project.name,
+            'org.opencontainers.image.version' : project.version.toString()
+        ]
+    }
+}

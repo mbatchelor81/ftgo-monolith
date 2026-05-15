@@ -1,0 +1,17 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+ftgo:
+  security:
+    enabled: true
+    public-paths:
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info

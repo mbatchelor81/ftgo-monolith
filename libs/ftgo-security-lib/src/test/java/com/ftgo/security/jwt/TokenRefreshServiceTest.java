@@ -1,0 +1,61 @@
+package com.ftgo.security.jwt;
+
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class TokenRefreshServiceTest {
+
+    @Test
+    void refreshReturnsEmptyWhenDisabled() {
+        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
+        refreshProps.setEnabled(false);
+
+        TokenRefreshService service = new TokenRefreshService(refreshProps);
+
+        assertThat(service.refreshAccessToken("some-token")).isEmpty();
+        assertThat(service.isEnabled()).isFalse();
+    }
+
+    @Test
+    void refreshReturnsEmptyWhenNoEndpointConfigured() {
+        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
+        refreshProps.setEnabled(true);
+        refreshProps.setTokenEndpoint(null);
+
+        TokenRefreshService service = new TokenRefreshService(refreshProps);
+
+        assertThat(service.refreshAccessToken("some-token")).isEmpty();
+    }
+
+    @Test
+    void refreshReturnsEmptyWhenNoClientIdConfigured() {
+        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
+        refreshProps.setEnabled(true);
+        refreshProps.setTokenEndpoint("http://localhost:8180/token");
+        refreshProps.setClientId(null);
+
+        TokenRefreshService service = new TokenRefreshService(refreshProps);
+
+        assertThat(service.refreshAccessToken("some-token")).isEmpty();
+    }
+
+    @Test
+    void refreshBeforeExpirySecondsIsConfigurable() {
+        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
+        refreshProps.setRefreshBeforeExpirySeconds(600);
+
+        TokenRefreshService service = new TokenRefreshService(refreshProps);
+
+        assertThat(service.getRefreshBeforeExpirySeconds()).isEqualTo(600);
+    }
+
+    @Test
+    void defaultRefreshBeforeExpiryIs60Seconds() {
+        FtgoJwtProperties.TokenRefresh refreshProps = new FtgoJwtProperties.TokenRefresh();
+
+        TokenRefreshService service = new TokenRefreshService(refreshProps);
+
+        assertThat(service.getRefreshBeforeExpirySeconds()).isEqualTo(60);
+    }
+}

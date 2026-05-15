@@ -1,0 +1,49 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'net.chrisrichardson.ftgo'
+version = ftgoCommonLibVersion
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+dependencies {
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.7'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
+    api group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.7"
+
+    runtimeOnly "javax.xml.bind:jaxb-api:2.2.11"
+    runtimeOnly "com.sun.xml.bind:jaxb-core:2.2.11"
+    runtimeOnly "com.sun.xml.bind:jaxb-impl:2.2.11"
+    runtimeOnly "javax.activation:activation:1.1.1"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'net.chrisrichardson.ftgo'
+            artifactId = 'ftgo-common-lib'
+            version = ftgoCommonLibVersion
+
+            pom {
+                name = 'FTGO Common Library'
+                description = 'Shared value objects, utilities, and exceptions for the FTGO platform'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'local'
+            url = "${rootProject.buildDir}/repo"
+        }
+    }
+}

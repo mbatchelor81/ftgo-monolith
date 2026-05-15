@@ -1,0 +1,139 @@
+{
+  "realm": "ftgo",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "refreshTokenMaxReuse": 0,
+  "roles": {
+    "realm": [
+      {
+        "name": "ftgo-consumer",
+        "description": "FTGO Consumer — can place and manage orders"
+      },
+      {
+        "name": "ftgo-restaurant",
+        "description": "FTGO Restaurant — can accept and prepare orders"
+      },
+      {
+        "name": "ftgo-courier",
+        "description": "FTGO Courier — can accept and deliver orders"
+      },
+      {
+        "name": "ftgo-admin",
+        "description": "FTGO Admin — full platform access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ftgo-api",
+      "name": "FTGO API Gateway",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "http://localhost:*",
+        "https://localhost:*"
+      ],
+      "webOrigins": ["*"],
+      "defaultClientScopes": ["openid", "profile", "email", "roles"],
+      "protocolMappers": [
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "ftgo-service",
+      "name": "FTGO Service-to-Service",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "change-me-in-production",
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "defaultClientScopes": ["openid", "profile", "email"]
+    }
+  ],
+  "users": [
+    {
+      "username": "consumer1",
+      "email": "consumer1@ftgo.example",
+      "firstName": "Alice",
+      "lastName": "Consumer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ftgo-consumer"]
+    },
+    {
+      "username": "restaurant1",
+      "email": "restaurant1@ftgo.example",
+      "firstName": "Bob",
+      "lastName": "Restaurant",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ftgo-restaurant"]
+    },
+    {
+      "username": "courier1",
+      "email": "courier1@ftgo.example",
+      "firstName": "Carol",
+      "lastName": "Courier",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ftgo-courier"]
+    },
+    {
+      "username": "admin",
+      "email": "admin@ftgo.example",
+      "firstName": "Dave",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ftgo-admin", "ftgo-consumer", "ftgo-restaurant", "ftgo-courier"]
+    }
+  ]
+}

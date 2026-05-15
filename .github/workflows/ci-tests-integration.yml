@@ -1,0 +1,273 @@
+name: "CI — Integration Tests"
+
+on:
+  push:
+    branches: [main, feat/microservices-migration]
+    paths:
+      - "ftgo-application/**"
+      - "ftgo-order-service/**"
+      - "ftgo-order-service-api/**"
+      - "ftgo-consumer-service/**"
+      - "ftgo-consumer-service-api/**"
+      - "ftgo-restaurant-service/**"
+      - "ftgo-restaurant-service-api/**"
+      - "ftgo-courier-service/**"
+      - "ftgo-courier-service-api/**"
+      - "ftgo-common/**"
+      - "ftgo-common-jpa/**"
+      - "ftgo-domain/**"
+      - "ftgo-flyway/**"
+      - "ftgo-test-util/**"
+      - "common-swagger/**"
+      - "libs/**"
+      - "services/**"
+      - "build-logic/**"
+      - "buildSrc/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradle/**"
+      - ".github/workflows/ci-tests-integration.yml"
+  pull_request:
+    branches: [main, feat/microservices-migration]
+    paths:
+      - "ftgo-application/**"
+      - "ftgo-order-service/**"
+      - "ftgo-order-service-api/**"
+      - "ftgo-consumer-service/**"
+      - "ftgo-consumer-service-api/**"
+      - "ftgo-restaurant-service/**"
+      - "ftgo-restaurant-service-api/**"
+      - "ftgo-courier-service/**"
+      - "ftgo-courier-service-api/**"
+      - "ftgo-common/**"
+      - "ftgo-common-jpa/**"
+      - "ftgo-domain/**"
+      - "ftgo-flyway/**"
+      - "ftgo-test-util/**"
+      - "common-swagger/**"
+      - "libs/**"
+      - "services/**"
+      - "build-logic/**"
+      - "buildSrc/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradle/**"
+      - ".github/workflows/ci-tests-integration.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Tier 2 — Monolith integration tests (require MySQL for Flyway + DB-backed tests)
+  # ---------------------------------------------------------------------------
+  monolith-integration:
+    name: "Integration Tests — Monolith"
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: ftgo
+          MYSQL_USER: mysqluser
+          MYSQL_PASSWORD: mysqlpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-integ-mono-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'gradle/**') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-integ-mono-
+            ${{ runner.os }}-gradle-
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mysql-client
+
+      - name: Grant database privileges
+        run: |
+          mysql -h 127.0.0.1 -u root -prootpassword -e \
+            "GRANT ALL PRIVILEGES ON ftgo.* TO 'mysqluser'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+
+      - name: Run Flyway migrations
+        run: ./gradlew :ftgo-flyway:flywayMigrate
+
+      - name: Run monolith build and tests
+        run: |
+          ./gradlew clean build \
+            -x :ftgo-end-to-end-tests:test \
+            -x :ftgo-end-to-end-tests-common:build \
+            -x :ftgo-application:compileTestJava \
+            -x :ftgo-application:test
+
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results-monolith
+          path: |
+            **/build/test-results/test/*.xml
+          retention-days: 14
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports-monolith
+          path: |
+            **/build/reports/tests/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Tier 2 — Microservice integration tests (require MySQL)
+  # Runs integrationTest tasks for modules that define them via
+  # ftgo.testing-conventions. Skips gracefully if no tasks are found.
+  # ---------------------------------------------------------------------------
+  microservice-integration:
+    name: "Integration Tests — Microservices"
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: ftgo
+          MYSQL_USER: mysqluser
+          MYSQL_PASSWORD: mysqlpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-integ-svc-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'gradle/**') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-integ-svc-
+            ${{ runner.os }}-gradle-
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mysql-client
+
+      - name: Grant database privileges
+        run: |
+          mysql -h 127.0.0.1 -u root -prootpassword -e \
+            "GRANT ALL PRIVILEGES ON ftgo.* TO 'mysqluser'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+
+      - name: Run Flyway migrations
+        run: ./gradlew :ftgo-flyway:flywayMigrate
+
+      - name: Discover and run integration tests
+        run: |
+          # Find microservice modules that have integrationTest source directories
+          TASKS=""
+          for dir in services/*/; do
+            for app_dir in "$dir"*/; do
+              module_name=$(basename "$app_dir")
+              if [ -d "${app_dir}src/integration-test/java" ]; then
+                TASKS="$TASKS :${module_name}:integrationTest"
+              fi
+            done
+          done
+
+          if [ -z "$TASKS" ]; then
+            echo "No integration test source sets found — skipping"
+            echo "Integration tests will run automatically when modules add"
+            echo "src/integration-test/java directories."
+          else
+            echo "Running integration tests: $TASKS"
+            ./gradlew $TASKS --continue
+          fi
+
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results-microservices
+          path: |
+            **/build/test-results/integrationTest/*.xml
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports-microservices
+          path: |
+            **/build/reports/tests/integrationTest/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload JaCoCo coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage-reports-microservices
+          path: |
+            **/build/reports/jacoco/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Summary gate — all integration test jobs must pass
+  # ---------------------------------------------------------------------------
+  integration-tests-passed:
+    name: "Integration Tests ✓"
+    runs-on: ubuntu-latest
+    needs: [monolith-integration, microservice-integration]
+    if: always()
+
+    steps:
+      - name: Check integration test results
+        run: |
+          if [[ "${{ needs.monolith-integration.result }}" != "success" || \
+                "${{ needs.microservice-integration.result }}" != "success" ]]; then
+            echo "::error::One or more integration test jobs did not succeed (results: mono=${{ needs.monolith-integration.result }}, svc=${{ needs.microservice-integration.result }})"
+            exit 1
+          fi
+          echo "All integration test jobs passed"
