@@ -21,6 +21,8 @@ subprojects {
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 
+    ext['jackson.version'] = '2.19.0'
+
     group = "net.chrisrichardson.ftgo"
 
     repositories {
