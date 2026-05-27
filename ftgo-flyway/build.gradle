@@ -1,6 +1,16 @@
-plugins {
-    id "org.flywaydb.flyway" version "6.0.0"
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'org.flywaydb:flyway-gradle-plugin:8.5.13'
+        classpath 'org.flywaydb:flyway-mysql:8.5.13'
+        classpath 'mysql:mysql-connector-java:8.0.33'
+    }
 }
+
+apply plugin: 'org.flywaydb.flyway'
 
 flyway {
     url = "jdbc:mysql://${System.getenv('DOCKER_HOST_IP') ?: 'localhost'}/ftgo?useSSL=false"
